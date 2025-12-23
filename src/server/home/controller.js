@@ -1,12 +1,20 @@
-/**
- * A GDS styled example home page controller.
- * Provided as an example, remove or modify as required.
- */
 export const homeController = {
-  handler(_request, h) {
-    return h.view('home/index', {
-      pageTitle: 'Home',
-      heading: 'Home'
-    })
+  async handler(_request, h) {
+    const user = _request.yar.get('user') || null
+
+    if (!user) {
+      _request.yar.reset()
+      return h
+        .view('error/index', {
+          title: 'There is a problem',
+          heading: 'No JWT token submitted',
+          message: 'You need to come from Your Defra account to continue.',
+          linkHref: '/your-defra-account',
+          linkText: 'Go to Your Defra account'
+        })
+        .code(500)
+    }
+
+    return h.redirect('/dashboard')
   }
 }

@@ -219,6 +219,80 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  idService: {
+    jwtSecret: {
+      doc: 'The JWT secret to sign with',
+      format: String,
+      default: 'development-secret-key',
+      env: 'JWT_SECRET'
+    },
+    oidcIssuer: {
+      doc: 'Url of the OIDC issuer',
+      format: String,
+      default: 'https://login.defra.gov.uk',
+      env: 'OIDC_ISSUER'
+    },
+    oidcAudience: {
+      doc: 'The audience to request tokens for',
+      format: String,
+      default: 'api.cph_mapping_service.gov.uk',
+      env: 'OIDC_AUDIENCE'
+    },
+    useFakeExternalApi: {
+      doc: 'Toggles whether to use the fake external api or not',
+      format: Boolean,
+      default: false,
+      env: 'USE_FAKE_EXTERNAL_API'
+    },
+    identityServiceBaseUrl: {
+      doc: 'Url of the identity service handler',
+      format: String,
+      default: 'https://localhost:3000/',
+      env: 'IDENTITY_HANDLER_BASE_URL'
+    },
+    delegateListBaseUrl: {
+      doc: 'Url for the consumer to call back on for the delegated list of CPHs',
+      format: String,
+      default: 'https://localhost:3000/api/delegated-list/',
+      env: 'DELEGATED_LIST_API_URL'
+    },
+    identityApiBaseUrl: {
+      doc: 'Url of the identity service helper',
+      format: String,
+      default: 'https://localhost:3999/api/',
+      env: 'IDENTITY_HELPER_BASE_URL'
+    },
+    identityApiKey: {
+      doc: 'Api key of the identity service helper',
+      format: String,
+      default: 'NOT_A_REAL_KEY',
+      env: 'IDENTITY_HELPER_API_KEY'
+    },
+    auth0domain: {
+      doc: 'The domain of the auth0 tenant',
+      format: String,
+      default: 'NOT_A_REAL_DOMAIN',
+      env: 'AUTH0_DOMAIN'
+    },
+    auth0clientId: {
+      doc: 'The client id of the auth0 tenant',
+      format: String,
+      default: 'NOT_A_REAL_CLIENT_ID',
+      env: 'AUTH0_CLIENT_ID'
+    },
+    auth0clientSecret: {
+      doc: 'The client secret of the auth0 tenant',
+      format: String,
+      default: 'NOT_A_REAL_CLIENT_SECRET',
+      env: 'AUTH0_CLIENT_SECRET'
+    },
+    auth0audience: {
+      doc: 'The audience of the auth0 tenant',
+      format: String,
+      default: 'NOT_A_REAL_AUDIENCE',
+      env: 'AUTH0_AUDIENCE'
+    }
   }
 })
 

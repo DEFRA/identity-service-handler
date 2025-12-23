@@ -1,0 +1,62 @@
+[
+  {
+    "key": "livestock-keeper",
+    "label": "Livestock Keeper",
+    "services": ["els", "adml", "scoteid"]
+  },
+  {
+    "key": "livestock-owner",
+    "label": "Livestock Owner",
+    "services": ["els"]
+  },
+  {
+    "key": "facility-operator",
+    "label": "Facility Operator",
+    "services": ["els"]
+  },
+  {
+    "key": "facility-owner",
+    "label": "Facility Owner",
+    "services": ["els"]
+  },
+  {
+    "key": "agent",
+    "label": "Agent",
+    "services": ["els", "adml"]
+  },
+  {
+    "key": "citizen",
+    "label": "Citizen",
+    "services": ["els"]
+  },
+  {
+    "key": "customer",
+    "label": "Customer",
+    "services": ["els"]
+  },
+  {
+    "key": "cph-holder",
+    "label": "CPH Holder",
+    "services": ["els"]
+  },
+  {
+    "key": "registrant",
+    "label": "Registrant",
+    "services": ["els"]
+  },
+  {
+    "key": "land-owner",
+    "label": "Land Owner",
+    "services": ["els"]
+  },
+  {
+    "key": "exporter",
+    "label": "Exporter",
+    "services": ["els"]
+  },
+  {
+    "key": "one-off-exporter",
+    "label": "One Off Exporter",
+    "services": ["els"]
+  }
+]

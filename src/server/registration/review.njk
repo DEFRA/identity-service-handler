@@ -1,0 +1,45 @@
+{% extends 'layouts/page-base.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ serviceName }}</span>
+      <h1 class="govuk-heading-l">Edit configuration for {{ userType.label }}</h1>
+      <p class="govuk-body">Review the CPH or delegated CPH identifiers linked to this profile.</p>
+
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">CPH access</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          {% if userType.cphs.length == 1 %}
+            <p class="govuk-body">This user has access to a single holding.</p>
+          {% else %}
+            <p class="govuk-body">This user has access to multiple holdings.</p>
+          {% endif %}
+          <dl class="govuk-summary-list">
+            {% for cph in userType.cphs %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  {% if cph.delegated %}Delegated CPH{% else %}CPH{% endif %} {{ loop.index }}
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  <div class="govuk-!-margin-bottom-1">{{ cph.id }}</div>
+                  {% if cph.delegateId %}
+                    <span class="govuk-tag govuk-tag--blue">Delegate ID: {{ cph.delegateId }}</span>
+                  {% endif %}
+                </dd>
+              </div>
+            {% endfor %}
+          </dl>
+        </div>
+      </div>
+
+      <p class="govuk-body">Return to dashboard or continue to sign in as this user.</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="/user-type/{{ userType.slug }}?service={{ serviceKey | default('els') }}">Continue to login</a>
+        <a class="govuk-button govuk-button--secondary" href="/dashboard">Back to dashboard</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

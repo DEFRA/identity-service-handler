@@ -1,4 +1,4 @@
-{% extends 'layouts/page.njk' %}
+{% extends 'layouts/page-base.njk' %}
 
 {% block content %}
   {{ appHeading({
@@ -9,5 +9,10 @@
     <div class="govuk-grid-column-two-thirds">
       <p>{{ message }}</p>
     </div>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">If you came here by mistake, return to your account to start again.</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ linkHref }}">{{ linkText }}</a></p>
+    </div>
   </div>
+
 {% endblock %}
