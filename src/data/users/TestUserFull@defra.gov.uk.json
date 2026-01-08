@@ -1,0 +1,73 @@
+[
+  {
+    "key": "livestock-keeper",
+    "cphs": [{ "key": "UK1000001", "delegated": false }]
+  },
+  {
+    "key": "livestock-owner",
+    "cphs": [{ "key": "UK1000002", "delegated": false }]
+  },
+  {
+    "key": "facility-operator",
+    "cphs": [
+      { "key": "UK2000003", "delegated": true, "delegateId": "FO-DEL-01" },
+      { "key": "UK2000004", "delegated": true, "delegateId": "FO-DEL-02" }
+    ]
+  },
+  {
+    "key": "facility-owner",
+    "cphs": [
+      { "key": "UK3000001", "delegated": false },
+      { "key": "UK3000002", "delegated": false }
+    ]
+  },
+  {
+    "key": "agent",
+    "cphs": [
+      { "key": "UK7654321", "delegated": true, "delegateId": "AG-DEL-11" },
+      { "key": "UK7654322", "delegated": true, "delegateId": "AG-DEL-11" },
+      { "key": "UK7654323", "delegated": true, "delegateId": "AG-DEL-11" }
+    ]
+  },
+  {
+    "key": "citizen",
+    "cphs": [
+      { "key": "UK4000001", "delegated": false },
+      { "key": "UK4000002", "delegated": false }
+    ]
+  },
+  {
+    "key": "customer",
+    "cphs": [
+      { "key": "UK5000001", "delegated": false },
+      { "key": "UK5000002", "delegated": false },
+      { "key": "UK5000003", "delegated": true, "delegateId": "CU-DEL-01" }
+    ]
+  },
+  {
+    "key": "cph-holder",
+    "cphs": [{ "key": "UK6000001", "delegated": false }]
+  },
+  {
+    "key": "registrant",
+    "cphs": [{ "key": "UK7000001", "delegated": false }]
+  },
+  {
+    "key": "land-owner",
+    "cphs": [{ "key": "UK8000001", "delegated": false }]
+  },
+  {
+    "key": "exporter",
+    "cphs": [
+      { "key": "UK9000001", "delegated": true, "delegateId": "EX-DEL-01" },
+      { "key": "UK9000002", "delegated": false }
+    ]
+  },
+  {
+    "key": "one-off-exporter",
+    "cphs": [
+      { "key": "UK9100001", "delegated": true, "delegateId": "OOE-DEL-01" },
+      { "key": "UK9100002", "delegated": true, "delegateId": "OOE-DEL-02" }
+    ]
+  }
+]

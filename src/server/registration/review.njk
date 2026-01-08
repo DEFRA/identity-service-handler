@@ -1,0 +1,33 @@
+{% extends 'layouts/page-base.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Configuration for {{ roleDetails.label }}</h1>
+      <p class="govuk-body">Review the CPH or delegated CPH identifiers linked to this profile.</p>
+
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">CPH access</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          {{
+            govukSummaryList({ rows: listRows })
+          }}
+        </div>
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Login",
+          href: "/login/" + serviceDetails.key + "/" + roleDetails.key
+        }) }}
+        {{ govukButton({
+          text: "Back to Dashboard",
+          classes: "govuk-button--secondary",
+          href: "/dashboard"
+        }) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

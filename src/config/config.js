@@ -35,6 +35,26 @@ export const config = convict({
     default: 3000,
     env: 'PORT'
   },
+  tls: {
+    enabled: {
+      doc: 'Enable TLS/SSL',
+      format: Boolean,
+      default: false,
+      env: 'TLS_ENABLED'
+    },
+    key: {
+      doc: 'Path to TLS key file',
+      format: String,
+      default: path.resolve(dirname, '../../certs/server.key'),
+      env: 'TLS_KEY'
+    },
+    cert: {
+      doc: 'Path to TLS cert file',
+      format: String,
+      default: path.resolve(dirname, '../../certs/server.cert'),
+      env: 'TLS_CERT'
+    }
+  },
   staticCacheTimeout: {
     doc: 'Static cache timeout in milliseconds',
     format: Number,
@@ -218,6 +238,93 @@ export const config = convict({
       format: String,
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
+    }
+  },
+  idService: {
+    jwtSecret: {
+      doc: 'The JWT secret to sign with',
+      format: String,
+      default: 'development-secret-key',
+      env: 'JWT_SECRET'
+    },
+    oidcIssuer: {
+      doc: 'Url of the OIDC issuer',
+      format: String,
+      default: 'https://login.defra.gov.uk',
+      env: 'OIDC_ISSUER'
+    },
+    oidcAudience: {
+      doc: 'The audience to request tokens for',
+      format: String,
+      default: 'api.cph_mapping_service.gov.uk',
+      env: 'OIDC_AUDIENCE'
+    },
+    defraCiEndpoint: {
+      doc: 'The endpoint of the DefraCI service.',
+      format: String,
+      default:
+        'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin',
+      env: 'DEFRA_CI_ENDPOINT'
+    },
+    useFakeExternalApi: {
+      doc: 'Toggles whether to use the fake external api or not',
+      format: Boolean,
+      default: false,
+      env: 'USE_FAKE_EXTERNAL_API'
+    },
+    identityServiceBaseUrl: {
+      doc: 'Url of the identity service handler',
+      format: String,
+      default: 'http://localhost:3000',
+      env: 'IDENTITY_HANDLER_BASE_URL'
+    },
+    delegateListBaseUrl: {
+      doc: 'Url for the consumer to call back on for the delegated list of CPHs',
+      format: String,
+      default: 'https://localhost:3000/api/delegated-list/',
+      env: 'DELEGATED_LIST_API_URL'
+    },
+    identityApiBaseUrl: {
+      doc: 'Url of the identity service helper',
+      format: String,
+      default: 'https://localhost:3999/api',
+      env: 'IDENTITY_HELPER_BASE_URL'
+    },
+    identityApiKey: {
+      doc: 'Api key of the identity service helper',
+      format: String,
+      default: 'NOT_A_REAL_KEY',
+      env: 'IDENTITY_HELPER_API_KEY'
+    },
+    tenant: {
+      doc: 'The b2c tenant name',
+      format: String,
+      default: 'NOT_A_REAL_DOMAIN',
+      env: 'B2C_TENANT'
+    },
+    policy: {
+      doc: 'The b2c policy name',
+      format: String,
+      default: 'NOT_A_REAL_DOMAIN',
+      env: 'B2C_POLICY'
+    },
+    clientId: {
+      doc: 'The client id of the B2c tenant',
+      format: String,
+      default: 'NOT_A_REAL_CLIENT_ID',
+      env: 'B2C_CLIENT_ID'
+    },
+    clientSecret: {
+      doc: 'The client secret of the B2c tenant',
+      format: String,
+      default: 'NOT_A_REAL_CLIENT_SECRET',
+      env: 'B2C_CLIENT_SECRET'
+    },
+    auth0audience: {
+      doc: 'The audience of the auth0 tenant',
+      format: String,
+      default: 'NOT_A_REAL_AUDIENCE',
+      env: 'AUTH0_AUDIENCE'
     }
   }
 })

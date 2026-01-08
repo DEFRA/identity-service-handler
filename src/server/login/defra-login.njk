@@ -1,0 +1,36 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ thirdPartyName }}</span>
+      <h1 class="govuk-heading-l">JWT received</h1>
+      <p class="govuk-body">This is a stub for the DEFRA login journey. The generated JWT is shown below along with its decoded contents.</p>
+
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">Token details</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <h3 class="govuk-heading-s">JWT</h3>
+          <pre class="govuk-body jwt-token">{{ token }}</pre>
+
+          <h3 class="govuk-heading-s">Protected header</h3>
+          <pre class="govuk-body">{{ headerPretty }}</pre>
+
+          <h3 class="govuk-heading-s">Payload</h3>
+          <pre class="govuk-body">{{ payloadPretty }}</pre>
+        </div>
+      </div>
+
+      <p class="govuk-body breakable-text">In production this would redirect to: <strong class="breakable-text">{{ destinationUrl }}</strong></p>
+      <div class="govuk-button-group">
+        <a class="govuk-button govuk-button--secondary" href="/">Back to dashboard</a>
+        <form class="govuk-!-margin-bottom-0 govuk-!-display-inline-block" method="post" action="/">
+          <button class="govuk-button" type="submit">Log into service</button>
+          <input type="hidden" name="token" value="{{ token }}">
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

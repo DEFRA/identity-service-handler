@@ -64,6 +64,9 @@ services:
       REDIS_HOST: redis
       LOCALSTACK_ENDPOINT: http://localstack:4566
       USE_SINGLE_INSTANCE_CACHE: true
+      USE_FAKE_EXTERNAL_API: true
+      IDENTITY_HELPER_BASE_URL: http://identity-helper:3000
+      IDENTITY_HELPER_API_KEY: test
     networks:
       - cdp-tenant
 

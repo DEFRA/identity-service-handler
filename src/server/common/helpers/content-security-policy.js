@@ -11,12 +11,20 @@ const contentSecurityPolicy = {
     // https://frontend.design-system.service.gov.uk/import-javascript/#if-our-inline-javascript-snippet-is-blocked-by-a-content-security-policy
     defaultSrc: ['self'],
     fontSrc: ['self', 'data:'],
-    connectSrc: ['self', 'wss', 'data:'],
+    connectSrc: [
+      'self',
+      'wss',
+      'data:',
+      'https://cdn.auth0.com',
+      'https://dev-vkv82jrozs8ery4p.uk.auth0.com'
+    ],
     mediaSrc: ['self'],
     styleSrc: ['self'],
     scriptSrc: [
       'self',
-      "'sha256-GUQ5ad8JK5KmEWmROf3LZd9ge94daqNvd8xy9YS1iDw='"
+      'unsafe-inline',
+      // "'sha256-GUQ5ad8JK5KmEWmROf3LZd9ge94daqNvd8xy9YS1iDw='",
+      'https://cdn.auth0.com/'
     ],
     imgSrc: ['self', 'data:'],
     frameSrc: ['self', 'data:'],
@@ -24,6 +32,7 @@ const contentSecurityPolicy = {
     frameAncestors: ['none'],
     formAction: ['self'],
     manifestSrc: ['self'],
+    workerSrc: ['self', 'blob:'],
     generateNonces: false
   }
 }

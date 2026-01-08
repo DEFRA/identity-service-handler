@@ -1,0 +1,17 @@
+[
+  {
+    "key": "els",
+    "label": "England - Livestock Service",
+    "order": 1
+  },
+  {
+    "key": "adml",
+    "label": "Animal Disease Movement Licensing",
+    "order": 2
+  },
+  {
+    "key": "scoteid",
+    "label": "ScotEID - Livestock Service",
+    "order": 3
+  }
+]

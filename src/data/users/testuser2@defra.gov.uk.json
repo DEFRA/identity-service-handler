@@ -1,0 +1,17 @@
+[
+  {
+    "key": "livestock-keeper",
+    "cphs": [{ "key": "09/201/1235", "delegated": false }]
+  },
+  {
+    "key": "livestock-owner",
+    "cphs": [{ "key": "22/216/3322", "delegated": false }]
+  },
+  {
+    "key": "agent",
+    "cphs": [
+      { "key": "UK2000003", "delegated": true, "delegateId": "F0-DEL-11" },
+      { "key": "UK2000004", "delegated": true, "delegateId": "F0-DEL-11" }
+    ]
+  }
+]

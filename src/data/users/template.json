@@ -1,0 +1,62 @@
+[
+  {
+    "key": "livestock-keeper",
+    "label": "Livestock Keeper",
+    "cphs": []
+  },
+  {
+    "key": "livestock-owner",
+    "label": "Livestock Owner",
+    "cphs": []
+  },
+  {
+    "key": "facility-operator",
+    "label": "Facility Operator",
+    "cphs": []
+  },
+  {
+    "key": "facility-owner",
+    "label": "Facility Owner",
+    "cphs": []
+  },
+  {
+    "key": "agent",
+    "label": "Agent",
+    "cphs": []
+  },
+  {
+    "key": "citizen",
+    "label": "Citizen",
+    "cphs": []
+  },
+  {
+    "key": "customer",
+    "label": "Customer",
+    "cphs": []
+  },
+  {
+    "key": "cph-holder",
+    "label": "CPH Holder",
+    "cphs": []
+  },
+  {
+    "key": "registrant",
+    "label": "Registrant",
+    "cphs": []
+  },
+  {
+    "key": "land-owner",
+    "label": "Land Owner",
+    "cphs": []
+  },
+  {
+    "key": "exporter",
+    "label": "Exporter",
+    "cphs": []
+  },
+  {
+    "key": "one-off-exporter",
+    "label": "One Off Exporter",
+    "cphs": []
+  }
+]

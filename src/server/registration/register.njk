@@ -1,0 +1,26 @@
+{% extends 'layouts/page-base.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-caption-l">Registration in {{ service.label }}</h1>
+      <span class="govuk-heading-l">Registration for the {{ role.label }} role.</span>
+
+      <p class="govuk-body">Blah blah</p>
+      <p class="govuk-body">Blah blah</p>
+      <p class="govuk-body">Blah blah</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Terms and conditions</li>
+        <li>Privacy policy</li>
+        <li>Cookies</li>
+      </ul>
+      <p class="govuk-body">Return to dashboard or continue to register as a {{ role.label }}.</p>
+      <form action="/register/{{ service.key }}/{{ role.key }}" method="post">
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Register" }) }}
+          <a class="govuk-button govuk-button--secondary" href="/dashboard">Back to dashboard</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,6 +1,8 @@
 import path from 'path'
+import fs from 'node:fs'
 import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
+import Inert from '@hapi/inert'
 
 import { router } from './router.js'
 import { config } from '../config/config.js'
@@ -14,10 +16,14 @@ import { sessionCache } from './common/helpers/session-cache/session-cache.js'
 import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './common/helpers/content-security-policy.js'
+import { createLogger } from './common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 export async function createServer() {
   setupProxy()
-  const server = hapi.server({
+
+  const serverOptions = {
     host: config.get('host'),
     port: config.get('port'),
     routes: {
@@ -52,8 +58,19 @@ export async function createServer() {
     state: {
       strictHeader: false
     }
-  })
+  }
+
+  if (config.get('tls.enabled')) {
+    serverOptions.tls = {
+      key: fs.readFileSync(config.get('tls.key')),
+      cert: fs.readFileSync(config.get('tls.cert'))
+    }
+  }
+
+  const server = hapi.server(serverOptions)
+
   await server.register([
+    Inert,
     requestLogger,
     requestTracing,
     secureContext,
@@ -64,6 +81,8 @@ export async function createServer() {
     contentSecurityPolicy,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
+
+  logger.info(`Current working directory: ${process.cwd()}`)
 
   server.ext('onPreResponse', catchAll)
 
