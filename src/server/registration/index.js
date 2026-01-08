@@ -1,6 +1,7 @@
 import {
-  registerController,
-  registerCompleteController,
+  selectionController,
+  selectionControllerPost,
+  detailsController,
   reviewController
 } from './controller.js'
 
@@ -16,13 +17,18 @@ export const registration = {
         },
         {
           method: 'GET',
-          path: '/register/{service}/{usertype}',
-          ...registerController
+          path: '/register/{service}',
+          ...selectionController
         },
         {
           method: 'POST',
+          path: '/register/{service}',
+          ...selectionControllerPost
+        },
+        {
+          method: 'GET',
           path: '/register/{service}/{usertype}',
-          ...registerCompleteController
+          ...detailsController
         }
       ])
     }

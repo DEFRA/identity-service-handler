@@ -35,6 +35,26 @@ export const config = convict({
     default: 3000,
     env: 'PORT'
   },
+  tls: {
+    enabled: {
+      doc: 'Enable TLS/SSL',
+      format: Boolean,
+      default: false,
+      env: 'TLS_ENABLED'
+    },
+    key: {
+      doc: 'Path to TLS key file',
+      format: String,
+      default: path.resolve(dirname, '../../certs/server.key'),
+      env: 'TLS_KEY'
+    },
+    cert: {
+      doc: 'Path to TLS cert file',
+      format: String,
+      default: path.resolve(dirname, '../../certs/server.cert'),
+      env: 'TLS_CERT'
+    }
+  },
   staticCacheTimeout: {
     doc: 'Static cache timeout in milliseconds',
     format: Number,
@@ -239,6 +259,13 @@ export const config = convict({
       default: 'api.cph_mapping_service.gov.uk',
       env: 'OIDC_AUDIENCE'
     },
+    defraCiEndpoint: {
+      doc: 'The endpoint of the DefraCI service.',
+      format: String,
+      default:
+        'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin',
+      env: 'DEFRA_CI_ENDPOINT'
+    },
     useFakeExternalApi: {
       doc: 'Toggles whether to use the fake external api or not',
       format: Boolean,
@@ -248,7 +275,7 @@ export const config = convict({
     identityServiceBaseUrl: {
       doc: 'Url of the identity service handler',
       format: String,
-      default: 'https://localhost:3000/',
+      default: 'http://localhost:3000',
       env: 'IDENTITY_HANDLER_BASE_URL'
     },
     delegateListBaseUrl: {
@@ -260,7 +287,7 @@ export const config = convict({
     identityApiBaseUrl: {
       doc: 'Url of the identity service helper',
       format: String,
-      default: 'https://localhost:3999/api/',
+      default: 'https://localhost:3999/api',
       env: 'IDENTITY_HELPER_BASE_URL'
     },
     identityApiKey: {
@@ -269,23 +296,29 @@ export const config = convict({
       default: 'NOT_A_REAL_KEY',
       env: 'IDENTITY_HELPER_API_KEY'
     },
-    auth0domain: {
-      doc: 'The domain of the auth0 tenant',
+    tenant: {
+      doc: 'The b2c tenant name',
       format: String,
       default: 'NOT_A_REAL_DOMAIN',
-      env: 'AUTH0_DOMAIN'
+      env: 'B2C_TENANT'
     },
-    auth0clientId: {
-      doc: 'The client id of the auth0 tenant',
+    policy: {
+      doc: 'The b2c policy name',
+      format: String,
+      default: 'NOT_A_REAL_DOMAIN',
+      env: 'B2C_POLICY'
+    },
+    clientId: {
+      doc: 'The client id of the B2c tenant',
       format: String,
       default: 'NOT_A_REAL_CLIENT_ID',
-      env: 'AUTH0_CLIENT_ID'
+      env: 'B2C_CLIENT_ID'
     },
-    auth0clientSecret: {
-      doc: 'The client secret of the auth0 tenant',
+    clientSecret: {
+      doc: 'The client secret of the B2c tenant',
       format: String,
       default: 'NOT_A_REAL_CLIENT_SECRET',
-      env: 'AUTH0_CLIENT_SECRET'
+      env: 'B2C_CLIENT_SECRET'
     },
     auth0audience: {
       doc: 'The audience of the auth0 tenant',

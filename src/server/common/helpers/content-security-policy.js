@@ -24,7 +24,7 @@ const contentSecurityPolicy = {
       'self',
       'unsafe-inline',
       // "'sha256-GUQ5ad8JK5KmEWmROf3LZd9ge94daqNvd8xy9YS1iDw='",
-      "https://cdn.auth0.com/"
+      'https://cdn.auth0.com/'
     ],
     imgSrc: ['self', 'data:'],
     frameSrc: ['self', 'data:'],
@@ -32,6 +32,7 @@ const contentSecurityPolicy = {
     frameAncestors: ['none'],
     formAction: ['self'],
     manifestSrc: ['self'],
+    workerSrc: ['self', 'blob:'],
     generateNonces: false
   }
 }

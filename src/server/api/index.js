@@ -1,4 +1,8 @@
-import { apiController } from './controller.js'
+import {
+  apiController,
+  oidcDiscoveryController,
+  jwksController
+} from './controller.js'
 
 export const api = {
   plugin: {
@@ -7,8 +11,18 @@ export const api = {
       server.route([
         {
           method: 'GET',
-          path: '/api/delegate-list/{listId}',
+          path: '/api/delegated-list/{listId}',
           ...apiController
+        },
+        {
+          method: 'GET',
+          path: '/.well-known/openid-configuration',
+          ...oidcDiscoveryController
+        },
+        {
+          method: 'GET',
+          path: '/.well-known/jwks.json',
+          ...jwksController
         }
       ])
     }

@@ -1,8 +1,8 @@
 import path from 'path'
+import fs from 'node:fs'
 import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
-import Inert from '@hapi/inert';
-// import Jwt from '@hapi/jwt'
+import Inert from '@hapi/inert'
 
 import { router } from './router.js'
 import { config } from '../config/config.js'
@@ -23,7 +23,7 @@ const logger = createLogger()
 export async function createServer() {
   setupProxy()
 
-  const server = hapi.server({
+  const serverOptions = {
     host: config.get('host'),
     port: config.get('port'),
     routes: {
@@ -58,7 +58,16 @@ export async function createServer() {
     state: {
       strictHeader: false
     }
-  })
+  }
+
+  if (config.get('tls.enabled')) {
+    serverOptions.tls = {
+      key: fs.readFileSync(config.get('tls.key')),
+      cert: fs.readFileSync(config.get('tls.cert'))
+    }
+  }
+
+  const server = hapi.server(serverOptions)
 
   await server.register([
     Inert,
@@ -70,51 +79,10 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
-    // Jwt,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
-  //
-  // // Auth0 (RS256) via JWKS
-  // server.auth.strategy('jwt', 'jwt', {
-  //   keys: {
-  //     uri: `https://${config.get('idService.auth0domain')}/.well-known/jwks.json`, // e.g., https://your-tenant.eu.auth0.com/.well-known/jwks.json
-  //     algorithms: ['RS256']
-  //   },
-  //   verify: {
-  //     aud: config.get('idService.auth0audience'),
-  //     iss: `https://${config.get('idService.auth0domain')}`,
-  //     nbf: true,
-  //     exp: true,
-  //     sub: "true"
-  //   },
-  //   validate: (artifacts) => {
-  //     // Example: enforce a scope
-  //     // const scopes = artifacts.decoded.payload.scope?.split(' ') || []
-  //     // const isAllowed = scopes.includes('read:resource')
-  //     // return { isValid: isAllowed, credentials: { ...artifacts.decoded.payload, scopes } }
-  //
-  //     return { isValid: true, credentials: artifacts.decoded.payload }
-  //   }
-  // })
-  //
-  // // Require JWT by default for all routes
-  // server.auth.default('jwt')
 
   logger.info(`Current working directory: ${process.cwd()}`)
-
-  // Serve everything in /public under /assets
-  server.route({
-    method: 'GET',
-    path: '/assets/{param*}',
-    options: { auth: false },
-    handler: {
-      directory: {
-        path: path.join(process.cwd(), 'public/assets'),
-        listing: false,
-        index: false
-      }
-    }
-  })
 
   server.ext('onPreResponse', catchAll)
 

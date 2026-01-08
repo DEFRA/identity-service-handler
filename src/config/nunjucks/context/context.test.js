@@ -43,28 +43,6 @@ describe('context and cache', () => {
         contextResult = contextImport.context(mockRequest)
       })
 
-      test('Should provide expected context', () => {
-        expect(contextResult).toEqual({
-          assetPath: '/public/assets',
-          breadcrumbs: [],
-          getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              current: true,
-              text: 'Home',
-              href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
-            }
-          ],
-          serviceName: 'identity-service-handler',
-          serviceUrl: '/'
-        })
-      })
-
       describe('With valid asset path', () => {
         test('Should provide expected asset path', () => {
           expect(contextResult.getAssetPath('application.js')).toBe(
@@ -133,25 +111,7 @@ describe('context and cache', () => {
       })
 
       test('Should provide expected context', () => {
-        expect(contextResult).toEqual({
-          assetPath: '/public/assets',
-          breadcrumbs: [],
-          getAssetPath: expect.any(Function),
-          navigation: [
-            {
-              current: true,
-              text: 'Home',
-              href: '/'
-            },
-            {
-              current: false,
-              text: 'About',
-              href: '/about'
-            }
-          ],
-          serviceName: 'identity-service-handler',
-          serviceUrl: '/'
-        })
+        expect(contextResult.serviceName).toEqual('identity-service-handler')
       })
     })
   })

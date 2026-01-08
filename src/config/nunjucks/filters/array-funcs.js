@@ -5,7 +5,7 @@ export function filterByKeyValue(value, key, filter) {
 }
 
 export function sort(value, key, order = 'asc') {
-  return order === 'asc' ?
-    value.sort((a, b) => (a[key] > b[key] ? 1 : -1)) :
-    value.sort((a, b) => (a[key] < b[key] ? 1 : -1))
+  return order === 'asc'
+    ? value.sort((a, b) => (a[key] > b[key] ? 1 : -1))
+    : value.sort((a, b) => (a[key] < b[key] ? 1 : -1))
 }

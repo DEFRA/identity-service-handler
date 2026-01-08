@@ -1,77 +1,157 @@
 import { identityHelperServiceApiClient } from '../services/id-helper-service.js'
-import { config } from '../../config/config.js'
-import { SignJWT } from 'jose'
-import { randomUUID } from 'crypto'
-import jwt from 'jsonwebtoken'
 
 export const reviewController = {
-  async handler(_request, h) {
-    const user = _request.yar.get('user') || null
+  async handler(request, h) {
+    const user = request.yar.get('user') || null
     if (!user) {
       return h.redirect('/your-defra-account')
     }
-    const userPayload = await identityHelperServiceApiClient.getUserRegistrations(_request, user.email)
-    const supportedServices = await identityHelperServiceApiClient.getSupportedServices(_request)
-    const supportedRoles = await identityHelperServiceApiClient.getSupportedRoles(_request)
+    const supportedServices =
+      await identityHelperServiceApiClient.getSupportedServices(request)
+    const supportedRoles =
+      await identityHelperServiceApiClient.getSupportedRoles(request)
+    const userPayload =
+      await identityHelperServiceApiClient.getUserRegistrations(
+        request,
+        user.email
+      )
+    const userRole = userPayload.registeredRoles.filter(
+      (x) => x.key === request.params.usertype
+    )[0]
+    const serviceDetails = supportedServices.filter(
+      (x) => x.key === request.params.service
+    )[0]
+    const roleDetails = supportedRoles.filter(
+      (x) => x.key === request.params.usertype
+    )[0]
 
-    const userRole = userPayload.registeredRoles.filter(x=>x.key === _request.params.usertype)[0]
-    const hasDelegateId = userRole.cphs.filter(x=>x.delegated).length > 0
-    const delegatedId = hasDelegateId
-      ? userRole.cphs.filter((x) => x.delegated)[0].delegateId
-      : null
-    const primaryCphId = hasDelegateId
-      ? null
-      : userRole.cphs.filter((x) => !x.delegated)[0].key
-
+    const listRows = userRole.cphs.map((cph, index) => ({
+      key: {
+        text: cph.delegated ? cph.delegateId : `CPH ${index + 1}`
+      },
+      value: {
+        text: cph.key
+      },
+      actions: {
+        items: [
+          {
+            href: `/config/${request.params.service}/${request.params.usertype}/${encodeURIComponent(cph.key)}`,
+            text: 'Change',
+            visuallyHiddenText: cph.key
+          }
+        ]
+      }
+    }))
+    listRows[listRows.length - 1].actions.items.push({
+      href: `/config/${request.params.service}/${request.params.usertype}`,
+      text: 'Add New'
+    })
     return h.view('registration/review', {
-      serviceType: _request.params.service,
-      userRole,
-      primaryCphId,
-      delegatedId
+      serviceDetails,
+      roleDetails,
+      listRows
     })
   }
 }
 
-export const registerController = {
-  async handler(_request, h) {
-    const user = _request.yar.get('user') || null
+export const selectionController = {
+  async handler(request, h) {
+    const user = request.yar.get('user') || null
     if (!user) {
       return h.redirect('/your-defra-account')
     }
 
-    const supportedRoles = await identityHelperServiceApiClient.getSupportedRoles(_request)
-    const supportedServices = await identityHelperServiceApiClient.getSupportedServices(_request)
+    const model = await buildSelectionFormData({ request, user })
+    return h.view('registration/register-select', model)
+  }
+}
 
-    const tmp ={
-      role: (supportedRoles.filter((x)=>x.key === _request.params.usertype) || {key:"none", label:"Missing"})[0],
-      service: (supportedServices.filter((x)=>x.key === _request.params.service) || {key:"none", label:"Missing"})[0],
+export const selectionControllerPost = {
+  async handler(request, h) {
+    const { choice } = request.payload
+    const user = request.yar.get('user') || null
+    if (!user) {
+      return h.redirect('/your-defra-account')
+    }
+
+    if (!choice) {
+      const model = await buildSelectionFormData({
+        request,
+        user,
+        errors: { message: 'Select a role to apply for' },
+        values: { choice: '' }
+      })
+
+      return h.view('registration/register-select', model).code(400)
+    }
+
+    const model = identityHelperServiceApiClient.addRoleToUser(user, choice)
+    return h.view('registration/register-complete', model)
+  }
+}
+
+async function buildSelectionFormData({
+  request,
+  user,
+  errors = null,
+  values = {}
+}) {
+  const supportedServices =
+    await identityHelperServiceApiClient.getSupportedServices(request)
+  const supportedRoles =
+    await identityHelperServiceApiClient.getSupportedRoles(request)
+  const userPayload = await identityHelperServiceApiClient.getUserRegistrations(
+    request,
+    user.email
+  )
+  const serviceDetails = supportedServices.filter(
+    (x) => x.key === request.params.service
+  )[0]
+  const serviceRoles = supportedRoles.filter(
+    (x) =>
+      x.services &&
+      x.services.includes(request.params.service) &&
+      !userPayload.registeredRoles.find((y) => y.key === x.key)
+  )
+
+  const listRows = serviceRoles
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .map((role, index) => ({
+      text: role.label,
+      value: role.key
+    }))
+
+  return {
+    serviceDetails,
+    userPayload,
+    listRows,
+    errorSummary: errors ? [{ text: errors.message, href: '#choice' }] : null,
+    choiceError: errors ? { text: errors.message } : null
+  }
+}
+
+export const detailsController = {
+  async handler(request, h) {
+    const user = request.yar.get('user') || null
+    if (!user) {
+      return h.redirect('/your-defra-account')
+    }
+
+    const supportedRoles =
+      await identityHelperServiceApiClient.getSupportedRoles(request)
+    const supportedServices =
+      await identityHelperServiceApiClient.getSupportedServices(request)
+
+    const tmp = {
+      role: (supportedRoles.filter(
+        (x) => x.key === request.params.usertype
+      ) || { key: 'none', label: 'Missing' })[0],
+      service: (supportedServices.filter(
+        (x) => x.key === request.params.service
+      ) || { key: 'none', label: 'Missing' })[0],
       user
     }
 
     return h.view('registration/register', tmp)
-  }
-}
-
-const generateRequestId = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
-
-export const registerCompleteController = {
-  async handler(_request, h) {
-    const user = _request.yar.get('user') || null
-    if (!user) {
-      return h.redirect('/your-defra-account')
-    }
-
-    const tmp = {
-      requestId: generateRequestId()
-    }
-
-    return h.view('registration/register-complete', tmp)
   }
 }
