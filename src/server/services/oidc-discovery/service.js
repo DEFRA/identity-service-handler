@@ -1,7 +1,12 @@
-import { config } from '../../config/config.js'
 import Wreck from '@hapi/wreck'
 
-export async function defraOicdDetails() {
+export function createOidcApiClient({ baseUrl, apiKey }) {
+  return {
+    oidcDetails: async () => oidcDetails({ baseUrl, apiKey })
+  }
+}
+
+async function oidcDetails(config) {
   const defraCiDiscoveryUrl =
     config.get('idService.defraCiEndpoint') +
     '/.well-known/openid-configuration'

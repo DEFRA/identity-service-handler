@@ -17,6 +17,7 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './common/helpers/content-security-policy.js'
 import { createLogger } from './common/helpers/logging/logger.js'
+import { auth } from './common/helpers/auth/auth.js'
 
 const logger = createLogger()
 
@@ -79,6 +80,7 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
+    auth,
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
