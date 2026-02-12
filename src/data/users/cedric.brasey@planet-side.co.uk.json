@@ -1,18 +1,42 @@
-[
-  {
-    "key": "livestock-keeper",
-    "cphs": [{ "key": "10/101/1234", "delegated": false }]
+{
+  "sub": "cd91b1e0-bae4-4cee-becf-3529cc557311",
+  "user": {
+    "email": "cedric.brasey@planet-side.co.uk",
+    "displayName": "Cedric Brasey",
+    "givenName": "Cedric",
+    "familyName": "Brasey"
   },
-  {
-    "key": "livestock-owner",
-    "cphs": [{ "key": "40/016/7643", "delegated": false }]
-  },
-  {
-    "key": "agent",
-    "cphs": [
-      { "key": "01/011/9887", "delegated": true, "delegateId": "AG-DEL-11" },
-      { "key": "01/011/9886", "delegated": true, "delegateId": "AG-DEL-11" },
-      { "key": "01/011/9885", "delegated": true, "delegateId": "AG-DEL-11" }
-    ]
-  }
-]
+  "primaryCph": [
+    {
+      "selectedCph": "44/081/0006",
+      "role": "Owner"
+    }
+  ],
+  "delegatedCph": [
+    {
+      "cph": "44/081/0001",
+      "role": "Keeper",
+      "expiryDate": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0002",
+      "role": "Keeper",
+      "expiryDate": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0003",
+      "role": "Agent",
+      "expiryDate": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0004",
+      "role": "Agent",
+      "expiryDate": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0005",
+      "role": "Agent",
+      "expiryDate": "2029-01-01"
+    }
+  ]
+}

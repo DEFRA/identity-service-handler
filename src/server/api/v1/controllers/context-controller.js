@@ -1,5 +1,9 @@
+import { UserService } from '../../../services/user/UserService.js'
+
 export const contextController = {
   handler: (request, h) => {
-    return h.response({}).code(200)
+    const userService = new UserService()
+
+    return h.response(userService.getUserContext(request.user)).code(200)
   }
 }

@@ -11,7 +11,7 @@ export const routes = (options = {}) => {
       options: {
         ...(contextController.options ?? {}),
         auth: {
-          strategy: 'jwt',
+          strategy: 'bearer',
           mode: 'required'
         }
       }

@@ -1,0 +1,22 @@
+{
+  "sub": "043f9538-b6b3-41aa-8010-3fb4f310e2b1",
+  "user": {
+    "email": "default_user@example.com",
+    "displayName": "Default User",
+    "givenName": "Default",
+    "familyName": "User"
+  },
+  "primaryCph": [
+    {
+      "selectedCph": "12/021/0106",
+      "role": "Owner"
+    }
+  ],
+  "delegatedCph": [
+    {
+      "cph": "44/081/0001",
+      "role": "Agent",
+      "expiryDate": "2029-01-01"
+    }
+  ]
+}

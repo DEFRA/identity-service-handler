@@ -1,5 +1,5 @@
-import { createServer } from '../server.js'
-import { statusCodes } from '../common/constants/status-codes.js'
+import { createServer } from '../../../server.js'
+import { statusCodes } from '../../../common/constants/status-codes.js'
 
 describe('#healthController', () => {
   let server
@@ -16,7 +16,7 @@ describe('#healthController', () => {
   test('Should provide expected response', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/health'
+      url: '/.health'
     })
 
     expect(result).toEqual({ message: 'success' })

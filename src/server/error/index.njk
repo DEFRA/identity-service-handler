@@ -12,6 +12,25 @@
     <div class="govuk-inset-text">
       <p class="govuk-body">If you came here by mistake, return to your account to start again.</p>
       <p class="govuk-body"><a class="govuk-link" href="{{ linkHref }}">{{ linkText }}</a></p>
+
+      {% if(devMessage) %}
+      <strong class="govuk-tag govuk-tag--red">Development mode</strong>
+      <p class="govuk-body">
+        <strong>Error:</strong>
+        <br/>
+        {{ devMessage }}
+      </p>
+      <p class="govuk-body">
+        <strong>Description:</strong>
+        <br/>
+        {{ devErrorDescription }}
+      </p>
+      <p class="govuk-b   ody">
+        <strong>Details:</strong>
+        <br/>
+        {{ devErrorDetails }}
+      </p>
+    {% endif %}
     </div>
   </div>
 

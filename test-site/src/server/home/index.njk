@@ -1,0 +1,39 @@
+{% extends 'layouts/page.njk' %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="govuk-body" data-testid="app-page-body">
+
+        <p>Trigger logon on ISH {{ govukButton({
+            text: "Login",
+            href: "/login"
+          }) }}
+        </p>
+        <pre>
+          {{ logon_response | trim }}
+        </pre>
+       <hr>
+        <p>Get user context {{ govukButton({
+            text: "Context",
+            href: "/context"
+          }) }}
+        </p>
+        <pre>
+          {{ context_response }}
+        </pre>
+        <hr>
+        <p>Trigger signout on ISH {{ govukButton({
+            text: "Signout",
+            href: "/signout"
+          }) }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
