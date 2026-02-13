@@ -39,19 +39,19 @@ export const config = convict({
     enabled: {
       doc: 'Enable TLS/SSL',
       format: Boolean,
-      default: false,
+      default: true,
       env: 'TLS_ENABLED'
     },
     key: {
       doc: 'Path to TLS key file',
       format: String,
-      default: path.resolve(dirname, '../../certs/server.key'),
+      default: path.resolve(dirname, '../../certs/localhost-key.pem'),
       env: 'TLS_KEY'
     },
     cert: {
       doc: 'Path to TLS cert file',
       format: String,
-      default: path.resolve(dirname, '../../certs/server.cert'),
+      default: path.resolve(dirname, '../../certs/localhost.pem'),
       env: 'TLS_CERT'
     }
   },
@@ -143,7 +143,7 @@ export const config = convict({
       engine: {
         doc: 'backend cache is written to',
         format: ['redis', 'memory'],
-        default: isProduction ? 'redis' : 'memory',
+        default: 'redis',
         env: 'SESSION_CACHE_ENGINE'
       },
       name: {
@@ -169,7 +169,7 @@ export const config = convict({
       password: {
         doc: 'session cookie password',
         format: String,
-        default: 'the-password-must-be-at-least-32-characters-long',
+        default: 'NOT_A_REAL_PASSWORD_MUST_BE_CHANGED',
         env: 'SESSION_COOKIE_PASSWORD',
         sensitive: true
       },
@@ -185,7 +185,7 @@ export const config = convict({
     host: {
       doc: 'Redis cache host',
       format: String,
-      default: '127.0.0.1',
+      default: 'redis://localhost:6379',
       env: 'REDIS_HOST'
     },
     username: {
@@ -241,90 +241,94 @@ export const config = convict({
     }
   },
   idService: {
-    jwtSecret: {
-      doc: 'The JWT secret to sign with',
-      format: String,
-      default: 'development-secret-key',
-      env: 'JWT_SECRET'
+    oidc: {
+      issuer: {
+        doc: 'Url of the OIDC issuer',
+        format: 'url',
+        default: 'https://identity-service-handler.defra.gov.uk',
+        env: 'OIDC_ISSUER'
+      }
     },
-    oidcIssuer: {
-      doc: 'Url of the OIDC issuer',
-      format: String,
-      default: 'https://login.defra.gov.uk',
-      env: 'OIDC_ISSUER'
+    b2c: {
+      clientId: {
+        doc: 'The B2c Client Id',
+        format: String,
+        default: 'NOT_A_REAL_CLIENT_ID',
+        env: 'B2C_CLIENT_ID'
+      },
+      serviceId: {
+        doc: 'The B2c Service Id',
+        format: String,
+        default: 'NOT_A_REAL_CLIENT_ID',
+        env: 'B2C_SERVICE_ID'
+      },
+      useFakeClient: {
+        doc: 'Toggles whether to use the fake auth api or not',
+        format: Boolean,
+        default: false,
+        env: 'B2C_USE_FAKE_CLIENT'
+      },
+      clientSecret: {
+        doc: 'The B2C Client Secret',
+        format: String,
+        default: 'NOT_A_REAL_CLIENT_SECRET',
+        env: 'B2C_CLIENT_SECRET'
+      },
+      discoveryUrl: {
+        doc: 'The B2C OIDC discovery url',
+        format: String,
+        default:
+          'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin/.well-known/openid-configuration',
+        env: 'B2C_DISCOVERY_URL'
+      },
+      redirectUrl: {
+        doc: 'The B2C OIDC redirect url',
+        format: String,
+        default: `https://localhost:${process.env.PORT ?? '3000'}/sso`,
+        env: 'B2C_REDIRECT_URL'
+      }
     },
-    oidcAudience: {
-      doc: 'The audience to request tokens for',
-      format: String,
-      default: 'api.cph_mapping_service.gov.uk',
-      env: 'OIDC_AUDIENCE'
+    handler: {
+      baseUrl: {
+        doc: 'The base url for this service',
+        format: 'url',
+        default: `https://localhost:${process.env.PORT ?? '3000'}`,
+        env: 'HANDLER_BASEURL'
+      },
+      apiKeyAdmin: {
+        doc: 'The API Key for the service Admin endpoint',
+        format: String,
+        default:
+          'rXlX5VGkoCoPRBFGnjrVyvSyYODJuScFttswo6U7gX9hUk97cmM6c8Bn4fRI5i7e',
+        env: 'ADMIN_API_KEY'
+      },
+      useFakeClient: {
+        doc: 'Toggles whether to use the fake client api or not. This is only used for testing purposes.',
+        format: Boolean,
+        default: false,
+        env: 'HANDLER_USE_FAKE_CLIENT'
+      }
     },
-    defraCiEndpoint: {
-      doc: 'The endpoint of the DefraCI service.',
-      format: String,
-      default:
-        'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin',
-      env: 'DEFRA_CI_ENDPOINT'
-    },
-    useFakeExternalApi: {
-      doc: 'Toggles whether to use the fake external api or not',
-      format: Boolean,
-      default: false,
-      env: 'USE_FAKE_EXTERNAL_API'
-    },
-    identityServiceBaseUrl: {
-      doc: 'Url of the identity service handler',
-      format: String,
-      default: 'http://localhost:3000',
-      env: 'IDENTITY_HANDLER_BASE_URL'
-    },
-    delegateListBaseUrl: {
-      doc: 'Url for the consumer to call back on for the delegated list of CPHs',
-      format: String,
-      default: 'https://localhost:3000/api/delegated-list/',
-      env: 'DELEGATED_LIST_API_URL'
-    },
-    identityApiBaseUrl: {
-      doc: 'Url of the identity service helper',
-      format: String,
-      default: 'https://localhost:3999/api',
-      env: 'IDENTITY_HELPER_BASE_URL'
-    },
-    identityApiKey: {
-      doc: 'Api key of the identity service helper',
-      format: String,
-      default: 'NOT_A_REAL_KEY',
-      env: 'IDENTITY_HELPER_API_KEY'
-    },
-    tenant: {
-      doc: 'The b2c tenant name',
-      format: String,
-      default: 'NOT_A_REAL_DOMAIN',
-      env: 'B2C_TENANT'
-    },
-    policy: {
-      doc: 'The b2c policy name',
-      format: String,
-      default: 'NOT_A_REAL_DOMAIN',
-      env: 'B2C_POLICY'
-    },
-    clientId: {
-      doc: 'The client id of the B2c tenant',
-      format: String,
-      default: 'NOT_A_REAL_CLIENT_ID',
-      env: 'B2C_CLIENT_ID'
-    },
-    clientSecret: {
-      doc: 'The client secret of the B2c tenant',
-      format: String,
-      default: 'NOT_A_REAL_CLIENT_SECRET',
-      env: 'B2C_CLIENT_SECRET'
-    },
-    auth0audience: {
-      doc: 'The audience of the auth0 tenant',
-      format: String,
-      default: 'NOT_A_REAL_AUDIENCE',
-      env: 'AUTH0_AUDIENCE'
+    helper: {
+      baseUrl: {
+        doc: 'The base url of the helper service',
+        format: 'url',
+        default: `https://localhost:3001`,
+        env: 'HELPER_BASEURL'
+      },
+      apiKey: {
+        doc: 'The API key for the helper service',
+        format: String,
+        default:
+          'jbz9ljIFoIYaCBwhB0pYYthqZlkF9FqIbf00Cuk0iHlnKMMXHdMSpyXSTU2AsmqG',
+        env: 'HELPER_API_KEY'
+      },
+      useFakeClient: {
+        doc: 'Toggles whether to use the fake client api or not. This is only used for testing purposes.',
+        format: Boolean,
+        default: false,
+        env: 'HELPER_USE_FAKE_CLIENT'
+      }
     }
   }
 })

@@ -1,18 +1,38 @@
-[
-  {
-    "key": "livestock-keeper",
-    "cphs": [{ "key": "10/101/1234", "delegated": false }]
-  },
-  {
-    "key": "livestock-owner",
-    "cphs": [{ "key": "40/016/7643", "delegated": false }]
-  },
-  {
-    "key": "agent",
-    "cphs": [
-      { "key": "01/011/9887", "delegated": true, "delegateId": "AG-DEL-11" },
-      { "key": "01/011/9886", "delegated": true, "delegateId": "AG-DEL-11" },
-      { "key": "01/011/9885", "delegated": true, "delegateId": "AG-DEL-11" }
-    ]
-  }
-]
+{
+  "sub": "cd91b1e0-bae4-4cee-becf-3529cc557311",
+  "email": "cedric.brasey@planet-side.co.uk",
+  "display_name": "Cedric Brasey",
+  "given_name": "Cedric",
+  "family_name": "Brasey",
+  "primary_cph": [
+    {
+      "cph": "44/081/0006",
+      "role": "Owner"
+    }
+  ],
+  "delegated_cph": [
+    {
+      "cph": "44/081/0001",
+      "role": "Keeper"
+    },
+    {
+      "cph": "44/081/0002",
+      "role": "Keeper",
+      "expiry_date": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0003",
+      "role": "Agent"
+    },
+    {
+      "cph": "44/081/0004",
+      "role": "Agent",
+      "expiry_date": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0005",
+      "role": "Agent",
+      "expiry_date": "2029-01-01"
+    }
+  ]
+}

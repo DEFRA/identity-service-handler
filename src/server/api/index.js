@@ -1,30 +1,21 @@
-import {
-  apiController,
-  oidcDiscoveryController,
-  jwksController
-} from './controller.js'
+import { health } from './health/index.js'
+import { v1 } from './v1/index.js'
 
 export const api = {
   plugin: {
     name: 'api',
-    register(server) {
-      server.route([
-        {
-          method: 'GET',
-          path: '/api/delegated-list/{listId}',
-          ...apiController
-        },
-        {
-          method: 'GET',
-          path: '/.well-known/openid-configuration',
-          ...oidcDiscoveryController
-        },
-        {
-          method: 'GET',
-          path: '/.well-known/jwks.json',
-          ...jwksController
+    register: async (server, options = {}) => {
+      // Unversioned operational endpoint(s)
+      await server.register(health)
+
+      // Versioned business API surface
+      await server.register({
+        plugin: v1.plugin,
+        options,
+        routes: {
+          prefix: '/api/v1'
         }
-      ])
+      })
     }
   }
 }

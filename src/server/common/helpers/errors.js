@@ -1,4 +1,5 @@
 import { statusCodes } from '../constants/status-codes.js'
+import { config } from '../../../config/config.js'
 
 function statusCodeMessage(statusCode) {
   switch (statusCode) {
@@ -29,11 +30,17 @@ export function catchAll(request, h) {
     request.logger.error(response?.stack)
   }
 
-  return h
-    .view('error/index', {
-      pageTitle: errorMessage,
-      heading: statusCode,
-      message: errorMessage
-    })
-    .code(statusCode)
+  const isProduction = config.get('isProduction') || false
+  const payload = {
+    pageTitle: errorMessage,
+    heading: statusCode,
+    message: errorMessage
+  }
+  if (!isProduction) {
+    payload.devMessage = response.message
+    payload.devErrorDescription = response.error_description
+    payload.devErrorDetail = response.error_detail
+  }
+
+  return h.view('error/index', payload).code(statusCode)
 }

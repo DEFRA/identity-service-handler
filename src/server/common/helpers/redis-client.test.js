@@ -7,8 +7,12 @@ import { buildRedisClient } from './redis-client.js'
 
 vi.mock('ioredis', () => ({
   ...vi.importActual('ioredis'),
-  Cluster: vi.fn().mockReturnValue({ on: () => ({}) }),
-  Redis: vi.fn().mockReturnValue({ on: () => ({}) })
+  Cluster: vi.fn(function MockCluster() {
+    return { on: () => ({}) }
+  }),
+  Redis: vi.fn(function MockRedis() {
+    return { on: () => ({}) }
+  })
 }))
 
 describe('#buildRedisClient', () => {
@@ -18,9 +22,11 @@ describe('#buildRedisClient', () => {
     })
 
     test('Should instantiate a single Redis client', () => {
+      const redisHost = config.get('redis.host')
+
       expect(Redis).toHaveBeenCalledWith({
         db: 0,
-        host: '127.0.0.1',
+        host: redisHost,
         keyPrefix: 'identity-service-handler:',
         port: 6379
       })
@@ -39,15 +45,14 @@ describe('#buildRedisClient', () => {
     })
 
     test('Should instantiate a Redis Cluster client', () => {
-      expect(Cluster).toHaveBeenCalledWith(
-        [{ host: '127.0.0.1', port: 6379 }],
-        {
-          dnsLookup: expect.any(Function),
-          keyPrefix: 'identity-service-handler:',
-          redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
-          slotsRefreshTimeout: 10000
-        }
-      )
+      const redisHost = config.get('redis.host')
+
+      expect(Cluster).toHaveBeenCalledWith([{ host: redisHost, port: 6379 }], {
+        dnsLookup: expect.any(Function),
+        keyPrefix: 'identity-service-handler:',
+        redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
+        slotsRefreshTimeout: 10000
+      })
     })
   })
 })
