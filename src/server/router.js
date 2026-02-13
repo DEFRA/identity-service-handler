@@ -4,10 +4,9 @@ import { api } from './api/index.js'
 export const router = {
   plugin: {
     name: 'router',
-    async register(server) {
-      await server.register([api])
+    async register(server, options = {}) {
+      await server.register({ plugin: api.plugin, options })
 
-      // Static assets
       await server.register([serveStaticFiles])
     }
   }

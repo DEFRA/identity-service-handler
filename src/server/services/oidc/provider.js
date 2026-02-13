@@ -1,7 +1,6 @@
 import Provider from 'oidc-provider'
 import { RedisAdapter } from './redis-adapter.js'
 
-const CLAIM_NS = 'https://defra.gov.uk/claims/'
 const CUSTOM_USERINFO_CLAIM = ['user', 'primaryCph', 'delegatedCph']
 
 export function buildBrokerProvider({

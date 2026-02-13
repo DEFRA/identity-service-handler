@@ -277,7 +277,8 @@ export const config = convict({
       discoveryUrl: {
         doc: 'The B2C OIDC discovery url',
         format: String,
-        default: 'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin/.well-known/openid-configuration',
+        default:
+          'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin/.well-known/openid-configuration',
         env: 'B2C_DISCOVERY_URL'
       },
       redirectUrl: {
@@ -297,7 +298,8 @@ export const config = convict({
       apiKeyAdmin: {
         doc: 'The API Key for the service Admin endpoint',
         format: String,
-        default: 'rXlX5VGkoCoPRBFGnjrVyvSyYODJuScFttswo6U7gX9hUk97cmM6c8Bn4fRI5i7e',
+        default:
+          'rXlX5VGkoCoPRBFGnjrVyvSyYODJuScFttswo6U7gX9hUk97cmM6c8Bn4fRI5i7e',
         env: 'ADMIN_API_KEY'
       },
       useFakeClient: {
@@ -317,7 +319,8 @@ export const config = convict({
       apiKey: {
         doc: 'The API key for the helper service',
         format: String,
-        default: 'jbz9ljIFoIYaCBwhB0pYYthqZlkF9FqIbf00Cuk0iHlnKMMXHdMSpyXSTU2AsmqG',
+        default:
+          'jbz9ljIFoIYaCBwhB0pYYthqZlkF9FqIbf00Cuk0iHlnKMMXHdMSpyXSTU2AsmqG',
         env: 'HELPER_API_KEY'
       },
       useFakeClient: {

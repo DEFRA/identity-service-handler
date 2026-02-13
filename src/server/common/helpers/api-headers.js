@@ -1,11 +1,12 @@
 import { randomUUID } from 'crypto'
 import { config } from '../../../config/config.js'
 
-export async function generateHeaders(request, serviceName, correlationId){
-  const operatorId = request?.auth?.credentials?.sub ?? request?.oidc?.session?.accountId
+export async function generateHeaders(request, serviceName, correlationId) {
+  const operatorId =
+    request?.auth?.credentials?.sub ?? request?.oidc?.session?.accountId
   const processedCorrelationId = correlationId || randomUUID()
 
-  if(!config.get(`idService.${serviceName}.apiKey`)){
+  if (!config.get(`idService.${serviceName}.apiKey`)) {
     throw new Error(`No API key found for service ${serviceName}`)
   }
 

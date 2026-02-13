@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe } from 'node:test'
 import assert from 'node:assert'
 import { generateToken, verifyToken, hashToken } from './crypto-tools.js'
 import { randomBytes } from 'node:crypto'

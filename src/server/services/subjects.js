@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto'
-
 /**
  * Replace with DB table subject_map.
  * Stable mapping: upstream (iss,sub) -> brokerSub

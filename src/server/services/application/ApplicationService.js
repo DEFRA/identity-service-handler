@@ -16,8 +16,7 @@ export class ApplicationService {
         })
   }
 
-  async get(request, id)
-  {
+  async get(request, id) {
     const headers = await generateHeaders(request, 'helper', null)
     await this.initFake()
     return await this._impl.get(headers, id)

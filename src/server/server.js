@@ -36,11 +36,9 @@ export async function createServer() {
   const redis = new Redis(config.get('redis.host'))
 
   const applicationService = new ApplicationService(config)
-  const clientsService = new ApplicationCache(
-    redis,
-    applicationService,
-    { ttlSeconds: 300 }
-  )
+  const clientsService = new ApplicationCache(redis, applicationService, {
+    ttlSeconds: 300
+  })
   const subjectsService = new SubjectsService(redis)
   const userService = new UserService(redis, config)
   const upstreamStateStore = new UpstreamStateStore(redis)
@@ -110,8 +108,14 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
-    auth,
-    router // Register all the controllers/routes defined in src/server/router.js
+    {
+      plugin: auth.plugin,
+      options: { brokerProvider }
+    },
+    {
+      plugin: router.plugin,
+      options: { userService }
+    }
   ])
 
   await registerOidcRoutes(server, {

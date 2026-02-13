@@ -4,7 +4,9 @@ import { jwtVerify, createRemoteJWKSet } from 'jose'
 export const auth = {
   plugin: {
     name: 'auth',
-    async register(server) {
+    async register(server, options = {}) {
+      const brokerProvider = options.brokerProvider
+
       // Cookie auth
       server.auth.strategy('session', 'cookie', {
         cookie: {
@@ -38,7 +40,18 @@ export const auth = {
             }
             return h.authenticated({ credentials: { sub: payload.sub } })
           } catch {
-            throw h.unauthorized()
+            try {
+              const accessToken = await brokerProvider?.AccessToken?.find(token)
+              if (!accessToken?.accountId || accessToken.isExpired) {
+                throw new Error('Invalid access token')
+              }
+
+              return h.authenticated({
+                credentials: { sub: accessToken.accountId }
+              })
+            } catch {
+              throw h.unauthorized()
+            }
           }
         }
       }))

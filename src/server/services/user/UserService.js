@@ -2,7 +2,7 @@ import { Service } from './service.js'
 import { ServiceFake } from './service.fake.js'
 import { generateHeaders } from '../../common/helpers/api-headers.js'
 
- const UserContextKey = 'userContext'
+const UserContextKey = 'userContext'
 
 export class UserService {
   constructor(redis, config) {

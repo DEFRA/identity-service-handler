@@ -1,4 +1,3 @@
-import Wreck from '@hapi/wreck'
 import { createServer } from '../../server.js'
 import { config } from '../../../config/config.js'
 import { getFormatedOidcRoutes } from './oidc-config.js'
@@ -8,12 +7,14 @@ async function startServer() {
   await server.start()
 
   server.logger.info('Server started successfully')
-  server.logger.info(`Access your frontend on https://localhost:${config.get('port')}`)
+  server.logger.info(
+    `Access your frontend on https://localhost:${config.get('port')}`
+  )
 
   return server
 }
 
-async function logServerRoutes(server){
+async function logServerRoutes(server) {
   const oidcRoutes = getFormatedOidcRoutes()
 
   const serverRoutes = server
