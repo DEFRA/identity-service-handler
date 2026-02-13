@@ -245,7 +245,7 @@ export const config = convict({
       issuer: {
         doc: 'Url of the OIDC issuer',
         format: 'url',
-        default: 'https://login.defra.gov.uk',
+        default: 'https://identity-service-handler.defra.gov.uk',
         env: 'OIDC_ISSUER'
       }
     },

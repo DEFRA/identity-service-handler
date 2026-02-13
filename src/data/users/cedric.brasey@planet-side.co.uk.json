@@ -1,42 +1,38 @@
 {
   "sub": "cd91b1e0-bae4-4cee-becf-3529cc557311",
-  "user": {
-    "email": "cedric.brasey@planet-side.co.uk",
-    "displayName": "Cedric Brasey",
-    "givenName": "Cedric",
-    "familyName": "Brasey"
-  },
-  "primaryCph": [
+  "email": "cedric.brasey@planet-side.co.uk",
+  "display_name": "Cedric Brasey",
+  "given_name": "Cedric",
+  "family_name": "Brasey",
+  "primary_cph": [
     {
-      "selectedCph": "44/081/0006",
+      "cph": "44/081/0006",
       "role": "Owner"
     }
   ],
-  "delegatedCph": [
+  "delegated_cph": [
     {
       "cph": "44/081/0001",
-      "role": "Keeper",
-      "expiryDate": "2029-01-01"
+      "role": "Keeper"
     },
     {
       "cph": "44/081/0002",
       "role": "Keeper",
-      "expiryDate": "2029-01-01"
+      "expiry_date": "2029-01-01"
     },
     {
       "cph": "44/081/0003",
-      "role": "Agent",
-      "expiryDate": "2029-01-01"
+      "role": "Agent"
     },
     {
       "cph": "44/081/0004",
       "role": "Agent",
-      "expiryDate": "2029-01-01"
+      "expiry_date": "2029-01-01"
     },
     {
       "cph": "44/081/0005",
       "role": "Agent",
-      "expiryDate": "2029-01-01"
+      "expiry_date": "2029-01-01"
     }
   ]
 }

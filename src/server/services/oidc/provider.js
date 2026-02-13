@@ -1,7 +1,14 @@
 import Provider from 'oidc-provider'
 import { RedisAdapter } from './redis-adapter.js'
 
-const CUSTOM_USERINFO_CLAIM = ['user', 'primaryCph', 'delegatedCph']
+const CUSTOM_USERINFO_CLAIM = [
+  'email',
+  'given_name',
+  'family_name',
+  'display_name',
+  'primary_cph',
+  'delegated_cph'
+]
 
 export function buildBrokerProvider({
   cookiePassword,
@@ -35,7 +42,7 @@ export function buildBrokerProvider({
 
     claims: {
       openid: ['sub', ...CUSTOM_USERINFO_CLAIM],
-      profile: ['firstName', 'lastName'],
+      profile: ['first_name', 'family_name', 'display_name'],
       email: ['email']
     },
 
