@@ -16,7 +16,7 @@ describe('#healthController', () => {
   test('Should provide expected response', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/.health'
+      url: '/health'
     })
 
     expect(result).toEqual({ message: 'success' })

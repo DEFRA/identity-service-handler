@@ -39,7 +39,7 @@ export const config = convict({
     enabled: {
       doc: 'Enable TLS/SSL',
       format: Boolean,
-      default: true,
+      default: false,
       env: 'TLS_ENABLED'
     },
     key: {
