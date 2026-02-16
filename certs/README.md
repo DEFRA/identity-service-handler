@@ -15,3 +15,6 @@ mkcert -install
 # in the certs folder create the certificate
 mkcert localhost
 ```
+
+You will now have a localhost.pem and localhost-key.pem file in the `./certs` folder.
+These can be used to run the service locally with HTTPS enabled.

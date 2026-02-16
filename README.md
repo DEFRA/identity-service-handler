@@ -94,6 +94,21 @@ npm install
 
 ### Development
 
+The application will require a number of environment variables to be set to be able to run locally.
+
+```bash
+B2C_CLIENT_ID=<YOUR_CLIENT_ID_FROM_DEFRA_CI>
+B2C_CLIENT_SECRET=<YOUR_CLIENT_SECRET_FROM_DEFRA_CI>
+B2C_SERVICE_ID=<YOUR_SERVICE_ID_FROM_DEFRA_CI>
+HELPER_USE_FAKE_CLIENT=true
+NODE_EXTRA_CA_CERTS=<PATH_TO_YOUR_CERT.PEM_FILE>
+SESSION_COOKIE_PASSWORD=<32_CHAR_RANDOM_STRING>
+SESSION_COOKIE_SECURE=true
+TLS_ENABLED=true
+```
+
+For more information on the NODE_EXTRA_CA_CERTS variable please see [README.md](./certs/README.md)
+
 To run the application in `development` mode run:
 
 ```bash
