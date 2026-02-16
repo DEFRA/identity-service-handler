@@ -35,26 +35,28 @@ export const config = convict({
     default: 3000,
     env: 'PORT'
   },
-  tls: {
-    enabled: {
-      doc: 'Enable TLS/SSL',
-      format: Boolean,
-      default: true,
-      env: 'TLS_ENABLED'
-    },
-    key: {
-      doc: 'Path to TLS key file',
-      format: String,
-      default: path.resolve(dirname, '../../certs/localhost-key.pem'),
-      env: 'TLS_KEY'
-    },
-    cert: {
-      doc: 'Path to TLS cert file',
-      format: String,
-      default: path.resolve(dirname, '../../certs/localhost.pem'),
-      env: 'TLS_CERT'
+  ...(isDevelopment && {
+    tls: {
+      enabled: {
+        doc: 'Enable TLS/SSL',
+        format: Boolean,
+        default: true,
+        env: 'TLS_ENABLED'
+      },
+      key: {
+        doc: 'Path to TLS key file',
+        format: String,
+        default: path.resolve(dirname, '../../certs/localhost-key.pem'),
+        env: 'TLS_KEY'
+      },
+      cert: {
+        doc: 'Path to TLS cert file',
+        format: String,
+        default: path.resolve(dirname, '../../certs/localhost.pem'),
+        env: 'TLS_CERT'
+      }
     }
-  },
+  }),
   staticCacheTimeout: {
     doc: 'Static cache timeout in milliseconds',
     format: Number,
