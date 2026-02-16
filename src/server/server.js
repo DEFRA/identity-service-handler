@@ -88,7 +88,7 @@ export async function createServer() {
     }
   }
 
-  if (config.get('tls.enabled')) {
+  if (process.env.NODE_ENV === 'development' && config.get('tls.enabled')) {
     serverOptions.tls = {
       key: fs.readFileSync(config.get('tls.key')),
       cert: fs.readFileSync(config.get('tls.cert'))
