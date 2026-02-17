@@ -187,7 +187,7 @@ export const config = convict({
     host: {
       doc: 'Redis cache host',
       format: String,
-      default: 'redis://localhost:6379',
+      default: 'localhost',
       env: 'REDIS_HOST'
     },
     username: {

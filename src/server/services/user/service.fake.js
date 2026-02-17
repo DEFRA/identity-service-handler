@@ -1,5 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'path'
+import { createLogger } from '../../common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 export class ServiceFake {
   constructor({ config }) {
@@ -25,7 +28,7 @@ export class ServiceFake {
         }
       }
     } catch (error) {
-      console.warn('Could not load user data from data folder:', error.message)
+      logger.warn('Could not load user data from data folder:', error.message)
     }
   }
 

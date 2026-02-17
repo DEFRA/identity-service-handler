@@ -1,5 +1,8 @@
 import Provider from 'oidc-provider'
 import { RedisAdapter } from './redis-adapter.js'
+import { createLogger } from '../../common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 const CUSTOM_USERINFO_CLAIM = [
   'email',
@@ -71,32 +74,34 @@ export function buildBrokerProvider({
   const oidc = new Provider(issuer, configuration)
 
   oidc.on('server_error', (ctx, err) => {
-    console.error('[oidc-provider] server_error:', err?.message)
+    logger.error(`[oidc-provider] server_error: ${err?.message}`)
     if (err?.stack) {
-      console.error(err.stack)
+      logger.error(err.stack)
     }
-    console.error('[oidc-provider] context:', {
-      route: ctx?.request?.url,
-      method: ctx?.request?.method,
-      clientId: ctx?.oidc?.client?.clientId,
-      params: ctx?.oidc?.params,
-      prompt: ctx?.oidc?.prompt,
-      sessionAccountId: ctx?.oidc?.session?.accountId,
-      uid: ctx?.oidc?.uid
-    })
+    logger.error(
+      `[oidc-provider] context: ${{
+        route: ctx?.request?.url,
+        method: ctx?.request?.method,
+        clientId: ctx?.oidc?.client?.clientId,
+        params: ctx?.oidc?.params,
+        prompt: ctx?.oidc?.prompt,
+        sessionAccountId: ctx?.oidc?.session?.accountId,
+        uid: ctx?.oidc?.uid
+      }}`
+    )
   })
 
   oidc.on('interaction.error', (ctx, err) => {
-    console.error('[oidc-provider] interaction.error:', err?.message)
+    logger.error(`[oidc-provider] interaction.error: ${err?.message}`)
     if (err?.stack) {
-      console.error(err.stack)
+      logger.error(err.stack)
     }
   })
 
   oidc.on('authorization.error', (ctx, err) => {
-    console.error('[oidc-provider] authorization.error:', err?.message)
+    logger.error(`[oidc-provider] authorization.error: ${err?.message}`)
     if (err?.stack) {
-      console.error(err.stack)
+      logger.error(err.stack)
     }
   })
 

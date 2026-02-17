@@ -20,7 +20,7 @@ import { contentSecurityPolicy } from './common/helpers/content-security-policy.
 import { createLogger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
 import { buildBrokerProvider } from './services/oidc/provider.js'
-import Redis from 'ioredis'
+import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { UserService } from './services/user/UserService.js'
 import { SubjectsService } from './services/subjects.js'
@@ -28,12 +28,13 @@ import { ApplicationService } from './services/application/ApplicationService.js
 import { ApplicationCache } from './services/application/ApplicationCache.js'
 import { UpstreamStateStore } from './upstream/state-store.js'
 import { getOidcRoutes } from './common/helpers/oidc-config.js'
+
 const logger = createLogger()
 
 export async function createServer() {
   setupProxy()
 
-  const redis = new Redis(config.get('redis.host'))
+  const redis = buildRedisClient(config.get('redis'))
 
   const applicationService = new ApplicationService(config)
   const clientsService = new ApplicationCache(redis, applicationService, {

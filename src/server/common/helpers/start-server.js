@@ -24,7 +24,7 @@ async function logServerRoutes(server) {
 
   const routes = [...oidcRoutes, ...serverRoutes]
   routes.sort()
-  console.log('\nSupported routes:\n' + routes.join('\n'))
+  server.logger.info('\nSupported routes:\n' + routes.join('\n'))
 }
 
 export { startServer, logServerRoutes }
