@@ -1,12 +1,13 @@
 import { health } from './health/index.js'
+import { oidc } from './oidc/index.js'
 import { v1 } from './v1/index.js'
 
 export const api = {
   plugin: {
     name: 'api',
     register: async (server, options = {}) => {
-      // Unversioned operational endpoint(s)
       await server.register(health)
+      await server.register(oidc)
 
       // Versioned business API surface
       await server.register({

@@ -1,7 +1,9 @@
 import Wreck from '@hapi/wreck'
 
-const redirectUrl = new URL('https://localhost:3005/')
-const brokerBaseUrl = process.env.BROKER_BASE_URL ?? 'https://localhost:3000'
+const redirectUrl = new URL('https://localhost:3005')
+const brokerBaseUrl = new URL(
+  process.env.BROKER_BASE_URL ?? 'https://localhost:3000'
+)
 const clientId =
   process.env.OIDC_CLIENT_ID ?? 'a3d4e5f6-7890-4b1c-a2d3-e4f567890abc'
 const clientSecret =
@@ -39,23 +41,11 @@ export const signoutController = {
   handler(_request, h) {
     _request.yar.reset()
 
-    return h.redirect(
-      `https://localhost:3000/signout?post_logout_redirect_uri=${redirectUrl}`
-    )
-  }
-}
+    const signOutUrl = new URL('signout', brokerBaseUrl)
+    signOutUrl.searchParams.append('post_logout_redirect_uri', redirectUrl)
 
-export const refreshController = {
-  handler(_request, h) {
-    _request.yar.reset()
-
-    const loginUrl =
-      'https://localhost:3000/authorize?' +
-      `client_id=${clientId}&` +
-      `grant_type=refresh_token&` +
-      `redirect_uri=${redirectUrl}callback`
-
-    return h.redirect(loginUrl)
+    console.log(signOutUrl.href)
+    return h.redirect(signOutUrl.href)
   }
 }
 
@@ -63,16 +53,17 @@ export const loginController = {
   handler(_request, h) {
     _request.yar.reset()
 
-    const authUrl = new URL('https://localhost:3000/authorize')
+    const authUrl = new URL('authorize', brokerBaseUrl)
     authUrl.searchParams.append('client_id', clientId)
     authUrl.searchParams.append('response_type', 'code')
     authUrl.searchParams.append(
       'redirect_uri',
-      'https://localhost:3005/callback'
+      new URL('callback', redirectUrl).href
     )
     authUrl.searchParams.append('scope', 'openid')
-    console.log(authUrl.toString())
-    return h.redirect(authUrl.toString())
+
+    console.log(authUrl.href)
+    return h.redirect(authUrl.href)
   }
 }
 
@@ -106,7 +97,7 @@ export const loginCallbackController = {
     }
 
     try {
-      const res = await Wreck.post('https://localhost:3000/token', options)
+      const res = await Wreck.post(`${brokerBaseUrl}/token`, options)
       const token = JSON.parse(res.payload.toString())
 
       request.yar.set('brokerTokenResponse', token)

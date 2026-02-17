@@ -1,13 +1,5 @@
 export function getOidcRoutes() {
-  return [
-    '/.well-known/openid-configuration',
-    '/authorize',
-    '/signout',
-    '/jwks',
-    '/token',
-    '/request',
-    '/userinfo'
-  ]
+  return ['/authorize', '/signout', '/jwks', '/token', '/request', '/userinfo']
 }
 
 export function getFormatedOidcRoutes() {
