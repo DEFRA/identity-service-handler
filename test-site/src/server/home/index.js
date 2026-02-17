@@ -3,7 +3,6 @@ import {
   loginController,
   loginCallbackController,
   getContextController,
-  refreshController,
   signoutController
 } from './controller.js'
 
@@ -35,11 +34,6 @@ export const home = {
           method: 'GET',
           path: '/context',
           ...getContextController
-        },
-        {
-          method: 'GET',
-          path: '/refresh',
-          ...refreshController
         },
         {
           method: 'GET',
