@@ -97,7 +97,7 @@ export const loginCallbackController = {
     }
 
     try {
-      const res = await Wreck.post(`${brokerBaseUrl}/token`, options)
+      const res = await Wreck.post(`${brokerBaseUrl}token`, options)
       const token = JSON.parse(res.payload.toString())
 
       request.yar.set('brokerTokenResponse', token)
@@ -135,7 +135,7 @@ export const getContextController = {
     }
 
     try {
-      const response = await Wreck.get(`${brokerBaseUrl}/userinfo`, {
+      const response = await Wreck.get(`${brokerBaseUrl}userinfo`, {
         headers: {
           Accept: 'application/json',
           Authorization: `${tokenType} ${accessToken}`

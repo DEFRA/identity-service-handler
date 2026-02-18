@@ -68,7 +68,7 @@ export class RedisAdapter {
 
   async findByUid(uid) {
     // Scan for session keys matching the pattern
-    const pattern = this.key('*')
+    const pattern = `${this.redis.options.keyPrefix}${this.key('*')}`
     const keys = []
     let cursor = '0'
 
@@ -86,7 +86,13 @@ export class RedisAdapter {
 
     // Check each key for matching uid
     for (const key of keys) {
-      const data = await this.redis.get(key)
+      let data = await this.redis.get(key)
+      if (!data) {
+        data = await this.redis.get(
+          key.replace(this.redis.options.keyPrefix, '')
+        )
+      }
+
       if (data) {
         const payload = JSON.parse(data)
         if (payload.uid === uid) {
