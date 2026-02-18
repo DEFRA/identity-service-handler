@@ -16,7 +16,7 @@ export class ServiceFake {
       token_endpoint_auth_method: 'client_secret_post',
       secret:
         'S!uhSylf@klNy*HyI^~7vKz9EO"ACrmRTHrL>tpl)"[^~7TPaE3^u:<XfH9HYV#S{nj#@;nje"cKF6|bq9}h^AOci`sB",$lIv3]d|6"-l!U[]U40!th|PtkIhvC0u@J',
-      redirect_uris: ['https://localhost:3005/callback'],
+      redirect_uris: ['https://fakelocal:3005/callback'],
       ...tmp
     })
   }

@@ -1,6 +1,6 @@
 import Wreck from '@hapi/wreck'
 
-const redirectUrl = new URL('https://localhost:3005')
+const redirectUrl = new URL('https://fakelocal:3005')
 const brokerBaseUrl = new URL(
   process.env.BROKER_BASE_URL ?? 'https://localhost:3000'
 )
@@ -27,7 +27,8 @@ function buildHomePayload(request) {
     pageTitle: 'Home',
     heading: 'Home',
     logon_response: formatForView(request.yar.get('brokerTokenResponse')),
-    context_response: formatForView(request.yar.get('brokerContextResponse'))
+    context_response: formatForView(request.yar.get('brokerContextResponse')),
+    logout_response: request.path === '/success' ? 'Logged out' : ''
   }
 }
 
@@ -42,7 +43,10 @@ export const signoutController = {
     _request.yar.reset()
 
     const signOutUrl = new URL('signout', brokerBaseUrl)
-    signOutUrl.searchParams.append('post_logout_redirect_uri', redirectUrl)
+    signOutUrl.searchParams.append(
+      'post_logout_redirect_uri',
+      new URL('success', redirectUrl).href
+    )
 
     console.log(signOutUrl.href)
     return h.redirect(signOutUrl.href)
@@ -97,7 +101,7 @@ export const loginCallbackController = {
     }
 
     try {
-      const res = await Wreck.post(`${brokerBaseUrl}/token`, options)
+      const res = await Wreck.post(`${brokerBaseUrl}token`, options)
       const token = JSON.parse(res.payload.toString())
 
       request.yar.set('brokerTokenResponse', token)
@@ -135,7 +139,7 @@ export const getContextController = {
     }
 
     try {
-      const response = await Wreck.get(`${brokerBaseUrl}/userinfo`, {
+      const response = await Wreck.get(`${brokerBaseUrl}userinfo`, {
         headers: {
           Accept: 'application/json',
           Authorization: `${tokenType} ${accessToken}`

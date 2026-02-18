@@ -1,6 +1,7 @@
 import Provider from 'oidc-provider'
 import { RedisAdapter } from './redis-adapter.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { SIGNOUT_REDIRECT_COOKIE_NAME } from '../../oidc/constants.js'
 
 const logger = createLogger()
 
@@ -15,16 +16,65 @@ const CUSTOM_USERINFO_CLAIM = [
 
 export function buildBrokerProvider({
   cookiePassword,
+  sessionCookieSecure,
   issuer,
   redis,
   clientsService,
   userService
 }) {
+  function decodeSignoutRedirect(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+      return '/'
+    }
+
+    try {
+      return decodeURIComponent(value)
+    } catch {
+      return '/'
+    }
+  }
+
   const configuration = {
     adapter: (model) => new RedisAdapter(model, redis, 'oidc'),
 
     features: {
-      devInteractions: { enabled: false }
+      devInteractions: { enabled: false },
+      rpInitiatedLogout: {
+        enabled: true,
+        async logoutSource(ctx, form) {
+          ctx.type = 'html'
+          ctx.status = 200
+          ctx.body = `<!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Signing out</title>
+              </head>
+              <body>
+                ${form}
+                <script>
+                  document.getElementById('op.logoutForm')?.submit()
+                </script>
+              </body>
+            </html>`
+        },
+        async postLogoutSuccessSource(ctx) {
+          const redirectTarget = decodeSignoutRedirect(
+            ctx.cookies.get(SIGNOUT_REDIRECT_COOKIE_NAME)
+          )
+
+          ctx.cookies.set(SIGNOUT_REDIRECT_COOKIE_NAME, null, {
+            path: '/',
+            secure: sessionCookieSecure,
+            httpOnly: true,
+            sameSite: 'lax'
+          })
+
+          ctx.status = 303
+          ctx.redirect(redirectTarget)
+        }
+      }
     },
 
     responseTypes: ['code'],
@@ -57,7 +107,7 @@ export function buildBrokerProvider({
 
     routes: {
       authorization: '/authorize',
-      end_session: '/signout',
+      end_session: '/oidc/signout',
       userinfo: '/userinfo'
     },
 
