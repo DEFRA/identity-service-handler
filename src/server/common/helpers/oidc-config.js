@@ -1,5 +1,12 @@
 export function getOidcRoutes() {
-  return ['/authorize', '/signout', '/jwks', '/token', '/request', '/userinfo']
+  return [
+    '/authorize',
+    '/oidc/signout',
+    '/jwks',
+    '/token',
+    '/request',
+    '/userinfo'
+  ]
 }
 
 export function getFormatedOidcRoutes() {

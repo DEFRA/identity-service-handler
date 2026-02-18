@@ -1,5 +1,6 @@
 import { create as introCreate } from './controllers/interactionController.js'
 import { create as callbackCreate } from './controllers/callbackController.js'
+import { create as signoutCreate } from './controllers/signoutController.js'
 import * as oidc from 'openid-client'
 
 export async function registerOidcRoutes(
@@ -12,6 +13,18 @@ export async function registerOidcRoutes(
     b2cConfig.clientId,
     b2cConfig.clientSecret
   )
+
+  server.route({
+    method: 'GET',
+    path: '/signout',
+    options: {
+      auth: {
+        mode: 'try',
+        strategies: ['session']
+      }
+    },
+    handler: signoutCreate({ config })
+  })
 
   server.route({
     method: 'GET',

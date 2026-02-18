@@ -46,6 +46,7 @@ export async function createServer() {
 
   const brokerProvider = buildBrokerProvider({
     cookiePassword: config.get('session.cookie.password'),
+    sessionCookieSecure: config.get('session.cookie.secure'),
     issuer: config.get('idService.oidc.issuer'),
     redis,
     clientsService,

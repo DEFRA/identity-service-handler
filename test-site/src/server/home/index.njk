@@ -14,24 +14,21 @@
             href: "/login"
           }) }}
         </p>
-        <pre>
-          {{ logon_response | trim }}
-        </pre>
+        <pre>{{ logon_response | trim }}</pre>
        <hr>
         <p>Get user context {{ govukButton({
             text: "Context",
             href: "/context"
           }) }}
         </p>
-        <pre>
-          {{ context_response }}
-        </pre>
+        <pre>{{ context_response }}</pre>
         <hr>
         <p>Trigger signout on ISH {{ govukButton({
             text: "Signout",
             href: "/signout"
           }) }}
         </p>
+        <pre>{{ logout_response }}</pre>
       </div>
     </div>
   </div>
