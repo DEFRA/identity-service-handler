@@ -16,8 +16,8 @@ export const auth = {
         },
         redirectTo: false,
         validate: async (req, session) => {
-          if (!session?.sub) return { valid: false }
-          return { valid: true, credentials: { sub: session.sub } }
+          if (!session?.sub) return { isValid: false }
+          return { isValid: true, credentials: { sub: session.sub } }
         }
       })
 

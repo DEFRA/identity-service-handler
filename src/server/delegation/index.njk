@@ -1,0 +1,62 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading
+  }) }}
+
+  <p class="govuk-body">Add new or delete existing individuals who manage the digital service on your behalf.</p>
+  <p class="govuk-body">Once deleted a user will retain their government login credentials, but will not be able to access the service they had been delegated to.</p>
+
+
+  {% if delegates.length %}
+    <table class="govuk-table app-delegation-list">
+      <caption class="govuk-visually-hidden">Delegates and available actions</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-visually-hidden">Name</th>
+          <th scope="col" class="govuk-table__header govuk-visually-hidden">Email</th>
+          <th scope="col" class="govuk-table__header govuk-visually-hidden">Action</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for delegate in delegates %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell app-delegation-list__name">{{ delegate.name }}</td>
+            <td class="govuk-table__cell app-delegation-list__email">{{ delegate.email }}</td>
+            <td class="govuk-table__cell app-delegation-list__action">
+            {% if delegate.active %}
+            {{ govukButton({
+              text: "Delete delegate",
+              href: "/delegation/" + delegate.id + "/delete",
+              classes: "govuk-button--warning govuk-!-margin-bottom-0 app-delegation-list__button"
+            }) }}
+            {% else %}
+            {{ govukButton({
+              text: "Revoke invite",
+              href: "/delegation/" + delegate.id + "/delete",
+              classes: "govuk-!-margin-bottom-0 app-delegation-list__button"
+            }) }}
+            {% endif %}
+
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if pagination %}
+      {{ govukPagination(pagination) }}
+    {% endif %}
+  {% else %}
+    <p class="govuk-body">You do not have any delegates yet.</p>
+  {% endif %}
+
+  <div class="govuk-button-group app-delegation-list__invite">
+    {{ govukButton({
+      text: "Add a new delegate",
+      href: "/delegation/create"
+    }) }}
+  </div>
+{% endblock %}

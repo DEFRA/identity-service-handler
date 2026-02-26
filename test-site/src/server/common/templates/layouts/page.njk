@@ -8,24 +8,30 @@
 {# Import custom components globally #}
 {% from "heading/macro.njk" import appHeading %}
 
+{% set _rebrand = govukRebrand() if govukRebrand is callable else govukRebrand %}
+
 {% set mainClasses = "app-main-wrapper" %}
 
 {% block head %}
   <link href="{{ getAssetPath('stylesheets/application.scss') }}" rel="stylesheet">
 {% endblock %}
 
-{% block header %}
-  {# serviceName being used in govukHeader will be @deprecated in v6. It has moved to govukServiceNavigation - https://github.com/alphagov/govuk-frontend/blob/main/CHANGELOG.md#move-service-name-and-navigation-links-from-the-govuk-header-to-service-navigation-component #}
+{% block govukHeader %}
   {{ govukHeader({
     homepageUrl: "https://www.gov.uk/",
     classes: "app-header",
     containerClasses: "govuk-width-container",
+    rebrand: _rebrand
+  }) }}
+{% endblock %}
+
+{% block govukServiceNavigation %}{% endblock %}
+
+{% block headerEnd %}
+  {{ govukServiceNavigation({
+    rebrand: _rebrand,
     serviceName: serviceName,
     serviceUrl: serviceUrl,
-    useTudorCrown: true
-  }) }}
-
-  {{ govukServiceNavigation({
     navigation: navigation
   }) }}
 {% endblock %}
@@ -44,8 +50,9 @@
 
 {% block content %}{% endblock %}
 
-{% block footer %}
+{% block govukFooter %}
   {{ govukFooter({
+    rebrand: _rebrand,
     meta: {
       items: [
         {

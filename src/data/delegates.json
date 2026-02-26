@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "name": "Joe Bloggs",
+    "email": "Jim@gmail.com",
+    "active": true
+  },
+  {
+    "id": "2",
+    "name": "A N Other",
+    "email": "Andy@farminc.com",
+    "active": true
+  },
+  {
+    "id": "3",
+    "name": "Joanna Smith",
+    "email": "XJS@outlook.com",
+    "active": false
+  }
+]

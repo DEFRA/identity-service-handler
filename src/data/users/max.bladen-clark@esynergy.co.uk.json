@@ -1,0 +1,38 @@
+{
+  "sub": "a17a772c-604e-495d-950e-3dbee2ba6e98",
+  "email": "max.bladen-clark@esynergy.co.uk",
+  "display_name": "Max Bladen-Clark",
+  "given_name": "Max",
+  "family_name": "Bladen-Clark",
+  "primary_cph": [
+    {
+      "cph": "44/081/0006",
+      "role": "Owner"
+    }
+  ],
+  "delegated_cph": [
+    {
+      "cph": "44/081/0001",
+      "role": "Keeper"
+    },
+    {
+      "cph": "44/081/0002",
+      "role": "Keeper",
+      "expiry_date": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0003",
+      "role": "Agent"
+    },
+    {
+      "cph": "44/081/0004",
+      "role": "Agent",
+      "expiry_date": "2029-01-01"
+    },
+    {
+      "cph": "44/081/0005",
+      "role": "Agent",
+      "expiry_date": "2029-01-01"
+    }
+  ]
+}
