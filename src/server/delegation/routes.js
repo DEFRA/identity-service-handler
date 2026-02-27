@@ -3,6 +3,10 @@ import {
   createController,
   createSubmitController
 } from './controllers/create-controller.js'
+import {
+  deleteController,
+  deleteSubmitController
+} from './controllers/delete-controller.js'
 
 export const routes = (options = {}) => {
   const { delegationPath = '/delegation', delegationService } = options
@@ -39,6 +43,16 @@ export const routes = (options = {}) => {
         }
       },
       ...createSubmitController(delegationService)
+    },
+    {
+      method: 'GET',
+      path: `${delegationPath}/{delegateId}/delete`,
+      ...deleteController(delegationService)
+    },
+    {
+      method: 'POST',
+      path: `${delegationPath}/{delegateId}/delete`,
+      ...deleteSubmitController(delegationService)
     }
   ]
 }
