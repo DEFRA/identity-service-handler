@@ -3,18 +3,24 @@
     "id": "1",
     "name": "Joe Bloggs",
     "email": "Jim@gmail.com",
+    "species": ["sheep", "cattle"],
+    "cphs": ["12/345/6789", "37/989/0999"],
     "active": true
   },
   {
     "id": "2",
     "name": "A N Other",
     "email": "Andy@farminc.com",
+    "species": ["pigs"],
+    "cphs": ["35/345/0005"],
     "active": true
   },
   {
     "id": "3",
     "name": "Joanna Smith",
     "email": "XJS@outlook.com",
+    "species": ["sheep"],
+    "cphs": ["12/345/6789"],
     "active": false
   }
 ]

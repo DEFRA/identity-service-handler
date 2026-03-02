@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
+import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
 import {
   createController,
   createSubmitController
 } from './create-controller.js'
 
 const mocks = {
-  createInvite: vi.fn(),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
@@ -15,12 +14,19 @@ const mocks = {
 
 describe('createController()', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     vi.clearAllMocks()
   })
 
   test('it renders the create page with default view model', async () => {
     // Arrange
     const request = {}
+    vi.spyOn(DelegationDraftService.prototype, 'getFullName').mockReturnValue(
+      undefined
+    )
+    vi.spyOn(DelegationDraftService.prototype, 'getEmail').mockReturnValue(
+      undefined
+    )
     mocks.view.mockReturnValue('view-response')
     const h = { view: mocks.view }
 
@@ -46,17 +52,19 @@ describe('createController()', () => {
 
 describe('createSubmitController()', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     vi.clearAllMocks()
   })
 
-  test('it creates invite and redirects on valid payload', async () => {
+  test('it stores draft values and redirects on valid payload', async () => {
     // Arrange
-    const delegationService = {
-      createInvite: mocks.createInvite
-    }
-    mocks.createInvite.mockResolvedValue(undefined)
+    const setFullName = vi
+      .spyOn(DelegationDraftService.prototype, 'setFullName')
+      .mockReturnValue(undefined)
+    const setEmail = vi
+      .spyOn(DelegationDraftService.prototype, 'setEmail')
+      .mockReturnValue(undefined)
     const request = {
-      auth: { credentials: { sub: 'user-123' } },
       payload: {
         fullName: '  Joe Bloggs  ',
         email: '  JOE@EXAMPLE.COM  '
@@ -66,25 +74,17 @@ describe('createSubmitController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await createSubmitController(delegationService).handler(
-      request,
-      h
-    )
+    const result = await createSubmitController().handler(request, h)
 
     // Assert
-    expect(mocks.createInvite).toHaveBeenCalledWith('user-123', {
-      name: 'Joe Bloggs',
-      email: 'joe@example.com'
-    })
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(setFullName).toHaveBeenCalledWith('Joe Bloggs')
+    expect(setEmail).toHaveBeenCalledWith('joe@example.com')
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/species')
     expect(result).toBe('redirect-response')
   })
 
   test('it re-renders create page from failAction for missing fields', async () => {
     // Arrange
-    const delegationService = {
-      createInvite: mocks.createInvite
-    }
     const request = {
       payload: {
         fullName: '',
@@ -103,9 +103,11 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    const result = await createSubmitController(
-      delegationService
-    ).options.validate.failAction(request, h, err)
+    const result = await createSubmitController().options.validate.failAction(
+      request,
+      h,
+      err
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -129,9 +131,6 @@ describe('createSubmitController()', () => {
 
   test('it re-renders create page from failAction for invalid email format', async () => {
     // Arrange
-    const delegationService = {
-      createInvite: mocks.createInvite
-    }
     const request = {
       payload: {
         fullName: 'Joe Bloggs',
@@ -147,11 +146,7 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    await createSubmitController(delegationService).options.validate.failAction(
-      request,
-      h,
-      err
-    )
+    await createSubmitController().options.validate.failAction(request, h, err)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(

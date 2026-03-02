@@ -12,31 +12,27 @@ function viewModel(delegate) {
   }
 }
 
-export function deleteController(delegationService) {
-  return {
-    handler: async (request, h) => {
-      const sub = request.auth?.credentials?.sub
-      const { delegateId } = request.params
-      const delegate = await delegationService.getDelegation(sub, delegateId)
+export const deleteController = (delegationService) => ({
+  handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
+    const { delegateId } = request.params
+    const delegate = await delegationService.getDelegation(sub, delegateId)
 
-      if (!delegate) {
-        return h.redirect('/delegation')
-      }
-
-      return h.view('delegation/delete', viewModel(delegate))
-    }
-  }
-}
-
-export function deleteSubmitController(delegationService) {
-  return {
-    handler: async (request, h) => {
-      const sub = request.auth?.credentials?.sub
-      const { delegateId } = request.params
-
-      await delegationService.deleteDelegation(sub, delegateId)
-
+    if (!delegate) {
       return h.redirect('/delegation')
     }
+
+    return h.view('delegation/delete', viewModel(delegate))
   }
-}
+})
+
+export const deleteSubmitController = (delegationService) => ({
+  handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
+    const { delegateId } = request.params
+
+    await delegationService.deleteDelegation(sub, delegateId)
+
+    return h.redirect('/delegation')
+  }
+})

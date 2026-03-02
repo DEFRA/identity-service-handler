@@ -1,0 +1,67 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/delegation/create/species" class="govuk-back-link">Back</a>
+
+      {% if errors.cphs %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.cphs,
+              href: "#cphs"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-5">{{ heading }}</h1>
+      <p class="govuk-body govuk-!-margin-bottom-5">{{ caption }}:</p>
+
+      <form method="post" action="/delegation/create/cphs">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+        {% if errors.cphs %}
+          {{ govukCheckboxes({
+            idPrefix: "cphs",
+            name: "cphs",
+            fieldset: {
+              legend: {
+                text: caption,
+                classes: "govuk-visually-hidden",
+                isPageHeading: false
+              }
+            },
+            classes: "govuk-!-margin-bottom-6",
+            errorMessage: {
+              text: errors.cphs
+            },
+            items: checkboxItems
+          }) }}
+        {% else %}
+          {{ govukCheckboxes({
+            idPrefix: "cphs",
+            name: "cphs",
+            fieldset: {
+              legend: {
+                text: caption,
+                classes: "govuk-visually-hidden",
+                isPageHeading: false
+              }
+            },
+            classes: "govuk-!-margin-bottom-6",
+            items: checkboxItems
+          }) }}
+        {% endif %}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

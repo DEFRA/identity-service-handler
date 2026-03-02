@@ -1,55 +1,61 @@
 import Joi from 'joi'
+import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
+import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
 
-export function createController() {
-  return {
-    handler: async (request, h) => {
-      return h.view('delegation/create', viewModel())
-    }
-  }
-}
+export const createController = () => ({
+  handler: async (request, h) => {
+    const draftService = new DelegationDraftService(request)
 
-export function createSubmitController(delegationService) {
-  return {
-    options: {
-      validate: {
-        payload: Joi.object({
-          fullName: Joi.string().trim().required(),
-          email: Joi.string()
-            .trim()
-            .lowercase()
-            .email({ tlds: { allow: false } })
-            .required()
-        }),
-        failAction: async (request, h, err) => {
-          const fullName = (request.payload?.['fullName'] || '').trim()
-          const email = (request.payload?.['email'] || '').trim()
-          const errors = getErrorsFromValidation(err)
-
-          return h
-            .view(
-              'delegation/create',
-              viewModel({
-                formValues: { fullName, email },
-                errors
-              })
-            )
-            .code(400)
-            .takeover()
+    return h.view(
+      'delegation/create',
+      viewModel({
+        formValues: {
+          fullName: draftService.getFullName() ?? '',
+          email: draftService.getEmail() ?? ''
         }
-      }
-    },
-    handler: async (request, h) => {
-      const sub = request.auth?.credentials?.sub
-
-      await delegationService.createInvite(sub, {
-        name: request.payload.fullName.trim(),
-        email: request.payload.email.trim().toLowerCase()
       })
-
-      return h.redirect('/delegation')
-    }
+    )
   }
-}
+})
+
+export const createSubmitController = () => ({
+  options: {
+    validate: {
+      payload: Joi.object({
+        fullName: Joi.string().trim().required(),
+        email: Joi.string()
+          .trim()
+          .lowercase()
+          .email({ tlds: { allow: false } })
+          .required()
+      }),
+      failAction: async (request, h, err) => {
+        const fullName = (request.payload?.['fullName'] || '').trim()
+        const email = (request.payload?.['email'] || '').trim()
+        const errors = getErrorsFromValidation(err)
+
+        return h
+          .view(
+            'delegation/create',
+            viewModel({
+              formValues: { fullName, email },
+              errors
+            })
+          )
+          .code(400)
+          .takeover()
+      }
+    }
+  },
+  handler: async (request, h) => {
+    const draftService = new DelegationDraftService(request)
+
+    draftService.setFullName(request.payload.fullName.trim())
+    draftService.setEmail(request.payload.email.trim().toLowerCase())
+
+    return h.redirect('/delegation/create/species')
+  }
+})
 
 function getErrorsFromValidation(validationError) {
   const errors = {}
@@ -76,10 +82,9 @@ function getErrorsFromValidation(validationError) {
 
 function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
-  const pageTitlePrefix = Object.keys(errors).length > 0 ? 'Error: ' : ''
 
   return {
-    pageTitle: `${pageTitlePrefix}Add and invite a new delegate`,
+    pageTitle: withErrorPageTitle('Add and invite a new delegate', errors),
     heading: 'Add and invite a new delegate',
     formValues: {
       fullName: '',

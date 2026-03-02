@@ -11,6 +11,8 @@
       <p class="govuk-body">{{ delegate.email }}</p>
 
       <form method="post">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+
         {{ govukButton({
           text: confirmButtonText,
           classes: confirmButtonClasses

@@ -4,6 +4,7 @@ import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
 import Inert from '@hapi/inert'
 import Cookie from '@hapi/cookie'
+import Crumb from '@hapi/crumb'
 
 import { router } from './router.js'
 import { config } from '../config/config.js'
@@ -103,6 +104,7 @@ export async function createServer() {
 
   await server.register([
     Cookie,
+    Crumb,
     Inert,
     requestLogger,
     requestTracing,

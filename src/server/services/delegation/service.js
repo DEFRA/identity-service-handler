@@ -79,7 +79,7 @@ export class DelegationService {
    * @param  {id: string, name: string, email: string} the delegation to add
    * @returns {Promise<void>}
    */
-  async createInvite(userId, { name, email }) {
+  async createInvite(userId, { name, email, species = [], cphs = [] }) {
     const delegates = await this.#getValue(userId)
     await this.#setValue(userId, [
       ...delegates,
@@ -87,6 +87,8 @@ export class DelegationService {
         id: crypto.randomUUID(),
         name,
         email,
+        species,
+        cphs,
         active: false
       }
     ])
