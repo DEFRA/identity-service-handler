@@ -1,6 +1,8 @@
 import Wreck from '@hapi/wreck'
 
-const redirectUrl = new URL('https://fakelocal:3005')
+const redirectUrl = new URL(
+  process.env.BROKER_REDIRECT_URL ?? 'https://localhost:3005'
+)
 const brokerBaseUrl = new URL(
   process.env.BROKER_BASE_URL ?? 'https://localhost:3000'
 )
