@@ -28,7 +28,8 @@ describe('listController()', () => {
           active: true
         }
       ],
-      total_pages: 1
+      total_pages: 1,
+      total_items: 1
     }
     mocks.getDelegations.mockResolvedValue(pageResult)
     const request = {
@@ -50,6 +51,8 @@ describe('listController()', () => {
         pageTitle: 'Manage people who can act for you',
         heading: 'Manage people who can act for you',
         delegates: pageResult.items,
+        showingDelegatesCount: 1,
+        totalDelegatesCount: 1,
         pagination: null
       })
     )
@@ -71,7 +74,8 @@ describe('listController()', () => {
           active: false
         }
       ],
-      total_pages: 3
+      total_pages: 3,
+      total_items: 11
     }
     mocks.getDelegations.mockResolvedValue(pageResult)
     const request = {
@@ -91,6 +95,8 @@ describe('listController()', () => {
       'delegation/index',
       expect.objectContaining({
         delegates: pageResult.items,
+        showingDelegatesCount: 1,
+        totalDelegatesCount: 11,
         pagination: expect.objectContaining({
           items: [
             { number: 1, href: '/delegation?page=1', current: false },
@@ -134,7 +140,8 @@ describe('listController()', () => {
     mocks.getDelegations.mockResolvedValue({
       page: 3,
       items: [],
-      total_pages: 3
+      total_pages: 3,
+      total_items: 15
     })
     const request = {
       auth: { credentials: { sub: 'user-123' } },

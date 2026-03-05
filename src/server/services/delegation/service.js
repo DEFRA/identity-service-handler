@@ -46,7 +46,7 @@ export class DelegationService {
    * Get all delegations for a user.
    * @param {string} userId
    * @param {number} [page=1]
-   * @returns {Promise<{page: number, items: Array<{id: string, name: string, email: string, active: boolean}>, total_pages: number}>}
+   * @returns {Promise<{page: number, items: Array<{id: string, name: string, email: string, active: boolean}>, total_pages: number, total_items: number}>}
    */
   async getDelegations(userId, page = 1) {
     const all = await this.#getValue(userId)
@@ -59,7 +59,8 @@ export class DelegationService {
     return {
       page: currentPage,
       items: all.slice(startIndex, endIndex),
-      total_pages: totalPages
+      total_pages: totalPages,
+      total_items: all.length
     }
   }
 

@@ -6,8 +6,6 @@ function viewModel(delegate) {
     heading: isActive
       ? 'Are you sure you want to delete this delegate?'
       : 'Are you sure you want to revoke this invite?',
-    confirmButtonText: isActive ? 'Delete delegate' : 'Revoke invite',
-    confirmButtonClasses: isActive ? 'govuk-button--warning' : '',
     delegate
   }
 }

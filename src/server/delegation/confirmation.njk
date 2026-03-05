@@ -3,15 +3,15 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">An invitation was sent your new delegate at {{ email }}</p>
+      <p class="govuk-body">They will have 7 days to reply using the invite link sent to their email address.</p>
+      <p class="govuk-body">Within this time you can revoke the invite if you need to.</p>
       {{ govukPanel({
         titleText: heading
       }) }}
 
-      <p class="govuk-body">An invitation was sent your new delegate at {{ email }}</p>
-      <p class="govuk-body">They will have 7 days to reply using the invite link sent to their email address.</p>
-
       {{ govukButton({
-        text: "Return to delegates",
+        text: "Continue",
         href: "/delegation"
       }) }}
     </div>

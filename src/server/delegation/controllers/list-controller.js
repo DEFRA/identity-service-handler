@@ -19,6 +19,7 @@ export const listController = (delegationService) => ({
     const {
       items: delegates,
       total_pages: totalPages,
+      total_items: totalDelegatesCount,
       page
     } = await delegationService.getDelegations(sub, requestedPage ?? 1)
 
@@ -32,6 +33,8 @@ export const listController = (delegationService) => ({
       pageTitle: 'Manage people who can act for you',
       heading: 'Manage people who can act for you',
       delegates,
+      showingDelegatesCount: delegates.length,
+      totalDelegatesCount,
       pagination
     })
   }

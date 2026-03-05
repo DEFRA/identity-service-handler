@@ -23,16 +23,12 @@ describe('cphsController()', () => {
       getUserContext: mocks.getUserContext
     }
     const request = {}
-    mocks.getUserContext.mockResolvedValue([
-      {
-        key: 'livestock-keeper',
-        cphs: [{ key: '12/345/6789', delegated: false }]
-      },
-      {
-        key: 'agent',
-        cphs: [{ key: '35/345/0005', delegated: true }]
-      }
-    ])
+    mocks.getUserContext.mockResolvedValue({
+      primary_cph: [
+        { cph: '12/345/6789', role: 'Owner' },
+        { cph: '35/345/0005', role: 'Sole Occupier' }
+      ]
+    })
     vi.spyOn(DelegationDraftService.prototype, 'getCphs').mockReturnValue([
       '12/345/6789'
     ])
@@ -47,11 +43,17 @@ describe('cphsController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Define delegation scope',
-        heading: 'Define delegation scope',
+        pageTitle: 'Define delegation access',
+        heading: 'Define delegation access',
         caption:
           'Select the County Parish Holdings that your want your delegate to have access to',
-        checkboxItems: [{ value: '12/345/6789', text: '12/345/6789', checked: true }],
+        checkboxItems: [
+          {
+            value: '12/345/6789',
+            text: 'County Parish Holding Number 12/345/6789',
+            checked: true
+          }
+        ],
         formValues: {
           cphs: ['12/345/6789']
         },
@@ -94,12 +96,9 @@ describe('cphsSubmitController()', () => {
     const delegationService = {
       createInvite: mocks.createInvite
     }
-    mocks.getUserContext.mockResolvedValue([
-      {
-        key: 'livestock-keeper',
-        cphs: [{ key: '12/345/6789', delegated: false }]
-      }
-    ])
+    mocks.getUserContext.mockResolvedValue({
+      primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
+    })
     mocks.createInvite.mockResolvedValue(undefined)
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -111,10 +110,10 @@ describe('cphsSubmitController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await cphsSubmitController(delegationService, userService).handler(
-      request,
-      h
-    )
+    const result = await cphsSubmitController(
+      delegationService,
+      userService
+    ).handler(request, h)
 
     // Assert
     expect(mocks.getUserContext).toHaveBeenCalledWith(request, 'user-123')
@@ -130,14 +129,11 @@ describe('cphsSubmitController()', () => {
       cphs: ['12/345/6789']
     })
     expect(clearDraft).toHaveBeenCalledTimes(1)
-    expect(mocks.view).toHaveBeenCalledWith(
-      'delegation/confirmation',
-      {
-        pageTitle: 'Invite sent',
-        heading: 'Invite sent',
-        email: 'joe@example.gov.uk'
-      }
-    )
+    expect(mocks.view).toHaveBeenCalledWith('delegation/confirmation', {
+      pageTitle: 'You delegation invite has been sent',
+      heading: 'You delegation invite has been sent',
+      email: 'joe@example.gov.uk'
+    })
     expect(result).toBe('view-response')
   })
 
@@ -149,12 +145,9 @@ describe('cphsSubmitController()', () => {
     const request = {
       payload: {}
     }
-    mocks.getUserContext.mockResolvedValue([
-      {
-        key: 'livestock-keeper',
-        cphs: [{ key: '12/345/6789', delegated: false }]
-      }
-    ])
+    mocks.getUserContext.mockResolvedValue({
+      primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
+    })
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -172,9 +165,13 @@ describe('cphsSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Error: Define delegation scope',
+        pageTitle: 'Error: Define delegation access',
         checkboxItems: [
-          { value: '12/345/6789', text: '12/345/6789', checked: false }
+          {
+            value: '12/345/6789',
+            text: 'County Parish Holding Number 12/345/6789',
+            checked: false
+          }
         ],
         formValues: {
           cphs: []
@@ -199,12 +196,9 @@ describe('cphsSubmitController()', () => {
         cphs: ['bad-value']
       }
     }
-    mocks.getUserContext.mockResolvedValue([
-      {
-        key: 'livestock-keeper',
-        cphs: [{ key: '12/345/6789', delegated: false }]
-      }
-    ])
+    mocks.getUserContext.mockResolvedValue({
+      primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
+    })
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -224,9 +218,13 @@ describe('cphsSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Error: Define delegation scope',
+        pageTitle: 'Error: Define delegation access',
         checkboxItems: [
-          { value: '12/345/6789', text: '12/345/6789', checked: false }
+          {
+            value: '12/345/6789',
+            text: 'County Parish Holding Number 12/345/6789',
+            checked: false
+          }
         ],
         formValues: {
           cphs: ['bad-value']
@@ -246,16 +244,15 @@ describe('cphsSubmitController()', () => {
     const userService = {
       getUserContext: mocks.getUserContext
     }
-    vi.spyOn(DelegationDraftService.prototype, 'setCphs').mockReturnValue(undefined)
+    vi.spyOn(DelegationDraftService.prototype, 'setCphs').mockReturnValue(
+      undefined
+    )
     const delegationService = {
       createInvite: mocks.createInvite
     }
-    mocks.getUserContext.mockResolvedValue([
-      {
-        key: 'livestock-keeper',
-        cphs: [{ key: '12/345/6789', delegated: false }]
-      }
-    ])
+    mocks.getUserContext.mockResolvedValue({
+      primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
+    })
     mocks.code.mockReturnValue('code-response')
     mocks.view.mockReturnValue({ code: mocks.code })
     const request = {
@@ -278,7 +275,11 @@ describe('cphsSubmitController()', () => {
       'delegation/cphs',
       expect.objectContaining({
         checkboxItems: [
-          { value: '12/345/6789', text: '12/345/6789', checked: false }
+          {
+            value: '12/345/6789',
+            text: 'County Parish Holding Number 12/345/6789',
+            checked: false
+          }
         ],
         formValues: {
           cphs: ['35/345/0005']

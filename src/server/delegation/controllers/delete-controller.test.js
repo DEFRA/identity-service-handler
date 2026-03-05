@@ -49,8 +49,6 @@ describe('deleteController()', () => {
       expect.objectContaining({
         pageTitle: 'Delete delegate',
         heading: 'Are you sure you want to delete this delegate?',
-        confirmButtonText: 'Delete delegate',
-        confirmButtonClasses: 'govuk-button--warning',
         delegate
       })
     )
@@ -85,8 +83,6 @@ describe('deleteController()', () => {
       expect.objectContaining({
         pageTitle: 'Revoke invite',
         heading: 'Are you sure you want to revoke this invite?',
-        confirmButtonText: 'Revoke invite',
-        confirmButtonClasses: '',
         delegate
       })
     )

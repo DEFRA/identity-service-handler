@@ -14,7 +14,10 @@ export const cphsController = (userService) => ({
     return h.view(
       'delegation/cphs',
       viewModel({
-        checkboxItems: buildCheckboxItems(availableCphs, draftService.getCphs()),
+        checkboxItems: buildCheckboxItems(
+          availableCphs,
+          draftService.getCphs()
+        ),
         formValues: {
           cphs: draftService.getCphs()
         }
@@ -95,8 +98,8 @@ export const cphsSubmitController = (delegationService, userService) => ({
     draftService.clearDraft()
 
     return h.view('delegation/confirmation', {
-      pageTitle: 'Invite sent',
-      heading: 'Invite sent',
+      pageTitle: 'You delegation invite has been sent',
+      heading: 'You delegation invite has been sent',
       email
     })
   }
@@ -122,13 +125,15 @@ function getErrorFromValidation(validationError) {
 async function getAvailableCphs(userService, request, sub) {
   const userContext = await userService.getUserContext(request, sub)
 
-  return (userContext.primary_cph || []).filter(cph => cph.role === 'Owner').map(({cph}) => cph)
+  return (userContext.primary_cph || [])
+    .filter((cph) => cph.role === 'Owner')
+    .map(({ cph }) => cph)
 }
 
 function buildCheckboxItems(availableCphs, selectedCphs) {
   return availableCphs.map((cph) => ({
     value: cph,
-    text: cph,
+    text: `County Parish Holding Number ${cph}`,
     checked: selectedCphs.includes(cph)
   }))
 }
@@ -137,8 +142,8 @@ function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: withErrorPageTitle('Define delegation scope', errors),
-    heading: 'Define delegation scope',
+    pageTitle: withErrorPageTitle('Define delegation access', errors),
+    heading: 'Define delegation access',
     caption:
       'Select the County Parish Holdings that your want your delegate to have access to',
     checkboxItems: [],

@@ -64,7 +64,10 @@ function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: withErrorPageTitle('Select the species you want to delegate', errors),
+    pageTitle: withErrorPageTitle(
+      'Select the species you want to delegate',
+      errors
+    ),
     heading: 'Select the species you want to delegate',
     formValues: {
       species: []

@@ -30,7 +30,8 @@ describe('DelegationService', () => {
       expect(result).toEqual({
         page: 1,
         items: cached,
-        total_pages: 1
+        total_pages: 1,
+        total_items: 1
       })
       expect(mocks.redis.set).not.toHaveBeenCalled()
     })
@@ -48,6 +49,7 @@ describe('DelegationService', () => {
       expect(Array.isArray(result.items)).toBe(true)
       expect(result.items.length).toBeGreaterThan(0)
       expect(result.total_pages).toBeGreaterThan(0)
+      expect(result.total_items).toBeGreaterThan(0)
       expect(mocks.redis.set).toHaveBeenCalledTimes(1)
 
       const [key, value] = mocks.redis.set.mock.lastCall
@@ -75,6 +77,7 @@ describe('DelegationService', () => {
       expect(result.page).toBe(2)
       expect(result.items).toEqual([cached[5]])
       expect(result.total_pages).toBe(2)
+      expect(result.total_items).toBe(6)
     })
 
     test('it throws when cache contains malformed json', async () => {

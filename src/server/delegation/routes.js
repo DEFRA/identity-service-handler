@@ -24,7 +24,15 @@ const sessionAuth = {
 }
 
 export const routes = (options = {}) => {
-  const { delegationPath = '/delegation', delegationService, userService } = options
+  const {
+    delegationPath = '/delegation',
+    delegationService,
+    userService
+  } = options
+  const createSubmit = createSubmitController()
+  const speciesSubmit = speciesSubmitController()
+  const cphsSubmit = cphsSubmitController(delegationService, userService)
+
   return [
     {
       method: 'GET',
@@ -41,8 +49,11 @@ export const routes = (options = {}) => {
     {
       method: 'POST',
       path: `${delegationPath}/create`,
-      options: sessionAuth,
-      ...createSubmitController()
+      ...createSubmit,
+      options: {
+        ...createSubmit.options,
+        ...sessionAuth
+      }
     },
     {
       method: 'GET',
@@ -53,8 +64,11 @@ export const routes = (options = {}) => {
     {
       method: 'POST',
       path: `${delegationPath}/create/species`,
-      options: sessionAuth,
-      ...speciesSubmitController()
+      ...speciesSubmit,
+      options: {
+        ...speciesSubmit.options,
+        ...sessionAuth
+      }
     },
     {
       method: 'GET',
@@ -65,8 +79,11 @@ export const routes = (options = {}) => {
     {
       method: 'POST',
       path: `${delegationPath}/create/cphs`,
-      options: sessionAuth,
-      ...cphsSubmitController(delegationService, userService)
+      ...cphsSubmit,
+      options: {
+        ...cphsSubmit.options,
+        ...sessionAuth
+      }
     },
     {
       method: 'GET',
