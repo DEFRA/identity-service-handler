@@ -4,6 +4,7 @@ import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
 import Inert from '@hapi/inert'
 import Cookie from '@hapi/cookie'
+import Crumb from '@hapi/crumb'
 
 import { router } from './router.js'
 import { config } from '../config/config.js'
@@ -23,6 +24,7 @@ import { buildBrokerProvider } from './services/oidc/provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { UserService } from './services/user/UserService.js'
+import { DelegationService } from './services/delegation/service.js'
 import { SubjectsService } from './services/subjects.js'
 import { ApplicationService } from './services/application/ApplicationService.js'
 import { ApplicationCache } from './services/application/ApplicationCache.js'
@@ -42,6 +44,7 @@ export async function createServer() {
   })
   const subjectsService = new SubjectsService(redis)
   const userService = new UserService(redis, config)
+  const delegationService = new DelegationService(redis, config)
   const upstreamStateStore = new UpstreamStateStore(redis)
 
   const brokerProvider = buildBrokerProvider({
@@ -101,6 +104,7 @@ export async function createServer() {
 
   await server.register([
     Cookie,
+    Crumb,
     Inert,
     requestLogger,
     requestTracing,
@@ -116,7 +120,7 @@ export async function createServer() {
     },
     {
       plugin: router.plugin,
-      options: { userService }
+      options: { userService, delegationService }
     }
   ])
 
