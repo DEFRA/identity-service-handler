@@ -1,0 +1,99 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/delegation/create" class="govuk-back-link">Back</a>
+
+      {% if errors.species %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.species,
+              href: "#species"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-5">{{ heading }}</h1>
+      <p class="govuk-body govuk-!-margin-bottom-5">Select the species your delegate will be managing:</p>
+
+      <form method="post" action="/delegation/create/species">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+        {% if errors.species %}
+          {{ govukCheckboxes({
+            idPrefix: "species",
+            name: "species",
+            fieldset: {
+              legend: {
+                text: heading,
+                classes: "govuk-visually-hidden",
+                isPageHeading: false
+              }
+            },
+            classes: "govuk-!-margin-bottom-6",
+            errorMessage: {
+              text: errors.species
+            },
+            items: [
+              {
+                value: "sheep",
+                text: "Sheep",
+                checked: "sheep" in formValues.species
+              },
+              {
+                value: "cattle",
+                text: "Cattle",
+                checked: "cattle" in formValues.species
+              },
+              {
+                value: "pigs",
+                text: "Pigs",
+                checked: "pigs" in formValues.species
+              }
+            ]
+          }) }}
+        {% else %}
+          {{ govukCheckboxes({
+            idPrefix: "species",
+            name: "species",
+            fieldset: {
+              legend: {
+                text: heading,
+                classes: "govuk-visually-hidden",
+                isPageHeading: false
+              }
+            },
+            classes: "govuk-!-margin-bottom-6",
+            items: [
+              {
+                value: "sheep",
+                text: "Sheep",
+                checked: "sheep" in formValues.species
+              },
+              {
+                value: "cattle",
+                text: "Cattle",
+                checked: "cattle" in formValues.species
+              },
+              {
+                value: "pigs",
+                text: "Pigs",
+                checked: "pigs" in formValues.species
+              }
+            ]
+          }) }}
+        {% endif %}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

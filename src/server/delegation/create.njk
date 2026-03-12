@@ -1,0 +1,120 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/delegation" class="govuk-back-link">Back</a>
+
+      {% if errors.fullName and errors.email %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.fullName,
+              href: "#fullName"
+            },
+            {
+              text: errors.email,
+              href: "#email"
+            }
+          ]
+        }) }}
+      {% elif errors.fullName %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.fullName,
+              href: "#fullName"
+            }
+          ]
+        }) }}
+      {% elif errors.email %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.email,
+              href: "#email"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ heading }}</h1>
+
+      <form method="post" action="/delegation/create">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+
+        {% if errors.fullName %}
+          {{ govukInput({
+            label: {
+              text: "Full name"
+            },
+            id: "fullName",
+            name: "fullName",
+            value: formValues.fullName,
+            errorMessage: {
+              text: errors.fullName
+            },
+            classes: "govuk-input--width-20"
+          }) }}
+        {% else %}
+          {{ govukInput({
+            label: {
+              text: "Full name"
+            },
+            id: "fullName",
+            name: "fullName",
+            value: formValues.fullName,
+            classes: "govuk-input--width-20"
+          }) }}
+        {% endif %}
+
+        {% if errors.email %}
+          {{ govukInput({
+            label: {
+              text: "Enter the delegate's email address"
+            },
+            hint: {
+              text: "We'll send an email invitation to this address."
+            },
+            id: "email",
+            name: "email",
+            type: "email",
+            value: formValues.email,
+            spellcheck: false,
+            autocomplete: "email",
+            errorMessage: {
+              text: errors.email
+            },
+            classes: "govuk-input--width-20"
+          }) }}
+        {% else %}
+          {{ govukInput({
+            label: {
+              text: "Enter the delegate's email address"
+            },
+            hint: {
+              text: "We'll send an email invitation to this address."
+            },
+            id: "email",
+            name: "email",
+            type: "email",
+            value: formValues.email,
+            spellcheck: false,
+            autocomplete: "email",
+            classes: "govuk-input--width-20"
+          }) }}
+        {% endif %}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'layouts/page.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/delegation" class="govuk-back-link">Back</a>
+
+      <h1 class="govuk-heading-l">{{ heading }}</h1>
+
+      <p class="govuk-body"><strong>{{ delegate.name }}</strong></p>
+      <p class="govuk-body">{{ delegate.email }}</p>
+
+      <form method="post">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+
+      <p class="govuk-body">
+        <a href="/delegation" class="govuk-link">Cancel</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}
