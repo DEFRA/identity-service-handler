@@ -12,10 +12,10 @@ const mockLoggerError = vi.fn()
 vi.mock('ioredis', () => ({
   ...vi.importActual('ioredis'),
   Cluster: vi.fn(function MockCluster() {
-    return { on: () => ({}) }
+    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
   }),
   Redis: vi.fn(function MockRedis() {
-    return { on: () => ({}) }
+    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
   })
 }))
 vi.mock('@hapi/catbox-redis')

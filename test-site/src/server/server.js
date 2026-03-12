@@ -21,10 +21,10 @@ export async function createServer() {
     port: config.get('port'),
     tls: {
       key: fs.readFileSync(
-        path.resolve(config.get('root'), '../certs/localhost-key.pem')
+        path.resolve(config.get('root'), config.get('tlsKey'))
       ),
       cert: fs.readFileSync(
-        path.resolve(config.get('root'), '../certs/localhost.pem')
+        path.resolve(config.get('root'), config.get('tlsCert'))
       )
     },
     routes: {
