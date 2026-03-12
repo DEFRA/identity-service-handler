@@ -1,0 +1,141 @@
+[
+  {
+    "iss": "dummy-issuer",
+    "sub": "043f9538-b6b3-41aa-8010-3fb4f310e2b1",
+    "email": "default_user@example.com",
+    "display_name": "Default User",
+    "given_name": "Default",
+    "family_name": "User",
+    "primary_cph": [
+      {
+        "cph": "01/006/0045",
+        "role": "Owner"
+      }
+    ],
+    "delegated_cph": [
+      {
+        "cph": "01/028/0043",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/030/0034",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/040/0040",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/043/0049",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/049/0284",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/063/0196",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/064/0071",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/070/0020",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "01/109/0038",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      }
+    ]
+  },
+  {
+    "iss": "dummy-issuer",
+    "sub": "a17a772c-604e-495d-950e-3dbee2ba6e98",
+    "email": "max.bladen-clark@esynergy.co.uk",
+    "display_name": "Max Bladen-Clark",
+    "given_name": "Max",
+    "family_name": "Bladen-Clark",
+    "primary_cph": [
+      {
+        "cph": "44/081/0006",
+        "role": "Owner"
+      }
+    ],
+    "delegated_cph": [
+      {
+        "cph": "44/081/0001",
+        "role": "Keeper"
+      },
+      {
+        "cph": "44/081/0002",
+        "role": "Keeper",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "44/081/0003",
+        "role": "Agent"
+      },
+      {
+        "cph": "44/081/0004",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "44/081/0005",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      }
+    ]
+  },
+  {
+    "iss": "dummy-issuer",
+    "sub": "cd91b1e0-bae4-4cee-becf-3529cc557311",
+    "email": "cedric.brasey@planet-side.co.uk",
+    "display_name": "Cedric Brasey",
+    "given_name": "Cedric",
+    "family_name": "Brasey",
+    "primary_cph": [
+      {
+        "cph": "44/081/0006",
+        "role": "Owner"
+      }
+    ],
+    "delegated_cph": [
+      {
+        "cph": "44/081/0001",
+        "role": "Keeper"
+      },
+      {
+        "cph": "44/081/0002",
+        "role": "Keeper",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "44/081/0003",
+        "role": "Agent"
+      },
+      {
+        "cph": "44/081/0004",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "44/081/0005",
+        "role": "Agent",
+        "expiry_date": "2029-01-01"
+      }
+    ]
+  }
+]

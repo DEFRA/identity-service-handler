@@ -1,43 +1,77 @@
 import * as service from './service.js'
-import { ServiceFake } from './service.fake.js'
+import * as serviceFake from './service.fake.js'
 
 const UserContextKey = 'userContext'
 
+/**
+ * @typedef {import('ioredis').Redis | import('ioredis').Cluster} RedisClient
+ */
+
+/**
+ * @typedef {import('../../../config/config.js').AppConfig} AppConfig
+ */
+
+/**
+ * @typedef {import('../subjects.js').SubjectMapping} SubjectMapping
+ */
+
+/**
+ * @typedef {object} UserContext
+ * @property {string} sub
+ * @property {string} email
+ * @property {string} display_name
+ * @property {string} given_name
+ * @property {string} family_name
+ * @property {UserCph[]} primary_cph
+ * @property {UserCph[]} delegated_cph
+ */
+
 export class UserService {
+  /**
+   * @param {RedisClient} redis
+   * @param {AppConfig} config
+   */
   constructor(redis, config) {
     this.redis = redis
-    this.init = false
     this.helperConfig = config.get('idService.helper')
-    this._impl = this.helperConfig.useFakeClient
-      ? new ServiceFake({ config })
-      : service
+    this._impl = this.helperConfig.useFakeClient ? serviceFake : service
   }
 
+  /**
+   * @param {string} prefix
+   * @param {string} id
+   * @returns {string}
+   */
   key(prefix, id) {
     return `${prefix}:${id}`
   }
 
-  async getUserContext(id) {
-    await this.initFake()
-
-    const raw = await this.redis.get(this.key(UserContextKey, id))
+  /**
+   * @param {SubjectMapping} subjectMapping
+   * @returns {Promise<UserContext | undefined>}
+   */
+  async getUserContext(subjectMapping) {
+    const raw = await this.redis.get(
+      this.key(UserContextKey, subjectMapping.sub)
+    )
     if (raw) return JSON.parse(raw)
 
-    const userContext = await this._impl.getUserContext(id)
+    const userResult = await this._impl.getUserDetails(subjectMapping.sub)
+    const cphResult = await this._impl.getUserCphs(subjectMapping.sub)
+
+    const userContext = {
+      ...subjectMapping,
+      ...userResult,
+      ...cphResult
+    }
+
     await this.redis.set(
-      this.key(UserContextKey, id),
+      this.key(UserContextKey, subjectMapping.sub),
       JSON.stringify(userContext),
       'EX',
       300
     )
 
     return userContext
-  }
-
-  async initFake() {
-    if (!this.init && this.helperConfig.useFakeClient) {
-      await this._impl.init()
-      this.init = true
-    }
   }
 }

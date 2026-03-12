@@ -15,6 +15,16 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 convict.addFormats(convictFormatWithValidator)
 
+/**
+ * @typedef {import('convict').Config<Record<string, unknown>>} AppConfig
+ */
+
+/**
+ * Application configuration built from schema defaults, environment variables,
+ * and runtime validation rules.
+ *
+ * @type {AppConfig}
+ */
 export const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
