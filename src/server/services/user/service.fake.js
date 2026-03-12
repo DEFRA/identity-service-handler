@@ -33,6 +33,14 @@ export class ServiceFake {
   }
 
   async getUserContext(headers, id) {
-    return [...this.users.entries()].find((u) => u[1].sub === id)[1]
+    const user = [...this.users.entries()].find((u) => u[1].sub === id)
+
+    if (!user) {
+      const defaultUser = this.users.get('default_user@example.com')
+      defaultUser.sub = id
+      return defaultUser
+    }
+
+    return user[1]
   }
 }
