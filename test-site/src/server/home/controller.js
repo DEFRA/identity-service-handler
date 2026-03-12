@@ -1,7 +1,7 @@
 import Wreck from '@hapi/wreck'
 
 const redirectUrl = new URL(
-  process.env.BROKER_REDIRECT_URL ?? 'https://localhost:3005'
+  process.env.BROKER_REDIRECT_URL ?? 'https://localhost:3005/callback'
 )
 const brokerBaseUrl = new URL(
   process.env.BROKER_BASE_URL ?? 'https://localhost:3000'
@@ -62,10 +62,7 @@ export const loginController = {
     const authUrl = new URL('authorize', brokerBaseUrl)
     authUrl.searchParams.append('client_id', clientId)
     authUrl.searchParams.append('response_type', 'code')
-    authUrl.searchParams.append(
-      'redirect_uri',
-      new URL('callback', redirectUrl).href
-    )
+    authUrl.searchParams.append('redirect_uri', redirectUrl.href)
     authUrl.searchParams.append('scope', 'openid')
 
     console.log(authUrl.href)
@@ -91,7 +88,7 @@ export const loginCallbackController = {
       client_secret: clientSecret,
       code,
       scope: `${clientId}`,
-      redirect_uri: `${redirectUrl}callback`
+      redirect_uri: `${redirectUrl}`
     }).toString()
     const options = {
       payload: data,

@@ -8,10 +8,10 @@ import { buildRedisClient } from './redis-client.js'
 vi.mock('ioredis', () => ({
   ...vi.importActual('ioredis'),
   Cluster: vi.fn(function MockCluster() {
-    return { on: () => ({}) }
+    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
   }),
   Redis: vi.fn(function MockRedis() {
-    return { on: () => ({}) }
+    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
   })
 }))
 

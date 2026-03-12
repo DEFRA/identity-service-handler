@@ -72,6 +72,18 @@ export const config = convict({
     format: Boolean,
     default: isTest
   },
+  tlsKey: {
+    doc: 'Path to TLS key file',
+    format: String,
+    default: '../certs/localhost-key.pem',
+    env: 'TLS_KEY'
+  },
+  tlsCert: {
+    doc: 'Path to TLS cert file',
+    format: String,
+    default: '../certs/localhost.pem',
+    env: 'TLS_CERT'
+  },
   log: {
     enabled: {
       doc: 'Is logging enabled',
