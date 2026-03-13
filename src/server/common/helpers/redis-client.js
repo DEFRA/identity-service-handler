@@ -67,19 +67,19 @@ export function buildRedisClient(redisConfig) {
 
   const originalGet = redisClient.get.bind(redisClient)
   redisClient.get = (key, ...args) => {
-    console.log(`Redis GET key: ${key}`)
+    logger.debug(`Redis GET key: ${key}`)
     return originalGet(key, ...args)
   }
 
   const originalSet = redisClient.set.bind(redisClient)
   redisClient.set = (key, ...args) => {
-    console.log(`Redis SET key: ${key}`)
+    logger.debug(`Redis SET key: ${key}`)
     return originalSet(key, ...args)
   }
 
   const originalDel = redisClient.del.bind(redisClient)
   redisClient.del = (key, ...args) => {
-    console.log(`Redis DEL key: ${key}`)
+    logger.debug(`Redis DEL key: ${key}`)
     return originalDel(key, ...args)
   }
 
