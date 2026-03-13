@@ -36,6 +36,7 @@ const logger = createLogger()
 export async function createServer() {
   setupProxy()
 
+  logger.info(`Starting server with configuration: ${config}`)
   const redis = buildRedisClient(config.get('redis'))
 
   const applicationService = new ApplicationService(config)
