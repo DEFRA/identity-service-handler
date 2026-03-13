@@ -274,6 +274,7 @@ export const config = convict({
         doc: 'The B2C Client Secret',
         format: String,
         default: 'NOT_A_REAL_CLIENT_SECRET',
+        sensitive: true,
         env: 'B2C_CLIENT_SECRET'
       },
       discoveryUrl: {
@@ -302,6 +303,7 @@ export const config = convict({
         format: String,
         default:
           'rXlX5VGkoCoPRBFGnjrVyvSyYODJuScFttswo6U7gX9hUk97cmM6c8Bn4fRI5i7e',
+        sensitive: true,
         env: 'ADMIN_API_KEY'
       },
       useFakeClient: {
@@ -323,6 +325,7 @@ export const config = convict({
         format: String,
         default:
           'jbz9ljIFoIYaCBwhB0pYYthqZlkF9FqIbf00Cuk0iHlnKMMXHdMSpyXSTU2AsmqG',
+        sensitive: true,
         env: 'HELPER_API_KEY'
       },
       useFakeClient: {
