@@ -16,6 +16,13 @@
         </p>
         <pre>{{ logon_response | trim }}</pre>
        <hr>
+        <p>Use refresh token on ISH {{ govukButton({
+            text: "Refresh token",
+            href: "/refresh",
+            disabled: not refresh_token_present
+          }) }}
+        </p>
+        <hr>
         <p>Get user context {{ govukButton({
             text: "Context",
             href: "/context"

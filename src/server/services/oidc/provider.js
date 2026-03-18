@@ -14,12 +14,18 @@ const CUSTOM_USERINFO_CLAIM = [
   'delegated_cph'
 ]
 
-export function buildBrokerProvider({
+export function resolveClientGrantTypes(client = {}) {
+  if (Array.isArray(client.grant_types) && client.grant_types.length > 0) {
+    return client.grant_types
+  }
+
+  return ['authorization_code', 'refresh_token']
+}
+
+export function buildBrokerConfiguration({
   cookiePassword,
   sessionCookieSecure,
-  issuer,
   redis,
-  clientsService,
   userService
 }) {
   function decodeSignoutRedirect(value) {
@@ -34,7 +40,7 @@ export function buildBrokerProvider({
     }
   }
 
-  const configuration = {
+  return {
     adapter: (model) => new RedisAdapter(model, redis, 'oidc'),
 
     features: {
@@ -45,7 +51,7 @@ export function buildBrokerProvider({
           ctx.type = 'html'
           ctx.status = 200
           ctx.body = `<!DOCTYPE html>
-            <html>
+            <html lang="en">
               <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -78,7 +84,7 @@ export function buildBrokerProvider({
     },
 
     responseTypes: ['code'],
-    grantTypes: ['authorization_code'],
+    scopes: ['openid', 'offline_access', 'profile', 'email'],
 
     ttl: {
       AccessToken: 15 * 60,
@@ -115,11 +121,28 @@ export function buildBrokerProvider({
       return {
         accountId: sub,
         async claims(use) {
+          console.log('claims', use)
           return await userService.getUserContext(ctx.request, sub)
         }
       }
     }
   }
+}
+
+export function buildBrokerProvider({
+  cookiePassword,
+  sessionCookieSecure,
+  issuer,
+  redis,
+  clientsService,
+  userService
+}) {
+  const configuration = buildBrokerConfiguration({
+    cookiePassword,
+    sessionCookieSecure,
+    redis,
+    userService
+  })
 
   const oidc = new Provider(issuer, configuration)
 
@@ -163,20 +186,18 @@ export function buildBrokerProvider({
     const tokenEndpointAuthMethod =
       c.token_endpoint_auth_method ?? 'private_key_jwt'
 
-    const tmp = new oidc.Client({
+    return new oidc.Client({
       client_id: c.client_id,
       client_name: c.client_name,
       redirect_uris: c.redirect_uris,
       post_logout_redirect_uris: c.post_logout_redirect_uris ?? [],
       response_types: c.response_types ?? ['code'],
-      grant_types: c.grant_types ?? ['authorization_code'],
+      grant_types: resolveClientGrantTypes(c),
       token_endpoint_auth_method: tokenEndpointAuthMethod,
       client_secret: c.client_secret ?? c.secret,
       jwks: c.jwks,
       scope: c.scope ?? 'openid'
     })
-
-    return tmp
   }
 
   return oidc

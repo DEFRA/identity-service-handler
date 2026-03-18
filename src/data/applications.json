@@ -2,7 +2,8 @@
   {
     "client_id": "a3d4e5f6-7890-4b1c-a2d3-e4f567890abc",
     "client_name": "Auth Test Application",
-    "scope": "openid profile",
+    "scope": "openid profile offline_access",
+    "grant_types": ["authorization_code", "refresh_token"],
     "token_endpoint_auth_method": "client_secret_post",
     "secret": "S!uhSylf@klNy*HyI^~7vKz9EO\"ACrmRTHrL>tpl)\"[^~7TPaE3^u:<XfH9HYV#S{nj#@;nje\"cKF6|bq9}h^AOci`sB\",$lIv3]d|6\"-l!U[]U40!th|PtkIhvC0u@J",
     "redirect_uris": [
@@ -26,7 +27,8 @@
   {
     "client_id": "3f061cdf-184e-4eda-8386-aa723544d700",
     "client_name": "LI Test Application",
-    "scope": "openid profile",
+    "scope": "openid profile offline_access",
+    "grant_types": ["authorization_code", "refresh_token"],
     "token_endpoint_auth_method": "client_secret_post",
     "secret": "+7czn34{.%B)pY{Fu6}ZcYy@GVKBsm#VdhMa1%SZ`yayQ|4/<{Y^gw1a;Y=evF)^1w9kF!=v!{INgp8X#lFdZ-n@Uv@sIa+s=uxI;W7X7$JCQ-huc<VwKjkHnNCV*tv:",
     "redirect_uris": [

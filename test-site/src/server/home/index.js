@@ -2,6 +2,7 @@ import {
   homeController,
   loginController,
   loginCallbackController,
+  refreshTokenController,
   getContextController,
   signoutController
 } from './controller.js'
@@ -34,6 +35,11 @@ export const home = {
           method: 'GET',
           path: '/context',
           ...getContextController
+        },
+        {
+          method: 'GET',
+          path: '/refresh',
+          ...refreshTokenController
         },
         {
           method: 'GET',

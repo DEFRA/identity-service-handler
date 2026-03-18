@@ -25,12 +25,38 @@ function formatForView(value) {
 }
 
 function buildHomePayload(request) {
+  const refreshToken = request.yar.get('brokerRefreshToken')
+
   return {
     pageTitle: 'Home',
     heading: 'Home',
     logon_response: formatForView(request.yar.get('brokerTokenResponse')),
     context_response: formatForView(request.yar.get('brokerContextResponse')),
-    logout_response: request.path === '/success' ? 'Logged out' : ''
+    logout_response: request.path === '/success' ? 'Logged out' : '',
+    refresh_token_present: Boolean(refreshToken)
+  }
+}
+
+function persistTokenResponse(
+  request,
+  token,
+  { preserveRefreshToken = false } = {}
+) {
+  request.yar.set('brokerTokenResponse', token)
+  request.yar.set('brokerAccessToken', token.access_token)
+  request.yar.set('brokerTokenType', token.token_type ?? 'Bearer')
+  request.yar.set(
+    'brokerTokenExpiresAt',
+    Date.now() + (token.expires_in ?? 0) * 1000
+  )
+
+  if (typeof token.refresh_token === 'string' && token.refresh_token.trim()) {
+    request.yar.set('brokerRefreshToken', token.refresh_token)
+    return
+  }
+
+  if (!preserveRefreshToken) {
+    request.yar.clear('brokerRefreshToken')
   }
 }
 
@@ -63,7 +89,8 @@ export const loginController = {
     authUrl.searchParams.append('client_id', clientId)
     authUrl.searchParams.append('response_type', 'code')
     authUrl.searchParams.append('redirect_uri', redirectUrl.href)
-    authUrl.searchParams.append('scope', 'openid')
+    authUrl.searchParams.append('scope', 'openid offline_access')
+    authUrl.searchParams.append('prompt', 'consent')
 
     console.log(authUrl.href)
     return h.redirect(authUrl.href)
@@ -87,7 +114,6 @@ export const loginCallbackController = {
       client_id: clientId,
       client_secret: clientSecret,
       code,
-      scope: `${clientId}`,
       redirect_uri: `${redirectUrl}`
     }).toString()
     const options = {
@@ -103,13 +129,7 @@ export const loginCallbackController = {
       const res = await Wreck.post(`${brokerBaseUrl}token`, options)
       const token = JSON.parse(res.payload.toString())
 
-      request.yar.set('brokerTokenResponse', token)
-      request.yar.set('brokerAccessToken', token.access_token)
-      request.yar.set('brokerTokenType', token.token_type ?? 'Bearer')
-      request.yar.set(
-        'brokerTokenExpiresAt',
-        Date.now() + (token.expires_in ?? 0) * 1000
-      )
+      persistTokenResponse(request, token)
       request.yar.clear('brokerContextResponse')
 
       return h.redirect('/')
@@ -117,6 +137,53 @@ export const loginCallbackController = {
       console.error('Failed to exchange authorization code for token', error)
       request.yar.set('brokerTokenResponse', {
         error: 'token_exchange_failed',
+        message: error.message
+      })
+      return h.redirect('/')
+    }
+  }
+}
+
+export const refreshTokenController = {
+  async handler(request, h) {
+    const refreshToken = request.yar.get('brokerRefreshToken')
+
+    if (!refreshToken) {
+      request.yar.set('brokerTokenResponse', {
+        error: 'missing_refresh_token',
+        error_description: 'No refresh token in session, login first'
+      })
+      return h.redirect('/')
+    }
+
+    const data = new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken
+    }).toString()
+
+    const options = {
+      payload: data,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json'
+      },
+      rejectUnauthorized: false
+    }
+
+    try {
+      const res = await Wreck.post(`${brokerBaseUrl}token`, options)
+      const token = JSON.parse(res.payload.toString())
+
+      persistTokenResponse(request, token, { preserveRefreshToken: true })
+      request.yar.clear('brokerContextResponse')
+
+      return h.redirect('/')
+    } catch (error) {
+      console.error('Failed to exchange refresh token for token', error)
+      request.yar.set('brokerTokenResponse', {
+        error: 'refresh_failed',
         message: error.message
       })
       return h.redirect('/')
