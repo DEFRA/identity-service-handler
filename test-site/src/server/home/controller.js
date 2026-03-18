@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto'
 import Wreck from '@hapi/wreck'
 
 const redirectUrl = new URL(
@@ -11,6 +12,20 @@ const clientId =
 const clientSecret =
   process.env.OIDC_CLIENT_SECRET ??
   'S!uhSylf@klNy*HyI^~7vKz9EO"ACrmRTHrL>tpl)"[^~7TPaE3^u:<XfH9HYV#S{nj#@;nje"cKF6|bq9}h^AOci`sB",$lIv3]d|6"-l!U[]U40!th|PtkIhvC0u@J'
+const pkceVerifierKey = 'brokerPkceVerifier'
+const loginStateKey = 'brokerLoginState'
+
+export function createPkceVerifier() {
+  return randomBytes(32).toString('base64url')
+}
+
+export function createPkceChallenge(verifier) {
+  return createHash('sha256').update(verifier).digest('base64url')
+}
+
+function createState() {
+  return randomBytes(16).toString('base64url')
+}
 
 function formatForView(value) {
   if (value === undefined || value === null || value === '') {
@@ -82,8 +97,14 @@ export const signoutController = {
 }
 
 export const loginController = {
-  handler(_request, h) {
-    _request.yar.reset()
+  handler(request, h) {
+    request.yar.reset()
+
+    const codeVerifier = createPkceVerifier()
+    const state = createState()
+
+    request.yar.set(pkceVerifierKey, codeVerifier)
+    request.yar.set(loginStateKey, state)
 
     const authUrl = new URL('authorize', brokerBaseUrl)
     authUrl.searchParams.append('client_id', clientId)
@@ -91,6 +112,12 @@ export const loginController = {
     authUrl.searchParams.append('redirect_uri', redirectUrl.href)
     authUrl.searchParams.append('scope', 'openid offline_access')
     authUrl.searchParams.append('prompt', 'consent')
+    authUrl.searchParams.append('state', state)
+    authUrl.searchParams.append(
+      'code_challenge',
+      createPkceChallenge(codeVerifier)
+    )
+    authUrl.searchParams.append('code_challenge_method', 'S256')
 
     console.log(authUrl.href)
     return h.redirect(authUrl.href)
@@ -100,6 +127,9 @@ export const loginController = {
 export const loginCallbackController = {
   async handler(request, h) {
     const code = request.query.code
+    const state = request.query.state
+    const expectedState = request.yar.get(loginStateKey)
+    const codeVerifier = request.yar.get(pkceVerifierKey)
 
     if (!code) {
       request.yar.set('brokerTokenResponse', {
@@ -109,12 +139,29 @@ export const loginCallbackController = {
       return h.redirect('/')
     }
 
+    if (!state || !expectedState || state !== expectedState) {
+      request.yar.set('brokerTokenResponse', {
+        error: 'invalid_state',
+        error_description: 'Authorization response state did not match session'
+      })
+      return h.redirect('/')
+    }
+
+    if (!codeVerifier) {
+      request.yar.set('brokerTokenResponse', {
+        error: 'missing_code_verifier',
+        error_description: 'No PKCE code verifier in session, login first'
+      })
+      return h.redirect('/')
+    }
+
     const data = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       code,
-      redirect_uri: `${redirectUrl}`
+      redirect_uri: `${redirectUrl}`,
+      code_verifier: codeVerifier
     }).toString()
     const options = {
       payload: data,
@@ -129,6 +176,8 @@ export const loginCallbackController = {
       const res = await Wreck.post(`${brokerBaseUrl}token`, options)
       const token = JSON.parse(res.payload.toString())
 
+      request.yar.clear(pkceVerifierKey)
+      request.yar.clear(loginStateKey)
       persistTokenResponse(request, token)
       request.yar.clear('brokerContextResponse')
 
