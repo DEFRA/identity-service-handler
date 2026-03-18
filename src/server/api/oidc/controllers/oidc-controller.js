@@ -29,7 +29,7 @@ export const oidcController = {
         ],
         code_challenge_methods_supported: ['S256'],
         grant_types_supported: ['authorization_code', 'refresh_token'],
-        issuer: 'https://login.defra.gov.uk',
+        issuer: 'https://identity-service-handler.defra.gov.uk',
         authorization_response_iss_parameter_supported: true,
         response_modes_supported: ['form_post', 'fragment', 'query'],
         response_types_supported: ['code'],
