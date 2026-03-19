@@ -32,8 +32,7 @@
     "token_endpoint_auth_method": "client_secret_post",
     "secret": "+7czn34{.%B)pY{Fu6}ZcYy@GVKBsm#VdhMa1%SZ`yayQ|4/<{Y^gw1a;Y=evF)^1w9kF!=v!{INgp8X#lFdZ-n@Uv@sIa+s=uxI;W7X7$JCQ-huc<VwKjkHnNCV*tv:",
     "redirect_uris": [
-      "https://Livestockinformationb2cdev.b2clogin.com/Livestockinformationb2cdev.onmicrosoft.com/oauth2/authresp",
-      "https://jwt.ms",
+      "https://livestockinformationb2cdev.b2clogin.com/livestockinformationb2cdev.onmicrosoft.com/oauth2/authresp",
       "https://localhost:3005/callback",
       "https://fakelocal:3005/callback"
     ],
