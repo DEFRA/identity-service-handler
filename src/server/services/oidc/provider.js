@@ -121,8 +121,7 @@ export function buildBrokerConfiguration({
       return {
         accountId: sub,
         async claims(use) {
-          console.log('claims', use)
-          return await userService.getUserContext(ctx.request, sub)
+          return await userService.getUserContext(sub)
         }
       }
     }
@@ -180,7 +179,7 @@ export function buildBrokerProvider({
 
   // Dynamic client loading (OPTION A: private_key_jwt only)
   oidc.Client.find = async (clientId) => {
-    const c = await clientsService.getClient(clientId, Provider.ctx)
+    const c = await clientsService.getClient(clientId)
     if (!c) return undefined
 
     const tokenEndpointAuthMethod =

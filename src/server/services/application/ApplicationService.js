@@ -7,17 +7,12 @@ export class ApplicationService {
     this.init = false
     this.helperConfig = config.get('idService.helper')
     this._impl = this.helperConfig.useFakeClient
-      ? new ServiceFake({
-          config
-        })
-      : new Service({
-          config,
-          baseUrl: this.helperConfig.baseUrl
-        })
+      ? new ServiceFake({ config })
+      : new Service({ config, baseUrl: this.helperConfig.baseUrl })
   }
 
-  async get(request, id) {
-    const headers = await generateHeaders('helper', null)
+  async get(id) {
+    const headers = generateHeaders('helper', null)
     await this.initFake()
     return await this._impl.get(headers, id)
   }

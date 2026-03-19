@@ -21,7 +21,7 @@ describe('#contextController', () => {
 
     const result = await contextController(userService).handler(request, h)
 
-    expect(mockGetUserContext).toHaveBeenCalledWith(request, 'broker-sub-123')
+    expect(mockGetUserContext).toHaveBeenCalledWith('broker-sub-123')
     expect(response).toHaveBeenCalledWith(userContext)
     expect(code).toHaveBeenCalledWith(200)
     expect(result).toBe('final-response')
@@ -38,7 +38,7 @@ describe('#contextController', () => {
 
     await contextController(userService).handler(request, h)
 
-    expect(mockGetUserContext).toHaveBeenCalledWith(request, undefined)
+    expect(mockGetUserContext).toHaveBeenCalledWith(undefined)
     expect(response).toHaveBeenCalledWith(undefined)
     expect(code).toHaveBeenCalledWith(200)
   })
