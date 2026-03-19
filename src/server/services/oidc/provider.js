@@ -4,7 +4,6 @@ import { createLogger } from '../../common/helpers/logging/logger.js'
 import { SIGNOUT_REDIRECT_COOKIE_NAME } from '../../oidc/constants.js'
 
 const logger = createLogger()
-
 const CUSTOM_USERINFO_CLAIM = [
   'email',
   'given_name',
@@ -15,11 +14,12 @@ const CUSTOM_USERINFO_CLAIM = [
 ]
 
 export function resolveClientGrantTypes(client = {}) {
-  if (Array.isArray(client.grant_types) && client.grant_types.length > 0) {
-    return client.grant_types
-  }
+  const grantTypes = new Set(client.grant_types || ['authorization_code'])
 
-  return ['authorization_code', 'refresh_token']
+  if (!client.scopes?.includes('offline_access')) {
+    grantTypes.delete('refresh_token')
+  }
+  return Array.from(grantTypes)
 }
 
 export function buildBrokerConfiguration({
@@ -177,25 +177,22 @@ export function buildBrokerProvider({
     }
   })
 
-  // Dynamic client loading (OPTION A: private_key_jwt only)
+  // Dynamic client loading
   oidc.Client.find = async (clientId) => {
     const c = await clientsService.getClient(clientId)
     if (!c) return undefined
-
-    const tokenEndpointAuthMethod =
-      c.token_endpoint_auth_method ?? 'private_key_jwt'
-
     return new oidc.Client({
       client_id: c.client_id,
-      client_name: c.client_name,
-      redirect_uris: c.redirect_uris,
+      client_name: c.name,
+      redirect_uris: c.redirect_uri,
       post_logout_redirect_uris: c.post_logout_redirect_uris ?? [],
       response_types: c.response_types ?? ['code'],
       grant_types: resolveClientGrantTypes(c),
-      token_endpoint_auth_method: tokenEndpointAuthMethod,
-      client_secret: c.client_secret ?? c.secret,
-      jwks: c.jwks,
-      scope: c.scope ?? 'openid'
+      token_endpoint_auth_method:
+        c.token_endpoint_auth_method ?? 'client_secret_post',
+      client_secret: c.secret,
+      ...(c.jwks && { jwks: c.jwks }),
+      scope: c.scopes?.length ? c.scopes.join(' ') : 'openid'
     })
   }
 

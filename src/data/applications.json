@@ -1,12 +1,13 @@
 [
   {
+    "id": "1",
+    "name": "Auth Test Application",
     "client_id": "a3d4e5f6-7890-4b1c-a2d3-e4f567890abc",
-    "client_name": "Auth Test Application",
-    "scope": "openid profile offline_access",
-    "grant_types": ["authorization_code", "refresh_token"],
-    "token_endpoint_auth_method": "client_secret_post",
-    "secret": "S!uhSylf@klNy*HyI^~7vKz9EO\"ACrmRTHrL>tpl)\"[^~7TPaE3^u:<XfH9HYV#S{nj#@;nje\"cKF6|bq9}h^AOci`sB\",$lIv3]d|6\"-l!U[]U40!th|PtkIhvC0u@J",
-    "redirect_uris": [
+    "secret": "secret123",
+    "tenant_name": "auth-test",
+    "description": "Auth Test Application",
+    "scopes": ["openid", "profile", "offline_access"],
+    "redirect_uri": [
       "https://localhost:3005/callback",
       "https://fakelocal:3005/callback"
     ],
@@ -25,13 +26,14 @@
     "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJF9L2hTCInTZx\n3ZHhCjqWQ6NmWnJGrJpJ5O7MP/y341/QOzcEFxltS7GCTlxqJIVNm5wo06ZZSY2K\nQTfbRINfcbEQWen01QGbf9id+hrZYjHTJ06WXSLJmm6KXykrqbafDuKqEWPKJ8sz\nu7L2tP3T324BmLTexIF8lPZEOHaiUXzQz5wTmWC1dLGSkXUuRocYj83LOC5nKo9/\nq5rYwMQwqcdPoSvkd8kb+p7Qu8vySVa4qURedbumwDtg4p6hGRQSytoK7AjhZI+2\nOs14z5pS1zRapfu4224fZV7e9waLY64MVgOq4iBHRAGyAyJHyUWbLXp/OBCAAyw1\nS/wrjiqfAgMBAAECggEAX0eWgY+h61jyDwl4sTPzhncN2NVKCAqIIDMEomo/B7II\nF9W2v41iUtLmjGMsjm43awor93ww+WVMVxGHsbDIvlRUHPc9TvAODuuIa3GxfwZz\nrSSWq8/9R6CQd6eXDkUfbkXTR9lter9YHG724MXo7paSvNbp/BMHd0vtU22daFJz\n0u18lO0THDcQ6wGpVL3seIXO09Pa75FzgrhWUO5ZRSxdEgsiNK9hsZFt4ObAKI/v\nJgNhxW6PcbSGg4FGB9MkbkVuLampBuqUzIm+gcYE40obpUqstan/W3jTCRO1/fXa\n3JS9XwKlCv6qgRFegbSugx905lZDky11bcpjkSKGYQKBgQD6OQf0BGdQzimGw1I/\nICtlczEU7vy6I67yMP5bq2w5Ue4Ui3DSqeBYeTnI6Rwucm2zxsSPMeuljHSaD+uX\nIAxiHLLl8bvskUtsnQK2sfLJqiwJbasDx8Ym7ZYUqyOJAITRU2wAPg99Ng5aZFrc\nKUi6dzcB8b8MX2kLa7L3cs8zpQKBgQDNvGgPdIUheDWXSV9LgNbCnoZmEx3iT/pa\nOxb2WoDP9e98kL4/C/L24Ia8GPwbWFnPBN4D4huSyU3nW+pBK/Wb9DtEorP/BkyM\n7cR6zMLXHI7Q+DTTmS1gNkKW7JLDq68SY4HSuF9ytaKQYvYizvfrEm+P4rEo+9MC\nIAgjuVKB8wKBgQDypdWJk6+g05u/fK/IWWjb433oP+1CkJH5ePtgZ/b2CvZmY+ZP\n076j7ULVCwFyJTMu0AUSm6VZj8APGnsqvUBk8FGn3OiQ+0D6HbRg+GVpnKVBq2DY\ntKT6YRFWD7PRCnjCCTTFc2lP0djPXVwi/cHyWOM19nl/BRL3qUQO4/38pQKBgHZD\nrKnduD3SJTRPKCl16X48tFNu/8m9YdOGjh+VTOC+pik75zDExKjnzmvIDPwHILEh\nQiKHUoRhlZe+PX2zMF+y2HMO+FtMGqsUbtKMbCBNuUcktvE/51acOlEZsxAp29y9\nOL6R38RH5ygKyySdRuRpV5olnONLRzO8iBFJEcXDAoGAF1X+ncZYfuJ6HpTEL76f\n7PejcD5af54NA3LejftqGQ80rSwSp7Th20ZWSzZ/ofxKpqpK05zEeE88p9Boi68N\npomJdxWg0quQ42DNH2ro8AY3eXZwrbJruxl4/6ke9BkA/EJyRn0d+ZF1N5RMRWDv\ns9KpaeRSGw09CyJA6nhOEE8=\n-----END PRIVATE KEY-----"
   },
   {
+    "id": "2",
+    "name": "LI Test Application",
     "client_id": "3f061cdf-184e-4eda-8386-aa723544d700",
-    "client_name": "LI Test Application",
-    "scope": "openid profile offline_access",
-    "grant_types": ["authorization_code", "refresh_token"],
-    "token_endpoint_auth_method": "client_secret_post",
     "secret": "+7czn34{.%B)pY{Fu6}ZcYy@GVKBsm#VdhMa1%SZ`yayQ|4/<{Y^gw1a;Y=evF)^1w9kF!=v!{INgp8X#lFdZ-n@Uv@sIa+s=uxI;W7X7$JCQ-huc<VwKjkHnNCV*tv:",
-    "redirect_uris": [
+    "tenant_name": "li-test",
+    "description": "LI Test Application",
+    "scopes": ["openid", "profile", "offline_access"],
+    "redirect_uri": [
       "https://livestockinformationb2cdev.b2clogin.com/livestockinformationb2cdev.onmicrosoft.com/oauth2/authresp",
       "https://localhost:3005/callback",
       "https://fakelocal:3005/callback"

@@ -23,17 +23,29 @@ describe('oidc provider configuration', () => {
     ])
   })
 
-  test('should allow refresh tokens for clients that do not override grant types', () => {
-    expect(resolveClientGrantTypes({})).toEqual([
-      'authorization_code',
-      'refresh_token'
-    ])
+  test('should default to authorization_code only when client has no offline_access scope', () => {
+    expect(resolveClientGrantTypes({})).toEqual(['authorization_code'])
+  })
+
+  test('should retain refresh_token when client has offline_access scope and explicit grant types', () => {
+    expect(
+      resolveClientGrantTypes({
+        grant_types: ['authorization_code', 'refresh_token'],
+        scopes: ['openid', 'offline_access']
+      })
+    ).toEqual(['authorization_code', 'refresh_token'])
   })
 
   test('should preserve explicitly configured client grant types', () => {
     expect(
+      resolveClientGrantTypes({ grant_types: ['authorization_code'] })
+    ).toEqual(['authorization_code'])
+  })
+
+  test('should strip refresh_token from explicit grant types when client has no offline_access scope', () => {
+    expect(
       resolveClientGrantTypes({
-        grant_types: ['authorization_code']
+        grant_types: ['authorization_code', 'refresh_token']
       })
     ).toEqual(['authorization_code'])
   })

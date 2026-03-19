@@ -1,24 +1,31 @@
 import * as service from './service.js'
-import { ServiceFake } from './service.fake.js'
+import * as serviceFake from './service.fake.js'
+
+/**
+ * @typedef {import('./service.js').Application} Application
+ */
+
+/**
+ * @typedef {import('../../../config/config.js').AppConfig} AppConfig
+ */
 
 export class ApplicationService {
+  /**
+   * @param {AppConfig} config
+   */
   constructor(config) {
-    this.init = false
-    this.helperConfig = config.get('idService.helper')
-    this._impl = this.helperConfig.useFakeClient
-      ? new ServiceFake({ config })
+    this._impl = config.get('idService.helper')?.useFakeClient
+      ? serviceFake
       : service
   }
 
-  async get(id) {
-    await this.initFake()
-    return await this._impl.get(id)
-  }
-
-  async initFake() {
-    if (!this.init && this.helperConfig.useFakeClient) {
-      await this._impl.init()
-      this.init = true
-    }
+  /**
+   * Fetches an application by client ID from the helper service.
+   *
+   * @param {string} clientId
+   * @returns {Promise<Application>}
+   */
+  async get(clientId) {
+    return this._impl.get(clientId)
   }
 }
