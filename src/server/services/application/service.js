@@ -1,20 +1,6 @@
-import Wreck from '@hapi/wreck'
+import helperClient from '../../clients/helperClient.js'
 
-export class Service {
-  constructor({ config, baseUrl }) {
-    this.config = config
-    this.baseUrl = baseUrl
-  }
-
-  async get(headers, id) {
-    const result = await Wreck.get(`${this.baseUrl}/applications/${id}`, {
-      headers
-    })
-
-    if (!result.payload) {
-      throw new Error()
-    }
-
-    return result
-  }
+export async function get(id) {
+  const result = await helperClient.get(`/applications/${id}`)
+  return result.payload
 }

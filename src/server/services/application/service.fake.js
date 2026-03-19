@@ -29,7 +29,7 @@ export class ServiceFake {
     }
   }
 
-  async get(headers, id) {
+  async get(id) {
     return this.applications.get(id)
   }
 }
