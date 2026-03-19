@@ -24,7 +24,7 @@ export class UserService {
   }
 
   async getUserContext(request, id) {
-    const headers = await generateHeaders(request, 'helper', null)
+    const headers = await generateHeaders('helper', null)
     await this.initFake()
 
     const raw = await this.redis.get(this.key(UserContextKey, id))

@@ -1,5 +1,6 @@
 import { config } from '../../../../config/config.js'
 import { jwtVerify, createRemoteJWKSet } from 'jose'
+import { set } from '../request-context.js'
 
 export const auth = {
   plugin: {
@@ -56,6 +57,13 @@ export const auth = {
         }
       }))
       server.auth.strategy('bearer', 'bearer')
+
+      server.ext('onCredentials', (request, h) => {
+        if (request.auth.isAuthenticated) {
+          set('operator_id', request.auth.credentials.sub)
+        }
+        return h.continue
+      })
     }
   }
 }
