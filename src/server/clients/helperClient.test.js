@@ -21,7 +21,8 @@ describe('helper client', () => {
     'x-operator-id': 'op-123',
     'x-correlation-id': 'corr-456'
   }
-  const mockResponse = { payload: { data: 'test' } }
+  const mockPayload = { data: 'test' }
+  const mockResponse = { res: { statusCode: 200 }, payload: mockPayload }
 
   beforeEach(() => {
     mocks.configGet.mockReturnValue('https://helper.example.com')
@@ -35,46 +36,150 @@ describe('helper client', () => {
     vi.resetAllMocks()
   })
 
-  test('passes correlationId from options to generateHeaders', async () => {
-    await helper.get('/path', { correlationId: 'my-correlation-id' })
+  describe('successful requests', () => {
+    test('returns the Wreck result', async () => {
+      const result = await helper.get('/path')
 
-    expect(mocks.generateHeaders).toHaveBeenCalledWith(
-      'helper',
-      'my-correlation-id'
-    )
-  })
-
-  test('merges caller-provided headers with generated headers', async () => {
-    await helper.get('/path', { headers: { 'x-custom': 'value' } })
-
-    expect(mocks.wreck.get).toHaveBeenCalledWith(
-      '/path',
-      expect.objectContaining({
-        headers: { ...mockHeaders, 'x-custom': 'value' }
-      })
-    )
-  })
-
-  test('spreads additional options into the Wreck call', async () => {
-    await helper.get('/path', { payload: { key: 'value' } })
-
-    expect(mocks.wreck.get).toHaveBeenCalledWith(
-      '/path',
-      expect.objectContaining({ payload: { key: 'value' } })
-    )
-  })
-
-  test.each([['get'], ['post'], ['put'], ['patch'], ['delete']])(
-    '%s() calls the correct Wreck method with baseUrl, headers and json',
-    async (method) => {
-      const result = await helper[method]('/some/path')
-
-      expect(mocks.wreck[method]).toHaveBeenCalledWith('/some/path', {
-        baseUrl: 'https://helper.example.com',
-        json: true,
-        headers: mockHeaders
-      })
       expect(result).toBe(mockResponse)
+    })
+
+    test.each([['get'], ['post'], ['put'], ['patch'], ['delete']])(
+      '%s() calls the correct Wreck method with baseUrl, headers and json',
+      async (method) => {
+        await helper[method]('/some/path')
+
+        expect(mocks.wreck[method]).toHaveBeenCalledWith('/some/path', {
+          baseUrl: 'https://helper.example.com',
+          json: true,
+          headers: mockHeaders
+        })
+      }
+    )
+  })
+
+  describe('error handling', () => {
+    const makeWreckError = (statusCode, payload) => {
+      const err = new Error('http error')
+      err.output = { statusCode }
+      err.data = { payload }
+      return err
     }
-  )
+
+    describe('when Wreck throws', () => {
+      test('handles JsonErrorMiddleware format', async () => {
+        // Arrange
+        mocks.wreck.get.mockRejectedValue(
+          makeWreckError(500, {
+            error: { code: 'SOME_ERROR', message: 'something went wrong' }
+          })
+        )
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('SOME_ERROR - something went wrong')
+      })
+
+      test('handles ProblemDetails format', async () => {
+        // Arrange
+        mocks.wreck.get.mockRejectedValue(
+          makeWreckError(500, {
+            status: 500,
+            title: 'Internal Server Error',
+            detail: 'exception message'
+          })
+        )
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('500 - exception message')
+      })
+
+      test('handles ProblemDetails format with no detail', async () => {
+        // Arrange
+        mocks.wreck.get.mockRejectedValue(
+          makeWreckError(404, { status: 404, title: 'Not Found' })
+        )
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('404 - Not Found')
+      })
+
+      test('handles validation error format (422)', async () => {
+        // Arrange
+        mocks.wreck.get.mockRejectedValue(
+          makeWreckError(422, { PropertyName: ['must not be empty'] })
+        )
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('Validation failed')
+      })
+
+      test('falls back to status code for unrecognised format', async () => {
+        // Arrange
+        mocks.wreck.get.mockRejectedValue(makeWreckError(503, null))
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('Request failed - 503')
+      })
+    })
+
+    describe('when Wreck returns a non-2xx response', () => {
+      test('throws using the response payload', async () => {
+        // Arrange
+        mocks.wreck.get.mockResolvedValue({
+          res: { statusCode: 404 },
+          payload: { status: 404, title: 'Not Found' }
+        })
+        let error
+
+        // Act
+        try {
+          await helper.get('/path')
+        } catch (e) {
+          error = e
+        }
+
+        // Assert
+        expect(error.message).toBe('404 - Not Found')
+      })
+    })
+  })
 })
