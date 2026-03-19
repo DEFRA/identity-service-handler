@@ -46,13 +46,13 @@ export const config = convict({
       key: {
         doc: 'Path to TLS key file',
         format: String,
-        default: path.resolve(dirname, '../../certs/fakelocal-key.pem'),
+        default: path.resolve(dirname, '../../certs/localhost-key.pem'),
         env: 'TLS_KEY'
       },
       cert: {
         doc: 'Path to TLS cert file',
         format: String,
-        default: path.resolve(dirname, '../../certs/fakelocal.pem'),
+        default: path.resolve(dirname, '../../certs/localhost.pem'),
         env: 'TLS_CERT'
       }
     }
