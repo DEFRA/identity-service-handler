@@ -21,7 +21,7 @@ import { contentSecurityPolicy } from './common/helpers/content-security-policy.
 import { requestContext } from './common/helpers/request-context.js'
 import { createLogger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
-import { buildBrokerProvider } from './services/oidc/provider.js'
+import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { UserService } from './services/user/UserService.js'
