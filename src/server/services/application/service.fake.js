@@ -1,35 +1,17 @@
-import path from 'path'
-import fs from 'node:fs/promises'
-import { createLogger } from '../../common/helpers/logging/logger.js'
+import data from '../../../data/applications.json' with { type: 'json' }
 
-const logger = createLogger()
+/**
+ * @typedef {import('./service.js').Application} Application
+ */
 
-export class ServiceFake {
-  constructor({ config, request }) {
-    this.config = config
-    this.applications = new Map()
-  }
+const applications = new Map(data.map((app) => [app.client_id, app]))
 
-  async init() {
-    const filePath = path.join(process.cwd(), 'src/data/applications.json')
-    try {
-      const stats = await fs.stat(filePath)
-      if (stats.isFile()) {
-        const content = await fs.readFile(filePath, 'utf-8')
-        const applicationData = JSON.parse(content)
-        for (const app of applicationData) {
-          this.applications.set(app.client_id, app)
-        }
-      }
-    } catch (error) {
-      logger.warn(
-        'Could not load application data from data folder:',
-        error.message
-      )
-    }
-  }
-
-  async get(headers, id) {
-    return this.applications.get(id)
-  }
+/**
+ * Fetches an application by client ID from the helper service.
+ *
+ * @param {string} clientId
+ * @returns {Promise<Application>}
+ */
+export async function get(clientId) {
+  return applications.get(clientId)
 }

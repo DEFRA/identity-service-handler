@@ -39,7 +39,7 @@ describe('cphsController()', () => {
     const result = await cphsController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserContext).toHaveBeenCalledWith(request, undefined)
+    expect(mocks.getUserContext).toHaveBeenCalledWith(undefined)
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
@@ -116,7 +116,7 @@ describe('cphsSubmitController()', () => {
     ).handler(request, h)
 
     // Assert
-    expect(mocks.getUserContext).toHaveBeenCalledWith(request, 'user-123')
+    expect(mocks.getUserContext).toHaveBeenCalledWith('user-123')
     expect(setCphs).toHaveBeenCalledWith(['12/345/6789'])
     expect(getFullName).toHaveBeenCalledTimes(1)
     expect(getEmail).toHaveBeenCalledTimes(2)

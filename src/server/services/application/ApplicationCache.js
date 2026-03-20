@@ -10,11 +10,11 @@ export class ApplicationCache {
     return `${this.prefix}:${clientId}`
   }
 
-  async getClient(clientId, requestCtx) {
+  async getClient(clientId) {
     const cached = await this.redis.get(this.key(clientId))
     if (cached) return JSON.parse(cached)
 
-    const client = await this.applicationClient.get(requestCtx, clientId)
+    const client = await this.applicationClient.get(clientId)
     if (!client) return null
 
     await this.redis.set(

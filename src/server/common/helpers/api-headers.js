@@ -1,20 +1,18 @@
 import { randomUUID } from 'crypto'
 import { config } from '../../../config/config.js'
+import { get } from './request-context.js'
 
-export async function generateHeaders(request, serviceName, correlationId) {
-  const operatorId =
-    request?.auth?.credentials?.sub ?? request?.oidc?.session?.accountId
-  const processedCorrelationId = correlationId || randomUUID()
+export function generateHeaders(serviceName, correlationId) {
+  const apiKey = config.get(`idService.${serviceName}.apiKey`)
 
-  if (!config.get(`idService.${serviceName}.apiKey`)) {
+  if (!apiKey) {
     throw new Error(`No API key found for service ${serviceName}`)
   }
 
-  const apiKey = config.get(`idService.${serviceName}.apiKey`)
-
   return {
     'x-api-key': apiKey,
-    'x-api-operator-id': operatorId || '00000000-0000-0000-0000-000000000000',
-    'x-api-correlation-id': processedCorrelationId
+    'x-operator-id':
+      get('operator_id') ?? '00000000-0000-0000-0000-000000000000',
+    'x-correlation-id': correlationId ?? randomUUID()
   }
 }

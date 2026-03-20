@@ -9,7 +9,7 @@ export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationDraftService(request)
-    const availableCphs = await getAvailableCphs(userService, request, sub)
+    const availableCphs = await getAvailableCphs(userService, sub)
 
     return h.view(
       'delegation/cphs',
@@ -39,7 +39,7 @@ export const cphsSubmitController = (delegationService, userService) => ({
       }),
       failAction: async (request, h, err) => {
         const sub = request.auth?.credentials?.sub
-        const availableCphs = await getAvailableCphs(userService, request, sub)
+        const availableCphs = await getAvailableCphs(userService, sub)
 
         return h
           .view(
@@ -66,7 +66,7 @@ export const cphsSubmitController = (delegationService, userService) => ({
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationDraftService(request)
     const cphs = normaliseCheckboxPayload(request.payload.cphs)
-    const availableCphs = await getAvailableCphs(userService, request, sub)
+    const availableCphs = await getAvailableCphs(userService, sub)
 
     if (cphs.some((cph) => !availableCphs.includes(cph))) {
       return h
@@ -122,8 +122,8 @@ function getErrorFromValidation(validationError) {
   return 'Select at least one County Parish Holding'
 }
 
-async function getAvailableCphs(userService, request, sub) {
-  const userContext = await userService.getUserContext(request, sub)
+async function getAvailableCphs(userService, sub) {
+  const userContext = await userService.getUserContext(sub)
 
   return (userContext.primary_cph || [])
     .filter((cph) => cph.role === 'Owner')

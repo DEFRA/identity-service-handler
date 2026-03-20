@@ -18,9 +18,10 @@ import { sessionCache } from './common/helpers/session-cache/session-cache.js'
 import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './common/helpers/content-security-policy.js'
+import { requestContext } from './common/helpers/request-context.js'
 import { createLogger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
-import { buildBrokerProvider } from './services/oidc/provider.js'
+import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { UserService } from './services/user/UserService.js'
@@ -115,6 +116,7 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
+    requestContext,
     {
       plugin: auth.plugin,
       options: { brokerProvider }

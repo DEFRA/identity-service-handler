@@ -1,6 +1,5 @@
-import { Service } from './service.js'
+import * as service from './service.js'
 import { ServiceFake } from './service.fake.js'
-import { generateHeaders } from '../../common/helpers/api-headers.js'
 
 const UserContextKey = 'userContext'
 
@@ -10,27 +9,21 @@ export class UserService {
     this.init = false
     this.helperConfig = config.get('idService.helper')
     this._impl = this.helperConfig.useFakeClient
-      ? new ServiceFake({
-          config
-        })
-      : new Service({
-          config,
-          baseUrl: this.helperConfig.baseUrl
-        })
+      ? new ServiceFake({ config })
+      : service
   }
 
   key(prefix, id) {
     return `${prefix}:${id}`
   }
 
-  async getUserContext(request, id) {
-    const headers = await generateHeaders(request, 'helper', null)
+  async getUserContext(id) {
     await this.initFake()
 
     const raw = await this.redis.get(this.key(UserContextKey, id))
     if (raw) return JSON.parse(raw)
 
-    const userContext = await this._impl.getUserContext(headers, id)
+    const userContext = await this._impl.getUserContext(id)
     await this.redis.set(
       this.key(UserContextKey, id),
       JSON.stringify(userContext),

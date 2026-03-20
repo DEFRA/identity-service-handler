@@ -9,9 +9,7 @@ const brokerBaseUrl = new URL(
 )
 const clientId =
   process.env.OIDC_CLIENT_ID ?? 'a3d4e5f6-7890-4b1c-a2d3-e4f567890abc'
-const clientSecret =
-  process.env.OIDC_CLIENT_SECRET ??
-  'S!uhSylf@klNy*HyI^~7vKz9EO"ACrmRTHrL>tpl)"[^~7TPaE3^u:<XfH9HYV#S{nj#@;nje"cKF6|bq9}h^AOci`sB",$lIv3]d|6"-l!U[]U40!th|PtkIhvC0u@J'
+const clientSecret = process.env.OIDC_CLIENT_SECRET ?? 'secret123'
 const pkceVerifierKey = 'brokerPkceVerifier'
 const loginStateKey = 'brokerLoginState'
 

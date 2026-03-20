@@ -1,80 +1,77 @@
-import { vi } from 'vitest'
+import { config } from '../../../config/config.js'
+import * as requestContext from './request-context.js'
 import { generateHeaders } from './api-headers.js'
 
-const mockRandomUUID = vi.fn()
-const mockConfigGet = vi.fn()
+const mocks = {
+  configGet: vi.spyOn(config, 'get'),
+  contextGet: vi.spyOn(requestContext, 'get')
+}
 
-vi.mock('crypto', async () => {
-  const crypto = await vi.importActual('crypto')
+describe('generateHeaders()', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
 
-  return {
-    ...crypto,
-    randomUUID: () => mockRandomUUID()
-  }
-})
+  test('it returns headers with the provided correlation id', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('helper-api-key')
+    mocks.contextGet.mockReturnValue('operator-123')
 
-vi.mock('../../../config/config.js', () => ({
-  config: {
-    get: (...args) => mockConfigGet(...args)
-  }
-}))
+    // Act
+    const result = await generateHeaders('helper', 'provided-correlation-id')
 
-describe('#apiHeaders', () => {
-  const request = {
-    auth: {
-      credentials: {
-        sub: 'operator-123'
-      }
+    // Assert
+    expect(result).toEqual({
+      'x-api-key': 'helper-api-key',
+      'x-operator-id': 'operator-123',
+      'x-correlation-id': 'provided-correlation-id'
+    })
+    expect(mocks.configGet).toHaveBeenCalledWith('idService.helper.apiKey')
+  })
+
+  test('it uses the nil UUID when no operator id is in context', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('helper-api-key')
+    mocks.contextGet.mockReturnValue(null)
+
+    // Act
+    const result = await generateHeaders('helper', 'provided-correlation-id')
+
+    // Assert
+    expect(result['x-operator-id']).toBe('00000000-0000-0000-0000-000000000000')
+  })
+
+  test('it generates a correlation id when one is not provided', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('helper-api-key')
+    mocks.contextGet.mockReturnValue('operator-123')
+
+    // Act
+    const result = await generateHeaders('helper')
+
+    // Assert
+    expect(result['x-correlation-id']).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  })
+
+  test('it throws when no api key is found for the service', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue(undefined)
+    let error
+
+    // Act
+    try {
+      await generateHeaders('missing-service')
+    } catch (e) {
+      error = e
     }
-  }
 
-  beforeEach(() => {
-    mockRandomUUID.mockReset()
-    mockConfigGet.mockReset()
-  })
-
-  test('Should return headers using provided correlation id', async () => {
-    mockConfigGet.mockReturnValue('helper-api-key')
-
-    const headers = await generateHeaders(
-      request,
-      'helper',
-      'provided-correlation-id'
-    )
-
-    expect(headers).toEqual({
-      'x-api-key': 'helper-api-key',
-      'x-api-operator-id': 'operator-123',
-      'x-api-correlation-id': 'provided-correlation-id'
-    })
-    expect(mockConfigGet).toHaveBeenCalledWith('idService.helper.apiKey')
-    expect(mockRandomUUID).not.toHaveBeenCalled()
-  })
-
-  test('Should generate correlation id when one is not provided', async () => {
-    mockConfigGet.mockReturnValue('helper-api-key')
-    mockRandomUUID.mockReturnValue('generated-correlation-id')
-
-    const headers = await generateHeaders(request, 'helper')
-
-    expect(headers).toEqual({
-      'x-api-key': 'helper-api-key',
-      'x-api-operator-id': 'operator-123',
-      'x-api-correlation-id': 'generated-correlation-id'
-    })
-    expect(mockConfigGet).toHaveBeenCalledWith('idService.helper.apiKey')
-    expect(mockRandomUUID).toHaveBeenCalledTimes(1)
-  })
-
-  test('Should throw when api key is missing for service', async () => {
-    mockConfigGet.mockReturnValue(undefined)
-
-    await expect(generateHeaders(request, 'missing-service')).rejects.toThrow(
-      'No API key found for service missing-service'
-    )
-    expect(mockConfigGet).toHaveBeenCalledWith(
+    // Assert
+    expect(error).toBeInstanceOf(Error)
+    expect(error?.message).toBe('No API key found for service missing-service')
+    expect(mocks.configGet).toHaveBeenCalledWith(
       'idService.missing-service.apiKey'
     )
-    expect(mockRandomUUID).toHaveBeenCalledTimes(1)
   })
 })
