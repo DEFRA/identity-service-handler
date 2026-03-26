@@ -55,7 +55,8 @@ export async function createServer() {
     issuer: config.get('idService.oidc.issuer'),
     redis,
     clientsService,
-    userService
+    userService,
+    subjectsService
   })
 
   const serverOptions = {

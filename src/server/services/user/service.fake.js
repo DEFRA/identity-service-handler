@@ -1,46 +1,52 @@
-import fs from 'node:fs/promises'
-import path from 'path'
-import { createLogger } from '../../common/helpers/logging/logger.js'
+import { SubjectsService } from '../subjects.js'
+import data from '../../../data/users.json' with { type: 'json' }
 
-const logger = createLogger()
+/**
+ * @typedef {import('./service.js').UserDetails} UserDetails
+ */
 
-export class ServiceFake {
-  constructor({ config }) {
-    this.config = config
-    this.users = new Map()
+/**
+ * @typedef {import('./service.js').UserCphAssignments} UserCphAssignments
+ */
+
+const DEFAULT_USER = SubjectsService.generateBrokerSub(
+  'dummy-issuer',
+  '043f9538-b6b3-41aa-8010-3fb4f310e2b1',
+  'default_user@example.com'
+)
+
+const users = new Map(
+  data.map((user) => [
+    SubjectsService.generateBrokerSub(user.iss, user.sub, user.email),
+    user
+  ])
+)
+
+/**
+ * Fetches the users CPH assignments for a given user identifier.
+ *
+ * @param {string} sub
+ * @returns {Promise<UserCphAssignments>}
+ */
+export async function getUserCphs(sub) {
+  const context = users.get(sub) || users.get(DEFAULT_USER)
+  return {
+    primary_cph: context.primary_cph || [],
+    delegated_cph: context.delegated_cph || []
   }
+}
 
-  async init() {
-    const dataDir = path.join(process.cwd(), 'src/data/users')
-    try {
-      const files = await fs.readdir(dataDir)
-      for (const file of files) {
-        if (path.extname(file) !== '.json') {
-          continue
-        }
-        const filePath = path.join(dataDir, file)
-        const stats = await fs.stat(filePath)
-        if (stats.isFile()) {
-          const content = await fs.readFile(filePath, 'utf-8')
-          const userData = JSON.parse(content)
-          const fileNameWithoutExt = path.parse(file).name
-          this.users.set(fileNameWithoutExt, userData)
-        }
-      }
-    } catch (error) {
-      logger.warn('Could not load user data from data folder:', error.message)
-    }
-  }
-
-  async getUserContext(id) {
-    const user = [...this.users.entries()].find((u) => u[1].sub === id)
-
-    if (!user) {
-      const defaultUser = this.users.get('default_user@example.com')
-      defaultUser.sub = id
-      return defaultUser
-    }
-
-    return user[1]
+/**
+ * Fetches the details for a given user identifier.
+ *
+ * @param {string} sub
+ * @returns {Promise<UserDetails>}
+ */
+export async function getUserDetails(sub) {
+  const context = users.get(sub) || users.get(DEFAULT_USER)
+  return {
+    display_name: context.display_name || '',
+    given_name: context.given_name || '',
+    family_name: context.family_name || ''
   }
 }

@@ -48,9 +48,10 @@ export function create({
     const claims = jwt.decode(tokens.id_token)
 
     // Map upstream (iss, sub) to broker sub
-    const brokerSub = await subjectsService.getOrCreateBrokerSub(
+    const { sub: brokerSub } = await subjectsService.getOrCreateBrokerSub(
       claims.iss,
-      claims.sub
+      claims.sub,
+      claims.email
     )
 
     // Set broker SSO cookie

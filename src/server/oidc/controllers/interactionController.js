@@ -1,4 +1,10 @@
-import * as oidc from 'openid-client'
+import {
+  buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
+  randomNonce,
+  randomPKCECodeVerifier,
+  randomState
+} from 'openid-client'
 
 export function create({
   config,
@@ -94,14 +100,13 @@ export function create({
     const scope = `openid offline_access ${b2cConfig.clientId}`
 
     // (recommended) PKCE + state
-    const pkceCodeVerifier = oidc.randomPKCECodeVerifier()
-    const pkceCodeChallenge =
-      await oidc.calculatePKCECodeChallenge(pkceCodeVerifier)
+    const pkceCodeVerifier = randomPKCECodeVerifier()
+    const pkceCodeChallenge = await calculatePKCECodeChallenge(pkceCodeVerifier)
 
-    const state = oidc.randomState()
+    const state = randomState()
 
     // (OIDC) nonce is still useful for id_token replay protection
-    const nonce = oidc.randomNonce()
+    const nonce = randomNonce()
 
     // store correlation for callback
     await upstreamStateStore.put(state, { uid, nonce, pkceCodeVerifier }, 600)
@@ -118,7 +123,7 @@ export function create({
     }
 
     // Build authorize URL and redirect the user to B2C (hosted UI)
-    const redirectTo = oidc.buildAuthorizationUrl(b2cConfiguration, parameters)
+    const redirectTo = buildAuthorizationUrl(b2cConfiguration, parameters)
     return h.redirect(redirectTo.href)
   }
 }
