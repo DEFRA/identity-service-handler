@@ -36,7 +36,11 @@
     "redirect_uri": [
       "https://livestockinformationb2cdev.b2clogin.com/livestockinformationb2cdev.onmicrosoft.com/oauth2/authresp",
       "https://localhost:3005/callback",
-      "https://fakelocal:3005/callback"
+      "https://fakelocal:3005/callback",
+      "http://localhost:3000/signin-success",
+      "https://localhost:3000/signin-success",
+      "http://fakelocal:3000/signin-success",
+      "https://fakelocal:3000/signin-success"
     ],
     "jwks": {
       "keys": [
