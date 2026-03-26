@@ -1,7 +1,7 @@
 {% extends 'layouts/page.njk' %}
 
-{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "cph-checkboxes/macro.njk" import appCphCheckboxes %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -25,44 +25,11 @@
 
       <form method="post" action="/delegation/create/cphs">
         <input type="hidden" name="crumb" value="{{ crumb }}">
-        {% if errors.cphs %}
-          {{ govukCheckboxes({
-            idPrefix: "cphs",
-            name: "cphs",
-            fieldset: {
-              legend: {
-                text: caption,
-                classes: "govuk-visually-hidden",
-                isPageHeading: false
-              }
-            },
-            hint: {
-              text: "Select all that apply"
-            },
-            classes: "govuk-!-margin-bottom-6",
-            errorMessage: {
-              text: errors.cphs
-            },
-            items: checkboxItems
-          }) }}
-        {% else %}
-          {{ govukCheckboxes({
-            idPrefix: "cphs",
-            name: "cphs",
-            fieldset: {
-              legend: {
-                text: caption,
-                classes: "govuk-visually-hidden",
-                isPageHeading: false
-              }
-            },
-            hint: {
-              text: "Select all that apply"
-            },
-            classes: "govuk-!-margin-bottom-6",
-            items: checkboxItems
-          }) }}
-        {% endif %}
+        {{ appCphCheckboxes({
+          caption: caption,
+          checkboxItems: checkboxItems,
+          errorMessage: errors.cphs
+        }) }}
 
         {{ govukButton({
           text: "Continue"
