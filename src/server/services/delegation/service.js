@@ -96,6 +96,21 @@ export class DelegationService {
   }
 
   /**
+   * Update fields on a single delegation.
+   * @param {string} userId
+   * @param {string} delegateId
+   * @param {Partial<{name: string, email: string, species: string[], cphs: string[]}>} updates
+   * @returns {Promise<void>}
+   */
+  async updateDelegation(userId, delegateId, updates) {
+    const delegates = await this.#getValue(userId)
+    await this.#setValue(
+      userId,
+      delegates.map((d) => (d.id === delegateId ? { ...d, ...updates } : d))
+    )
+  }
+
+  /**
    * Delete a single delegation by id for a user.
    * @param {string} userId
    * @param {string} delegateId

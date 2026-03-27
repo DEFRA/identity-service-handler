@@ -15,6 +15,10 @@ import {
   deleteController,
   deleteSubmitController
 } from './controllers/delete-controller.js'
+import {
+  manageController,
+  manageUpdateController
+} from './controllers/manage-controller.js'
 
 const sessionAuth = {
   auth: {
@@ -32,6 +36,7 @@ export const routes = (options = {}) => {
   const createSubmit = createSubmitController()
   const speciesSubmit = speciesSubmitController()
   const cphsSubmit = cphsSubmitController(delegationService, userService)
+  const manageUpdate = manageUpdateController(delegationService, userService)
 
   return [
     {
@@ -82,6 +87,21 @@ export const routes = (options = {}) => {
       ...cphsSubmit,
       options: {
         ...cphsSubmit.options,
+        ...sessionAuth
+      }
+    },
+    {
+      method: 'GET',
+      options: sessionAuth,
+      path: `${delegationPath}/{delegation_id}/manage`,
+      ...manageController(delegationService, userService)
+    },
+    {
+      method: 'POST',
+      path: `${delegationPath}/{delegation_id}/manage`,
+      ...manageUpdate,
+      options: {
+        ...manageUpdate.options,
         ...sessionAuth
       }
     },

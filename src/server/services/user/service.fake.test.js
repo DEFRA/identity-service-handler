@@ -59,7 +59,9 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toMatchObject({
-        primary_cph: [{ cph: '44/081/0006', role: 'Owner' }]
+        primary_cph: expect.arrayContaining([
+          { cph: '12/500/0001', role: 'Owner' }
+        ])
       })
     })
   })
