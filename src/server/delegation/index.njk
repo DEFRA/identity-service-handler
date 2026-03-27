@@ -15,15 +15,13 @@
       <caption class="govuk-visually-hidden">Delegates and available actions</caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header app-delegation-list__name">Delegate</th>
           <th scope="col" class="govuk-table__header app-delegation-list__email">Email address</th>
-          <th scope="col" class="govuk-table__header app-delegation-list__action">Actions</th>
+          <th scope="col" class="govuk-table__header app-delegation-list__action"><span class="govuk-visually-hidden">Actions</span></th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
         {% for delegate in delegates %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell app-delegation-list__name">{{ delegate.name }}</td>
             <td class="govuk-table__cell app-delegation-list__email">{{ delegate.email }}</td>
             <td class="govuk-table__cell app-delegation-list__action">
               <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/manage">
