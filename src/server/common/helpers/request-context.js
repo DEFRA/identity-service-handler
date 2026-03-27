@@ -7,7 +7,11 @@ export const requestContext = {
   version: '1.0.0',
   register(server) {
     server.ext('onRequest', (request, h) => {
-      storage.enterWith({})
+      const store = new Map()
+      for (const cycle of ['_lifecycle', '_postCycle']) {
+        const original = request[cycle].bind(request)
+        request[cycle] = () => storage.run(store, original)
+      }
       return h.continue
     })
   }
@@ -20,7 +24,7 @@ export const requestContext = {
  * @param {string} key
  * @returns {string | number | boolean | null}
  */
-export const get = (key) => storage.getStore()?.[key] ?? null
+export const get = (key) => storage.getStore()?.get(key) ?? null
 
 /**
  * Sets a primitive value in the current request context.
@@ -32,29 +36,27 @@ export const get = (key) => storage.getStore()?.[key] ?? null
 export const set = (key, value) => {
   const store = storage.getStore()
   if (store === undefined) throw new Error('No request context available')
-  store[key] = value
+  store.set(key, value)
 }
 
 /**
  * Removes a key from the current request context.
- * Throws if called outside of a request context.
+ * Throws if called outside a request context.
  *
  * @param {string} key
  */
 export const clear = (key) => {
   const store = storage.getStore()
   if (store === undefined) throw new Error('No request context available')
-  delete store[key]
+  store.delete(key)
 }
 
 /**
  * Removes all keys from the current request context.
- * Throws if called outside of a request context.
+ * Throws if called outside a request context.
  */
 export const clearAll = () => {
   const store = storage.getStore()
   if (store === undefined) throw new Error('No request context available')
-  for (const key in store) {
-    delete store[key]
-  }
+  store.clear()
 }
