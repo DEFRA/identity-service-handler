@@ -17,10 +17,7 @@ const mocks = {
 }
 
 describe('UserService', () => {
-  const subjectMapping = {
-    sub: 'broker-sub',
-    email: 'broker-sub'
-  }
+  const sub = 'broker-sub'
 
   afterEach(() => {
     vi.resetAllMocks()
@@ -29,16 +26,17 @@ describe('UserService', () => {
   describe('getUserContext()', () => {
     test('it returns cached user context when present', async () => {
       // Arrange
-      const cached = { sub: 'broker-sub', email: 'broker-sub' }
+      const cached = { sub: 'broker-sub', email: 'user@example.com' }
       mocks.configGet.mockReturnValue({ useFakeClient: false })
       mocks.redis.get.mockResolvedValue(JSON.stringify(cached))
       const userService = new UserService(mocks.redis, config)
 
       // Act
-      const result = await userService.getUserContext(subjectMapping)
+      const result = await userService.getUserContext(sub)
 
       // Assert
       expect(result).toEqual(cached)
+      expect(mocks.redis.get).toHaveBeenCalledWith('user_context:broker-sub')
       expect(mocks.serviceGetUserDetails).not.toHaveBeenCalled()
       expect(mocks.serviceGetUserCphs).not.toHaveBeenCalled()
     })
@@ -49,6 +47,7 @@ describe('UserService', () => {
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
       mocks.serviceGetUserDetails.mockResolvedValue({
+        email: 'user@example.com',
         display_name: 'Test User',
         given_name: 'Test',
         family_name: 'User'
@@ -60,7 +59,7 @@ describe('UserService', () => {
       const userService = new UserService(mocks.redis, config)
 
       // Act
-      const result = await userService.getUserContext(subjectMapping)
+      const result = await userService.getUserContext(sub)
 
       // Assert
       expect(mocks.serviceGetUserDetails).toHaveBeenCalledWith('broker-sub')
@@ -68,7 +67,7 @@ describe('UserService', () => {
       expect(mocks.serviceFakeGetUserDetails).not.toHaveBeenCalled()
       expect(result).toEqual({
         sub: 'broker-sub',
-        email: 'broker-sub',
+        email: 'user@example.com',
         display_name: 'Test User',
         given_name: 'Test',
         family_name: 'User',
@@ -83,6 +82,7 @@ describe('UserService', () => {
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
       mocks.serviceFakeGetUserDetails.mockResolvedValue({
+        email: 'fake@example.com',
         display_name: 'Fake User',
         given_name: 'Fake',
         family_name: 'User'
@@ -94,7 +94,7 @@ describe('UserService', () => {
       const userService = new UserService(mocks.redis, config)
 
       // Act
-      const result = await userService.getUserContext(subjectMapping)
+      const result = await userService.getUserContext(sub)
 
       // Assert
       expect(mocks.serviceFakeGetUserDetails).toHaveBeenCalledWith('broker-sub')
@@ -102,7 +102,7 @@ describe('UserService', () => {
       expect(mocks.serviceGetUserDetails).not.toHaveBeenCalled()
       expect(result).toEqual({
         sub: 'broker-sub',
-        email: 'broker-sub',
+        email: 'fake@example.com',
         display_name: 'Fake User',
         given_name: 'Fake',
         family_name: 'User',
@@ -117,6 +117,7 @@ describe('UserService', () => {
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
       mocks.serviceGetUserDetails.mockResolvedValue({
+        email: 'user@example.com',
         display_name: 'Test User',
         given_name: 'Test',
         family_name: 'User'
@@ -128,14 +129,14 @@ describe('UserService', () => {
       const userService = new UserService(mocks.redis, config)
 
       // Act
-      await userService.getUserContext(subjectMapping)
+      await userService.getUserContext(sub)
 
       // Assert
       expect(mocks.redis.set).toHaveBeenCalledWith(
-        'userContext:broker-sub',
+        'user_context:broker-sub',
         JSON.stringify({
           sub: 'broker-sub',
-          email: 'broker-sub',
+          email: 'user@example.com',
           display_name: 'Test User',
           given_name: 'Test',
           family_name: 'User',

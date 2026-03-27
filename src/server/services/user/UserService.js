@@ -1,8 +1,6 @@
 import * as service from './service.js'
 import * as serviceFake from './service.fake.js'
 
-const UserContextKey = 'userContext'
-
 /**
  * @typedef {import('ioredis').Redis | import('ioredis').Cluster} RedisClient
  */
@@ -27,6 +25,7 @@ const UserContextKey = 'userContext'
  */
 
 export class UserService {
+  #contextCacheKeyPrefix = 'user_context'
   /**
    * @param {RedisClient} redis
    * @param {AppConfig} config
@@ -37,40 +36,42 @@ export class UserService {
     this._impl = this.helperConfig.useFakeClient ? serviceFake : service
   }
 
-  /**
-   * @param {string} prefix
-   * @param {string} id
-   * @returns {string}
-   */
-  key(prefix, id) {
-    return `${prefix}:${id}`
+  async #getCachedContext(sub) {
+    const raw = await this.redis.get(`${this.#contextCacheKeyPrefix}:${sub}`)
+    if (raw) {
+      return JSON.parse(raw)
+    }
   }
 
-  /**
-   * @param {SubjectMapping} subjectMapping
-   * @returns {Promise<UserContext | undefined>}
-   */
-  async getUserContext(subjectMapping) {
-    const raw = await this.redis.get(
-      this.key(UserContextKey, subjectMapping.sub)
-    )
-    if (raw) return JSON.parse(raw)
-
-    const userResult = await this._impl.getUserDetails(subjectMapping.sub)
-    const cphResult = await this._impl.getUserCphs(subjectMapping.sub)
-
-    const userContext = {
-      ...subjectMapping,
-      ...userResult,
-      ...cphResult
-    }
-
+  async #setCachedContext(userContext) {
     await this.redis.set(
-      this.key(UserContextKey, subjectMapping.sub),
+      `${this.#contextCacheKeyPrefix}:${userContext.sub}`,
       JSON.stringify(userContext),
       'EX',
       300
     )
+  }
+
+  /**
+   * @param {sub} string
+   * @returns {Promise<UserContext>}
+   */
+  async getUserContext(sub) {
+    const cached = await this.#getCachedContext(sub)
+    if (cached) {
+      return cached
+    }
+
+    const userResult = await this._impl.getUserDetails(sub)
+    const cphResult = await this._impl.getUserCphs(sub)
+
+    const userContext = {
+      sub,
+      ...userResult,
+      ...cphResult
+    }
+
+    await this.#setCachedContext(userContext)
 
     return userContext
   }
