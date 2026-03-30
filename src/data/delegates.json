@@ -1,21 +1,18 @@
 [
   {
     "id": "1",
-    "name": "Joe Bloggs",
     "email": "JoeBloggs1898@gmail.com",
     "cphs": ["12/500/0001", "12/500/0002", "12/500/0003"],
     "active": true
   },
   {
     "id": "2",
-    "name": "A N Other",
     "email": "Andy@farminc.com",
     "cphs": ["12/500/0003", "12/500/0004", "12/500/0005", "12/500/0006"],
     "active": true
   },
   {
     "id": "3",
-    "name": "Joanna Smith",
     "email": "XJS@outlook.com",
     "cphs": ["12/500/0002", "12/500/0005"],
     "active": false

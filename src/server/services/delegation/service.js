@@ -46,7 +46,7 @@ export class DelegationService {
    * Get all delegations for a user.
    * @param {string} userId
    * @param {number} [page=1]
-   * @returns {Promise<{page: number, items: Array<{id: string, name: string, email: string, active: boolean}>, total_pages: number, total_items: number}>}
+   * @returns {Promise<{page: number, items: Array<{id: string, email: string, active: boolean}>, total_pages: number, total_items: number}>}
    */
   async getDelegations(userId, page = 1) {
     const all = await this.#getValue(userId)
@@ -68,7 +68,7 @@ export class DelegationService {
    * Get a single delegation by id for a user.
    * @param {string} userId
    * @param {string} delegateId
-   * @returns {Promise<{id: string, name: string, email: string, active: boolean} | undefined>}
+   * @returns {Promise<{id: string, email: string, active: boolean} | undefined>}
    */
   async getDelegation(userId, delegateId) {
     const delegates = await this.#getValue(userId)
@@ -77,16 +77,15 @@ export class DelegationService {
   /**
    * Add a single delegation for a user.
    * @param {string} userId
-   * @param {{ name: string, email: string, cphs?: string[] }} invite
+   * @param {{ email: string, cphs?: string[] }} invite
    * @returns {Promise<void>}
    */
-  async createInvite(userId, { name, email, cphs = [] }) {
+  async createInvite(userId, { email, cphs = [] }) {
     const delegates = await this.#getValue(userId)
     await this.#setValue(userId, [
       ...delegates,
       {
         id: crypto.randomUUID(),
-        name,
         email,
         cphs,
         active: false
@@ -98,7 +97,7 @@ export class DelegationService {
    * Update fields on a single delegation.
    * @param {string} userId
    * @param {string} delegateId
-   * @param {Partial<{name: string, email: string, cphs: string[]}>} updates
+   * @param {Partial<{email: string, cphs: string[]}>} updates
    * @returns {Promise<void>}
    */
   async updateDelegation(userId, delegateId, updates) {

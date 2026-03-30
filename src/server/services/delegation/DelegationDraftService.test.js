@@ -13,54 +13,6 @@ describe('DelegationDraftService', () => {
     vi.resetAllMocks()
   })
 
-  describe('getFullName()', () => {
-    test('it returns the stored full name', () => {
-      // Arrange
-      const request = {
-        yar: {
-          get: mocks.get
-        }
-      }
-      const service = new DelegationDraftService(request)
-      mocks.get.mockReturnValue({ fullName: 'Joe Bloggs' })
-
-      // Act
-      const result = service.getFullName()
-
-      // Assert
-      expect(result).toBe('Joe Bloggs')
-    })
-  })
-
-  describe('setFullName()', () => {
-    test('it stores the full name and preserves the existing draft', () => {
-      // Arrange
-      const request = {
-        yar: {
-          get: mocks.get,
-          set: mocks.set
-        }
-      }
-      const service = new DelegationDraftService(request)
-      mocks.get.mockReturnValue({
-        email: 'joe@example.gov.uk'
-      })
-
-      // Act
-      const result = service.setFullName('Joe Bloggs')
-
-      // Assert
-      expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
-        fullName: 'Joe Bloggs',
-        email: 'joe@example.gov.uk'
-      })
-      expect(result).toEqual({
-        fullName: 'Joe Bloggs',
-        email: 'joe@example.gov.uk'
-      })
-    })
-  })
-
   describe('getEmail()', () => {
     test('it returns the stored email', () => {
       // Arrange
@@ -91,7 +43,6 @@ describe('DelegationDraftService', () => {
       }
       const service = new DelegationDraftService(request)
       mocks.get.mockReturnValue({
-        fullName: 'Joe Bloggs',
         cphs: ['12/345/6789']
       })
 
@@ -100,12 +51,10 @@ describe('DelegationDraftService', () => {
 
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
-        fullName: 'Joe Bloggs',
         email: 'joe@example.gov.uk',
         cphs: ['12/345/6789']
       })
       expect(result).toEqual({
-        fullName: 'Joe Bloggs',
         email: 'joe@example.gov.uk',
         cphs: ['12/345/6789']
       })
@@ -158,18 +107,18 @@ describe('DelegationDraftService', () => {
         }
       }
       const service = new DelegationDraftService(request)
-      mocks.get.mockReturnValue({ fullName: 'Joe Bloggs' })
+      mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
 
       // Act
       const result = service.setCphs(['12/345/6789'])
 
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
-        fullName: 'Joe Bloggs',
+        email: 'joe@example.gov.uk',
         cphs: ['12/345/6789']
       })
       expect(result).toEqual({
-        fullName: 'Joe Bloggs',
+        email: 'joe@example.gov.uk',
         cphs: ['12/345/6789']
       })
     })

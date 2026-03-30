@@ -14,7 +14,7 @@ export class DelegationDraftService {
 
   /**
    * Get the full draft from the session.
-   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
+   * @returns {{ email?: string, cphs?: string[] }}
    */
   getDraft() {
     if (this.draft !== undefined) {
@@ -28,8 +28,8 @@ export class DelegationDraftService {
 
   /**
    * Persist the full draft to the session.
-   * @param {{ fullName?: string, email?: string, cphs?: string[] }} draft
-   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
+   * @param {{ email?: string, cphs?: string[] }} draft
+   * @returns {{ email?: string, cphs?: string[] }}
    */
   setDraft(draft) {
     this.draft = draft
@@ -49,31 +49,13 @@ export class DelegationDraftService {
   /**
    * @returns {string | undefined}
    */
-  getFullName() {
-    return this.getDraft().fullName
-  }
-
-  /**
-   * @param {string} fullName
-   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
-   */
-  setFullName(fullName) {
-    return this.setDraft({
-      ...this.getDraft(),
-      fullName
-    })
-  }
-
-  /**
-   * @returns {string | undefined}
-   */
   getEmail() {
     return this.getDraft().email
   }
 
   /**
    * @param {string} email
-   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
+   * @returns {{ email?: string, cphs?: string[] }}
    */
   setEmail(email) {
     return this.setDraft({
@@ -91,7 +73,7 @@ export class DelegationDraftService {
 
   /**
    * @param {string[]} cphs
-   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
+   * @returns {{ email?: string, cphs?: string[] }}
    */
   setCphs(cphs) {
     return this.setDraft({

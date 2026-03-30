@@ -20,7 +20,6 @@ export const confirmSubmitController = (delegationService) => ({
     const email = draftService.getEmail()
 
     await delegationService.createInvite(sub, {
-      name: draftService.getFullName(),
       email,
       cphs: draftService.getCphs()
     })

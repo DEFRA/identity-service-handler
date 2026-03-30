@@ -50,9 +50,6 @@ describe('confirmSubmitController()', () => {
 
   test('it creates the invite, clears draft and renders the confirmation page', async () => {
     // Arrange
-    const getFullName = vi
-      .spyOn(DelegationDraftService.prototype, 'getFullName')
-      .mockReturnValue('Joe Bloggs')
     const getEmail = vi
       .spyOn(DelegationDraftService.prototype, 'getEmail')
       .mockReturnValue('joe@example.gov.uk')
@@ -75,11 +72,9 @@ describe('confirmSubmitController()', () => {
     )
 
     // Assert
-    expect(getFullName).toHaveBeenCalledTimes(1)
     expect(getEmail).toHaveBeenCalledTimes(1)
     expect(getCphs).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith('user-123', {
-      name: 'Joe Bloggs',
       email: 'joe@example.gov.uk',
       cphs: ['12/345/6789']
     })
