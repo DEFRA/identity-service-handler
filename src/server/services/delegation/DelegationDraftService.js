@@ -14,7 +14,7 @@ export class DelegationDraftService {
 
   /**
    * Get the full draft from the session.
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
+   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
    */
   getDraft() {
     if (this.draft !== undefined) {
@@ -28,8 +28,8 @@ export class DelegationDraftService {
 
   /**
    * Persist the full draft to the session.
-   * @param {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }} draft
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
+   * @param {{ fullName?: string, email?: string, cphs?: string[] }} draft
+   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
    */
   setDraft(draft) {
     this.draft = draft
@@ -55,7 +55,7 @@ export class DelegationDraftService {
 
   /**
    * @param {string} fullName
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
+   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
    */
   setFullName(fullName) {
     return this.setDraft({
@@ -73,30 +73,12 @@ export class DelegationDraftService {
 
   /**
    * @param {string} email
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
+   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
    */
   setEmail(email) {
     return this.setDraft({
       ...this.getDraft(),
       email
-    })
-  }
-
-  /**
-   * @returns {string[]}
-   */
-  getSpecies() {
-    return this.getDraft().species ?? []
-  }
-
-  /**
-   * @param {string[]} species
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
-   */
-  setSpecies(species) {
-    return this.setDraft({
-      ...this.getDraft(),
-      species
     })
   }
 
@@ -109,7 +91,7 @@ export class DelegationDraftService {
 
   /**
    * @param {string[]} cphs
-   * @returns {{ fullName?: string, email?: string, species?: string[], cphs?: string[] }}
+   * @returns {{ fullName?: string, email?: string, cphs?: string[] }}
    */
   setCphs(cphs) {
     return this.setDraft({

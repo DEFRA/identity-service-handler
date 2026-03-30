@@ -77,10 +77,10 @@ export class DelegationService {
   /**
    * Add a single delegation for a user.
    * @param {string} userId
-   * @param  {id: string, name: string, email: string} the delegation to add
+   * @param {{ name: string, email: string, cphs?: string[] }} invite
    * @returns {Promise<void>}
    */
-  async createInvite(userId, { name, email, species = [], cphs = [] }) {
+  async createInvite(userId, { name, email, cphs = [] }) {
     const delegates = await this.#getValue(userId)
     await this.#setValue(userId, [
       ...delegates,
@@ -88,7 +88,6 @@ export class DelegationService {
         id: crypto.randomUUID(),
         name,
         email,
-        species,
         cphs,
         active: false
       }
@@ -99,7 +98,7 @@ export class DelegationService {
    * Update fields on a single delegation.
    * @param {string} userId
    * @param {string} delegateId
-   * @param {Partial<{name: string, email: string, species: string[], cphs: string[]}>} updates
+   * @param {Partial<{name: string, email: string, cphs: string[]}>} updates
    * @returns {Promise<void>}
    */
   async updateDelegation(userId, delegateId, updates) {

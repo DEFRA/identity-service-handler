@@ -49,7 +49,7 @@ export const createSubmitController = () => ({
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())
 
-    return h.redirect('/delegation/create/species')
+    return h.redirect('/delegation/create/cphs')
   }
 })
 

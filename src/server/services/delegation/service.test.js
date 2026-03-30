@@ -159,7 +159,6 @@ describe('DelegationService', () => {
         name: 'Two',
         email: 't@example.gov.uk',
         id: expect.any(String),
-        species: [],
         cphs: [],
         active: false
       })

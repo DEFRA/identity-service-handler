@@ -84,9 +84,6 @@ describe('cphsSubmitController()', () => {
     const getEmail = vi
       .spyOn(DelegationDraftService.prototype, 'getEmail')
       .mockReturnValue('joe@example.gov.uk')
-    const getSpecies = vi
-      .spyOn(DelegationDraftService.prototype, 'getSpecies')
-      .mockReturnValue(['cattle'])
     const getCphs = vi
       .spyOn(DelegationDraftService.prototype, 'getCphs')
       .mockReturnValue(['12/345/6789'])
@@ -120,12 +117,10 @@ describe('cphsSubmitController()', () => {
     expect(setCphs).toHaveBeenCalledWith(['12/345/6789'])
     expect(getFullName).toHaveBeenCalledTimes(1)
     expect(getEmail).toHaveBeenCalledTimes(2)
-    expect(getSpecies).toHaveBeenCalledTimes(1)
     expect(getCphs).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith('user-123', {
       name: 'Joe Bloggs',
       email: 'joe@example.gov.uk',
-      species: ['cattle'],
       cphs: ['12/345/6789']
     })
     expect(clearDraft).toHaveBeenCalledTimes(1)

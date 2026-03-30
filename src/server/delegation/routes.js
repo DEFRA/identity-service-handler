@@ -4,10 +4,6 @@ import {
   createSubmitController
 } from './controllers/create-controller.js'
 import {
-  speciesController,
-  speciesSubmitController
-} from './controllers/species-controller.js'
-import {
   cphsController,
   cphsSubmitController
 } from './controllers/cphs-controller.js'
@@ -34,7 +30,6 @@ export const routes = (options = {}) => {
     userService
   } = options
   const createSubmit = createSubmitController()
-  const speciesSubmit = speciesSubmitController()
   const cphsSubmit = cphsSubmitController(delegationService, userService)
   const manageUpdate = manageUpdateController(delegationService, userService)
 
@@ -57,21 +52,6 @@ export const routes = (options = {}) => {
       ...createSubmit,
       options: {
         ...createSubmit.options,
-        ...sessionAuth
-      }
-    },
-    {
-      method: 'GET',
-      path: `${delegationPath}/create/species`,
-      options: sessionAuth,
-      ...speciesController()
-    },
-    {
-      method: 'POST',
-      path: `${delegationPath}/create/species`,
-      ...speciesSubmit,
-      options: {
-        ...speciesSubmit.options,
         ...sessionAuth
       }
     },

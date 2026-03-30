@@ -70,7 +70,7 @@ describe('createSubmitController()', () => {
 
     // Assert
     expect(setEmail).toHaveBeenCalledWith('joe@example.com')
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/species')
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
     expect(result).toBe('redirect-response')
   })
 

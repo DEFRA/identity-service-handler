@@ -89,7 +89,6 @@ export const cphsSubmitController = (delegationService, userService) => ({
     await delegationService.createInvite(sub, {
       name: draftService.getFullName(),
       email: draftService.getEmail(),
-      species: draftService.getSpecies(),
       cphs: draftService.getCphs()
     })
 
