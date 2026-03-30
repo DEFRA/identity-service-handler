@@ -43,10 +43,10 @@ describe('cphsController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Define delegation access',
-        heading: 'Define delegation access',
+        pageTitle: 'Manage access to your County Parish Holdings',
+        heading: 'Manage access to your County Parish Holdings',
         caption:
-          'Select the County Parish Holdings that your want your delegate to have access to',
+          'Select the County Parish Holdings that you want your delegate to have access to',
         checkboxItems: [
           {
             value: '12/345/6789',
@@ -160,7 +160,7 @@ describe('cphsSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Error: Define delegation access',
+        pageTitle: 'Error: Manage access to your County Parish Holdings',
         checkboxItems: [
           {
             value: '12/345/6789',
@@ -213,7 +213,7 @@ describe('cphsSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
-        pageTitle: 'Error: Define delegation access',
+        pageTitle: 'Error: Manage access to your County Parish Holdings',
         checkboxItems: [
           {
             value: '12/345/6789',

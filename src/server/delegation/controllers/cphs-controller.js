@@ -107,10 +107,13 @@ function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: withErrorPageTitle('Define delegation access', errors),
-    heading: 'Define delegation access',
+    pageTitle: withErrorPageTitle(
+      'Manage access to your County Parish Holdings',
+      errors
+    ),
+    heading: 'Manage access to your County Parish Holdings',
     caption:
-      'Select the County Parish Holdings that your want your delegate to have access to',
+      'Select the County Parish Holdings that you want your delegate to have access to',
     checkboxItems: [],
     formValues: {
       cphs: []
