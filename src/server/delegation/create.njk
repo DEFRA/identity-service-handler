@@ -2,37 +2,14 @@
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-full">
       <a href="/delegation" class="govuk-back-link">Back</a>
 
-      {% if errors.fullName and errors.email %}
-        {{ govukErrorSummary({
-          titleText: "There is a problem",
-          errorList: [
-            {
-              text: errors.fullName,
-              href: "#fullName"
-            },
-            {
-              text: errors.email,
-              href: "#email"
-            }
-          ]
-        }) }}
-      {% elif errors.fullName %}
-        {{ govukErrorSummary({
-          titleText: "There is a problem",
-          errorList: [
-            {
-              text: errors.fullName,
-              href: "#fullName"
-            }
-          ]
-        }) }}
-      {% elif errors.email %}
+      {% if errors.email %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
           errorList: [
@@ -49,71 +26,30 @@
       <form method="post" action="/delegation/create">
         <input type="hidden" name="crumb" value="{{ crumb }}">
 
-        {% if errors.fullName %}
-          {{ govukInput({
-            label: {
-              text: "Full name"
-            },
-            id: "fullName",
-            name: "fullName",
-            value: formValues.fullName,
-            errorMessage: {
-              text: errors.fullName
-            },
-            classes: "govuk-input--width-20"
-          }) }}
-        {% else %}
-          {{ govukInput({
-            label: {
-              text: "Full name"
-            },
-            id: "fullName",
-            name: "fullName",
-            value: formValues.fullName,
-            classes: "govuk-input--width-20"
-          }) }}
-        {% endif %}
+        {{ govukInput({
+          label: {
+            text: "Email"
+          },
+          id: "email",
+          name: "email",
+          type: "email",
+          value: formValues.email,
+          spellcheck: false,
+          autocomplete: "email",
+          errorMessage: ({ text: errors.email } if errors.email),
+          classes: "govuk-input--width-20"
+        }) }}
 
-        {% if errors.email %}
-          {{ govukInput({
-            label: {
-              text: "Enter the delegate's email address"
-            },
-            hint: {
-              text: "We'll send an email invitation to this address."
-            },
-            id: "email",
-            name: "email",
-            type: "email",
-            value: formValues.email,
-            spellcheck: false,
-            autocomplete: "email",
-            errorMessage: {
-              text: errors.email
-            },
-            classes: "govuk-input--width-20"
-          }) }}
-        {% else %}
-          {{ govukInput({
-            label: {
-              text: "Enter the delegate's email address"
-            },
-            hint: {
-              text: "We'll send an email invitation to this address."
-            },
-            id: "email",
-            name: "email",
-            type: "email",
-            value: formValues.email,
-            spellcheck: false,
-            autocomplete: "email",
-            classes: "govuk-input--width-20"
-          }) }}
-        {% endif %}
+
+        <p class="govuk-body govuk-!-margin-top-9">Your delegate will receive an email invitation from the Livestock Information Service at the end of this process</p>
+        <p class="govuk-body govuk-!-margin-bottom-9">If the user does not have a GOV.UK One Login credential then they will be asked to set this up before they are able to accept the invitation.</p>
+
 
         {{ govukButton({
           text: "Continue"
         }) }}
+
+        <p class="govuk-body"><a href="/delegation" class="govuk-link">Cancel</a></p>
       </form>
     </div>
   </div>

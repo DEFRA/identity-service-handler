@@ -21,9 +21,6 @@ describe('createController()', () => {
   test('it renders the create page with default view model', async () => {
     // Arrange
     const request = {}
-    vi.spyOn(DelegationDraftService.prototype, 'getFullName').mockReturnValue(
-      undefined
-    )
     vi.spyOn(DelegationDraftService.prototype, 'getEmail').mockReturnValue(
       undefined
     )
@@ -37,10 +34,9 @@ describe('createController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/create',
       expect.objectContaining({
-        pageTitle: 'Add and invite a new delegate',
-        heading: 'Add and invite a new delegate',
+        pageTitle: 'Add a new delegate',
+        heading: 'Add a new delegate',
         formValues: {
-          fullName: '',
           email: ''
         },
         errors: {}
@@ -56,17 +52,13 @@ describe('createSubmitController()', () => {
     vi.clearAllMocks()
   })
 
-  test('it stores draft values and redirects on valid payload', async () => {
+  test('it stores email and redirects on valid payload', async () => {
     // Arrange
-    const setFullName = vi
-      .spyOn(DelegationDraftService.prototype, 'setFullName')
-      .mockReturnValue(undefined)
     const setEmail = vi
       .spyOn(DelegationDraftService.prototype, 'setEmail')
       .mockReturnValue(undefined)
     const request = {
       payload: {
-        fullName: '  Joe Bloggs  ',
         email: '  JOE@EXAMPLE.COM  '
       }
     }
@@ -77,17 +69,15 @@ describe('createSubmitController()', () => {
     const result = await createSubmitController().handler(request, h)
 
     // Assert
-    expect(setFullName).toHaveBeenCalledWith('Joe Bloggs')
     expect(setEmail).toHaveBeenCalledWith('joe@example.com')
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/species')
     expect(result).toBe('redirect-response')
   })
 
-  test('it re-renders create page from failAction for missing fields', async () => {
+  test('it re-renders create page from failAction when email is missing', async () => {
     // Arrange
     const request = {
       payload: {
-        fullName: '',
         email: ''
       }
     }
@@ -96,10 +86,7 @@ describe('createSubmitController()', () => {
     mocks.view.mockReturnValue({ code: mocks.code })
     const h = { view: mocks.view }
     const err = {
-      details: [
-        { path: ['fullName'], type: 'string.empty' },
-        { path: ['email'], type: 'string.empty' }
-      ]
+      details: [{ path: ['email'], type: 'string.empty' }]
     }
 
     // Act
@@ -113,13 +100,11 @@ describe('createSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/create',
       expect.objectContaining({
-        pageTitle: 'Error: Add and invite a new delegate',
+        pageTitle: 'Error: Add a new delegate',
         formValues: {
-          fullName: '',
           email: ''
         },
         errors: {
-          fullName: 'Enter the full name',
           email: "Enter the delegate's email address"
         }
       })
@@ -133,7 +118,6 @@ describe('createSubmitController()', () => {
     // Arrange
     const request = {
       payload: {
-        fullName: 'Joe Bloggs',
         email: 'bad-email'
       }
     }
@@ -152,9 +136,8 @@ describe('createSubmitController()', () => {
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/create',
       expect.objectContaining({
-        pageTitle: 'Error: Add and invite a new delegate',
+        pageTitle: 'Error: Add a new delegate',
         formValues: {
-          fullName: 'Joe Bloggs',
           email: 'bad-email'
         },
         errors: {
