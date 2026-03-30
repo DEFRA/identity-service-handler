@@ -8,6 +8,10 @@ import {
   cphsSubmitController
 } from './controllers/cphs-controller.js'
 import {
+  confirmController,
+  confirmSubmitController
+} from './controllers/confirm-controller.js'
+import {
   deleteController,
   deleteSubmitController
 } from './controllers/delete-controller.js'
@@ -30,7 +34,8 @@ export const routes = (options = {}) => {
     userService
   } = options
   const createSubmit = createSubmitController()
-  const cphsSubmit = cphsSubmitController(delegationService, userService)
+  const cphsSubmit = cphsSubmitController(userService)
+  const confirmSubmit = confirmSubmitController(delegationService)
   const manageUpdate = manageUpdateController(delegationService, userService)
 
   return [
@@ -69,6 +74,18 @@ export const routes = (options = {}) => {
         ...cphsSubmit.options,
         ...sessionAuth
       }
+    },
+    {
+      method: 'GET',
+      path: `${delegationPath}/create/confirm`,
+      options: sessionAuth,
+      ...confirmController()
+    },
+    {
+      method: 'POST',
+      options: sessionAuth,
+      path: `${delegationPath}/create/confirm`,
+      ...confirmSubmit
     },
     {
       method: 'GET',

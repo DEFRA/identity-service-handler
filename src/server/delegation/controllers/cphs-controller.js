@@ -28,7 +28,7 @@ export const cphsController = (userService) => ({
   }
 })
 
-export const cphsSubmitController = (delegationService, userService) => ({
+export const cphsSubmitController = (userService) => ({
   options: {
     validate: {
       payload: Joi.object({
@@ -86,20 +86,7 @@ export const cphsSubmitController = (delegationService, userService) => ({
 
     draftService.setCphs(cphs)
 
-    await delegationService.createInvite(sub, {
-      name: draftService.getFullName(),
-      email: draftService.getEmail(),
-      cphs: draftService.getCphs()
-    })
-
-    const email = draftService.getEmail()
-    draftService.clearDraft()
-
-    return h.view('delegation/confirmation', {
-      pageTitle: 'You delegation invite has been sent',
-      heading: 'You delegation invite has been sent',
-      email
-    })
+    return h.redirect('/delegation/create/confirm')
   }
 })
 

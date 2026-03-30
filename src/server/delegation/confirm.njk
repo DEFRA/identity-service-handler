@@ -1,0 +1,37 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/delegation/create/cphs" class="govuk-back-link">Back</a>
+
+      <h1 class="govuk-heading-l">{{ heading }}</h1>
+
+      <p class="govuk-body">Confirm the delegate details below and we will send an invite to your new delegate.</p>
+
+      <p class="govuk-body govuk-!-margin-bottom-1">Delegate Livestock Information System access to:</p>
+      <p class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-9">
+        <strong>{{ email }}</strong>
+      </p>
+
+      <p class="govuk-body govuk-!-margin-bottom-1">For the following County Parish Holding Number(s):</p>
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-1 govuk-!-margin-bottom-9">
+        {% for cph in cphs %}
+          <li>{{ cph }}</li>
+        {% endfor %}
+      </ul>
+
+      <form method="post" action="/delegation/create/confirm">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+
+        {{ govukButton({
+          text: "Confirm and Send Invite"
+        }) }}
+      </form>
+
+      <p class="govuk-body"><a href="/delegation" class="govuk-link">Cancel</a></p>
+    </div>
+  </div>
+{% endblock %}
