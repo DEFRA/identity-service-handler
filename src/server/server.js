@@ -124,7 +124,7 @@ export async function createServer() {
     },
     {
       plugin: router.plugin,
-      options: { userService, delegationService }
+      options: { userService, delegationService, subjectsService }
     }
   ])
 

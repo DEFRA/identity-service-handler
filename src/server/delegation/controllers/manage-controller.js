@@ -1,0 +1,73 @@
+import Joi from 'joi'
+import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
+import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
+import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
+import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
+
+export const manageController = (delegationService, userService) => ({
+  handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
+    const { delegation_id: delegationId } = request.params
+    const delegate = await delegationService.getDelegation(sub, delegationId)
+
+    if (!delegate) {
+      return h.redirect('/delegation')
+    }
+
+    const userContext = await userService.getUserContext(sub)
+    const availableCphs = getDelegatableCphs(userContext)
+
+    return h.view('delegation/manage', {
+      pageTitle: 'Manage delegate',
+      heading: 'Manage delegate',
+      delegate,
+      checkboxItems: buildCphCheckboxItems(availableCphs, delegate.cphs ?? [])
+    })
+  }
+})
+
+export const manageUpdateController = (delegationService, userService) => ({
+  options: {
+    validate: {
+      payload: Joi.object({
+        crumb: Joi.string(),
+        cphs: cphsSchema
+      }),
+      options: { allowUnknown: true },
+      failAction: async (request, h, err) => {
+        const sub = request.auth?.credentials?.sub
+        const { delegation_id: delegationId } = request.params
+        const [delegate, userContext] = await Promise.all([
+          delegationService.getDelegation(sub, delegationId),
+          userService.getUserContext(sub)
+        ])
+        const availableCphs = getDelegatableCphs(userContext)
+
+        return h
+          .view('delegation/manage', {
+            pageTitle: 'Error: Manage delegate',
+            heading: 'Manage delegate',
+            delegate,
+            checkboxItems: buildCphCheckboxItems(
+              availableCphs,
+              normaliseCheckboxPayload(request.payload?.cphs)
+            ),
+            errors: {
+              cphs: getCphValidationError(err)
+            }
+          })
+          .code(400)
+          .takeover()
+      }
+    }
+  },
+  handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
+    const { delegation_id: delegationId } = request.params
+    const cphs = normaliseCheckboxPayload(request.payload.cphs)
+
+    await delegationService.updateDelegation(sub, delegationId, { cphs })
+
+    return h.redirect(`/delegation`)
+  }
+})

@@ -10,7 +10,6 @@ export const createController = () => ({
       'delegation/create',
       viewModel({
         formValues: {
-          fullName: draftService.getFullName() ?? '',
           email: draftService.getEmail() ?? ''
         }
       })
@@ -22,7 +21,6 @@ export const createSubmitController = () => ({
   options: {
     validate: {
       payload: Joi.object({
-        fullName: Joi.string().trim().required(),
         email: Joi.string()
           .trim()
           .lowercase()
@@ -30,7 +28,6 @@ export const createSubmitController = () => ({
           .required()
       }),
       failAction: async (request, h, err) => {
-        const fullName = (request.payload?.['fullName'] || '').trim()
         const email = (request.payload?.['email'] || '').trim()
         const errors = getErrorsFromValidation(err)
 
@@ -38,7 +35,7 @@ export const createSubmitController = () => ({
           .view(
             'delegation/create',
             viewModel({
-              formValues: { fullName, email },
+              formValues: { email },
               errors
             })
           )
@@ -50,10 +47,9 @@ export const createSubmitController = () => ({
   handler: async (request, h) => {
     const draftService = new DelegationDraftService(request)
 
-    draftService.setFullName(request.payload.fullName.trim())
     draftService.setEmail(request.payload.email.trim().toLowerCase())
 
-    return h.redirect('/delegation/create/species')
+    return h.redirect('/delegation/create/cphs')
   }
 })
 
@@ -64,9 +60,6 @@ function getErrorsFromValidation(validationError) {
 
   for (const detail of details) {
     const field = detail?.path?.[0]
-    if (field === 'fullName') {
-      errors.fullName = 'Enter the full name'
-    }
     if (field === 'email') {
       if (detail?.type === 'string.empty' || detail?.type === 'any.required') {
         errors.email = "Enter the delegate's email address"
@@ -84,10 +77,9 @@ function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: withErrorPageTitle('Add and invite a new delegate', errors),
-    heading: 'Add and invite a new delegate',
+    pageTitle: withErrorPageTitle('Add a new delegate', errors),
+    heading: 'Add a new delegate',
     formValues: {
-      fullName: '',
       email: ''
     },
     errors: {},
