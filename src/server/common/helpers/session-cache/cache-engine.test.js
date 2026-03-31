@@ -21,10 +21,10 @@ vi.mock('ioredis', () => ({
 vi.mock('@hapi/catbox-redis')
 vi.mock('@hapi/catbox-memory')
 vi.mock('../logging/logger.js', () => ({
-  createLogger: () => ({
+  logger: {
     info: (...args) => mockLoggerInfo(...args),
     error: (...args) => mockLoggerError(...args)
-  })
+  }
 }))
 
 describe('#getCacheEngine', () => {

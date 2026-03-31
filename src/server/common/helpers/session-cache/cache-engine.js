@@ -1,13 +1,10 @@
 import { Engine as CatboxRedis } from '@hapi/catbox-redis'
 import { Engine as CatboxMemory } from '@hapi/catbox-memory'
-
-import { createLogger } from '../logging/logger.js'
+import { logger } from '../logging/logger.js'
 import { buildRedisClient } from '../redis-client.js'
 import { config } from '../../../../config/config.js'
 
 export function getCacheEngine(engine) {
-  const logger = createLogger()
-
   if (engine === 'redis') {
     logger.info('Using Redis session cache')
     const redisClient = buildRedisClient(config.get('redis'))

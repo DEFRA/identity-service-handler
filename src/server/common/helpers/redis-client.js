@@ -1,7 +1,6 @@
 import { Cluster, Redis } from 'ioredis'
-import { createLogger } from './logging/logger.js'
+import { logger } from './logging/logger.js'
 
-const logger = createLogger()
 const port = 6379
 const db = 0
 

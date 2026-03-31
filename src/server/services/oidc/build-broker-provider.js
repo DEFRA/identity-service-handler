@@ -1,9 +1,7 @@
 import Provider from 'oidc-provider'
-import { createLogger } from '../../common/helpers/logging/logger.js'
+import { logger } from '../../common/helpers/logging/logger.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { buildClientParams } from './build-client-params.js'
-
-const logger = createLogger()
 
 export function buildBrokerProvider({
   cookiePassword,
