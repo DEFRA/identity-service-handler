@@ -1,11 +1,14 @@
 {% extends 'layouts/page.njk' %}
 
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">An invitation was sent your new delegate at {{ email }}</p>
-      <p class="govuk-body">They will have 7 days to reply using the invite link sent to their email address.</p>
-      <p class="govuk-body">Within this time you can revoke the invite if you need to.</p>
+      <p class="govuk-body">An invite was sent to your new delegate at {{ email }}</p>
+      <p class="govuk-body">You can cancel the invite within 7 days.</p>
+
       {{ govukPanel({
         titleText: heading
       }) }}

@@ -1,26 +1,20 @@
 [
   {
     "id": "1",
-    "name": "Joe Bloggs",
     "email": "JoeBloggs1898@gmail.com",
-    "species": ["sheep", "cattle"],
-    "cphs": ["12/345/6789", "37/989/0999"],
+    "cphs": ["12/500/0001", "12/500/0002", "12/500/0003"],
     "active": true
   },
   {
     "id": "2",
-    "name": "A N Other",
     "email": "Andy@farminc.com",
-    "species": ["pigs"],
-    "cphs": ["35/345/0005"],
+    "cphs": ["12/500/0003", "12/500/0004", "12/500/0005", "12/500/0006"],
     "active": true
   },
   {
     "id": "3",
-    "name": "Joanna Smith",
     "email": "XJS@outlook.com",
-    "species": ["sheep"],
-    "cphs": ["12/345/6789"],
+    "cphs": ["12/500/0002", "12/500/0005"],
     "active": false
   }
 ]

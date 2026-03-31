@@ -4,17 +4,21 @@ import {
   createSubmitController
 } from './controllers/create-controller.js'
 import {
-  speciesController,
-  speciesSubmitController
-} from './controllers/species-controller.js'
-import {
   cphsController,
   cphsSubmitController
 } from './controllers/cphs-controller.js'
 import {
+  confirmController,
+  confirmSubmitController
+} from './controllers/confirm-controller.js'
+import {
   deleteController,
   deleteSubmitController
 } from './controllers/delete-controller.js'
+import {
+  manageController,
+  manageUpdateController
+} from './controllers/manage-controller.js'
 
 const sessionAuth = {
   auth: {
@@ -30,8 +34,9 @@ export const routes = (options = {}) => {
     userService
   } = options
   const createSubmit = createSubmitController()
-  const speciesSubmit = speciesSubmitController()
-  const cphsSubmit = cphsSubmitController(delegationService, userService)
+  const cphsSubmit = cphsSubmitController(userService)
+  const confirmSubmit = confirmSubmitController(delegationService)
+  const manageUpdate = manageUpdateController(delegationService, userService)
 
   return [
     {
@@ -57,21 +62,6 @@ export const routes = (options = {}) => {
     },
     {
       method: 'GET',
-      path: `${delegationPath}/create/species`,
-      options: sessionAuth,
-      ...speciesController()
-    },
-    {
-      method: 'POST',
-      path: `${delegationPath}/create/species`,
-      ...speciesSubmit,
-      options: {
-        ...speciesSubmit.options,
-        ...sessionAuth
-      }
-    },
-    {
-      method: 'GET',
       path: `${delegationPath}/create/cphs`,
       options: sessionAuth,
       ...cphsController(userService)
@@ -82,6 +72,33 @@ export const routes = (options = {}) => {
       ...cphsSubmit,
       options: {
         ...cphsSubmit.options,
+        ...sessionAuth
+      }
+    },
+    {
+      method: 'GET',
+      path: `${delegationPath}/create/confirm`,
+      options: sessionAuth,
+      ...confirmController()
+    },
+    {
+      method: 'POST',
+      options: sessionAuth,
+      path: `${delegationPath}/create/confirm`,
+      ...confirmSubmit
+    },
+    {
+      method: 'GET',
+      options: sessionAuth,
+      path: `${delegationPath}/{delegation_id}/manage`,
+      ...manageController(delegationService, userService)
+    },
+    {
+      method: 'POST',
+      path: `${delegationPath}/{delegation_id}/manage`,
+      ...manageUpdate,
+      options: {
+        ...manageUpdate.options,
         ...sessionAuth
       }
     },

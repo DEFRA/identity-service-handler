@@ -145,7 +145,6 @@ describe('DelegationService', () => {
 
       // Act
       await service.createInvite(userId, {
-        name: 'Two',
         email: 't@example.gov.uk'
       })
 
@@ -156,10 +155,8 @@ describe('DelegationService', () => {
       expect(parsedValue[0]).toEqual(cached[0])
       expect(parsedValue.length).toEqual(2)
       expect(parsedValue[1]).toEqual({
-        name: 'Two',
         email: 't@example.gov.uk',
         id: expect.any(String),
-        species: [],
         cphs: [],
         active: false
       })

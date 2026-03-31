@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { requestContext, get, set, clear, clearAll } from './request-context.js'
 
 const mocks = {
-  enterWith: vi.spyOn(AsyncLocalStorage.prototype, 'enterWith'),
+  run: vi.spyOn(AsyncLocalStorage.prototype, 'run'),
   getStore: vi.spyOn(AsyncLocalStorage.prototype, 'getStore'),
   ext: vi.fn()
 }
@@ -24,18 +24,29 @@ describe('requestContext', () => {
       expect(mocks.ext).toHaveBeenCalledWith('onRequest', expect.any(Function))
     })
 
-    test('onRequest initialises an empty store and continues', () => {
+    test('onRequest wraps _lifecycle and _postCycle in an ALS context and continues', () => {
       // Arrange
       const server = { ext: mocks.ext }
       requestContext.register(server)
       const [[, handler]] = mocks.ext.mock.calls
       const h = { continue: Symbol('continue') }
+      const lifecycle = vi.fn()
+      const postCycle = vi.fn()
+      const request = { _lifecycle: lifecycle, _postCycle: postCycle }
 
       // Act
-      const result = handler({}, h)
+      const result = handler(request, h)
 
       // Assert
-      expect(mocks.enterWith).toHaveBeenCalledWith({})
+      expect(request._lifecycle).not.toBe(lifecycle)
+      expect(request._postCycle).not.toBe(postCycle)
+      request._lifecycle()
+      request._postCycle()
+      expect(mocks.run).toHaveBeenCalledTimes(2)
+      const [firstStore] = mocks.run.mock.calls[0]
+      const [secondStore] = mocks.run.mock.calls[1]
+      expect(firstStore).toBe(secondStore)
+      expect(firstStore).toBeInstanceOf(Map)
       expect(result).toBe(h.continue)
     })
   })
@@ -54,7 +65,7 @@ describe('requestContext', () => {
 
     test('it returns null when the key is not in the store', () => {
       // Arrange
-      mocks.getStore.mockReturnValue({})
+      mocks.getStore.mockReturnValue(new Map())
 
       // Act
       const result = get('foo')
@@ -65,7 +76,7 @@ describe('requestContext', () => {
 
     test('it returns the value when the key is in the store', () => {
       // Arrange
-      mocks.getStore.mockReturnValue({ foo: 'bar' })
+      mocks.getStore.mockReturnValue(new Map([['foo', 'bar']]))
 
       // Act
       const result = get('foo')
@@ -95,14 +106,14 @@ describe('requestContext', () => {
 
     test('it sets the value on the store', () => {
       // Arrange
-      const store = {}
+      const store = new Map()
       mocks.getStore.mockReturnValue(store)
 
       // Act
       set('foo', 'bar')
 
       // Assert
-      expect(store.foo).toBe('bar')
+      expect(store.get('foo')).toBe('bar')
     })
   })
 
@@ -126,14 +137,14 @@ describe('requestContext', () => {
 
     test('it removes the key from the store', () => {
       // Arrange
-      const store = { foo: 'bar' }
+      const store = new Map([['foo', 'bar']])
       mocks.getStore.mockReturnValue(store)
 
       // Act
       clear('foo')
 
       // Assert
-      expect(store).not.toHaveProperty('foo')
+      expect(store.has('foo')).toBe(false)
     })
   })
 
@@ -157,14 +168,17 @@ describe('requestContext', () => {
 
     test('it removes all keys from the store', () => {
       // Arrange
-      const store = { foo: 'bar', baz: 'qux' }
+      const store = new Map([
+        ['foo', 'bar'],
+        ['baz', 'qux']
+      ])
       mocks.getStore.mockReturnValue(store)
 
       // Act
       clearAll()
 
       // Assert
-      expect(store).toEqual({})
+      expect(store.size).toBe(0)
     })
   })
 })

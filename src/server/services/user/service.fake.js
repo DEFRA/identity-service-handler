@@ -45,6 +45,7 @@ export async function getUserCphs(sub) {
 export async function getUserDetails(sub) {
   const context = users.get(sub) || users.get(DEFAULT_USER)
   return {
+    email: context.email || '',
     display_name: context.display_name || '',
     given_name: context.given_name || '',
     family_name: context.family_name || ''

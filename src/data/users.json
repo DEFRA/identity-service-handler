@@ -8,53 +8,31 @@
     "family_name": "User",
     "primary_cph": [
       {
-        "cph": "01/006/0045",
+        "cph": "44/081/0006",
         "role": "Owner"
       }
     ],
     "delegated_cph": [
       {
-        "cph": "01/028/0043",
+        "cph": "44/081/0001",
+        "role": "Keeper"
+      },
+      {
+        "cph": "44/081/0002",
+        "role": "Keeper",
+        "expiry_date": "2029-01-01"
+      },
+      {
+        "cph": "44/081/0003",
+        "role": "Agent"
+      },
+      {
+        "cph": "44/081/0004",
         "role": "Agent",
         "expiry_date": "2029-01-01"
       },
       {
-        "cph": "01/030/0034",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/040/0040",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/043/0049",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/049/0284",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/063/0196",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/064/0071",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/070/0020",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "01/109/0038",
+        "cph": "44/081/0005",
         "role": "Agent",
         "expiry_date": "2029-01-01"
       }
@@ -68,35 +46,20 @@
     "given_name": "Max",
     "family_name": "Bladen-Clark",
     "primary_cph": [
-      {
-        "cph": "44/081/0006",
-        "role": "Owner"
-      }
+      { "cph": "12/500/0001", "role": "Owner" },
+      { "cph": "12/500/0002", "role": "Owner" },
+      { "cph": "12/500/0003", "role": "Owner" },
+      { "cph": "12/500/0004", "role": "Owner" },
+      { "cph": "12/500/0005", "role": "Owner" },
+      { "cph": "12/500/0006", "role": "Owner" },
+      { "cph": "12/500/0007", "role": "Sole Occupier" },
+      { "cph": "12/500/0008", "role": "Keeper" },
+      { "cph": "12/500/0009", "role": "Keeper" },
+      { "cph": "12/500/0010", "role": "Agent" }
     ],
     "delegated_cph": [
-      {
-        "cph": "44/081/0001",
-        "role": "Keeper"
-      },
-      {
-        "cph": "44/081/0002",
-        "role": "Keeper",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "44/081/0003",
-        "role": "Agent"
-      },
-      {
-        "cph": "44/081/0004",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "44/081/0005",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      }
+      { "cph": "01/028/0043", "role": "Agent", "expiry_date": "2029-01-01" },
+      { "cph": "01/030/0034", "role": "Agent", "expiry_date": "2029-01-01" }
     ]
   },
   {
@@ -107,35 +70,20 @@
     "given_name": "Cedric",
     "family_name": "Brasey",
     "primary_cph": [
-      {
-        "cph": "44/081/0006",
-        "role": "Owner"
-      }
+      { "cph": "12/500/0001", "role": "Owner" },
+      { "cph": "12/500/0002", "role": "Owner" },
+      { "cph": "12/500/0003", "role": "Owner" },
+      { "cph": "12/500/0004", "role": "Owner" },
+      { "cph": "12/500/0005", "role": "Owner" },
+      { "cph": "12/500/0006", "role": "Owner" },
+      { "cph": "12/500/0007", "role": "Sole Occupier" },
+      { "cph": "12/500/0008", "role": "Keeper" },
+      { "cph": "12/500/0009", "role": "Keeper" },
+      { "cph": "12/500/0010", "role": "Agent" }
     ],
     "delegated_cph": [
-      {
-        "cph": "44/081/0001",
-        "role": "Keeper"
-      },
-      {
-        "cph": "44/081/0002",
-        "role": "Keeper",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "44/081/0003",
-        "role": "Agent"
-      },
-      {
-        "cph": "44/081/0004",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      },
-      {
-        "cph": "44/081/0005",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
-      }
+      { "cph": "01/028/0043", "role": "Agent", "expiry_date": "2029-01-01" },
+      { "cph": "01/030/0034", "role": "Agent", "expiry_date": "2029-01-01" }
     ]
   }
 ]

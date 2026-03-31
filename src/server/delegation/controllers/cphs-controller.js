@@ -2,19 +2,21 @@ import Joi from 'joi'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
-
-const CPH_REGEX = /^\d{2}\/\d{3}\/\d{4}$/
+import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
+import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
+import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
 
 export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationDraftService(request)
-    const availableCphs = await getAvailableCphs(userService, sub)
+    const userContext = await userService.getUserContext(sub)
+    const availableCphs = getDelegatableCphs(userContext)
 
     return h.view(
       'delegation/cphs',
       viewModel({
-        checkboxItems: buildCheckboxItems(
+        checkboxItems: buildCphCheckboxItems(
           availableCphs,
           draftService.getCphs()
         ),
@@ -26,26 +28,22 @@ export const cphsController = (userService) => ({
   }
 })
 
-export const cphsSubmitController = (delegationService, userService) => ({
+export const cphsSubmitController = (userService) => ({
   options: {
     validate: {
       payload: Joi.object({
-        cphs: Joi.alternatives()
-          .try(
-            Joi.string().pattern(CPH_REGEX),
-            Joi.array().items(Joi.string().pattern(CPH_REGEX)).min(1)
-          )
-          .required()
+        cphs: cphsSchema
       }),
       failAction: async (request, h, err) => {
         const sub = request.auth?.credentials?.sub
-        const availableCphs = await getAvailableCphs(userService, sub)
+        const userContext = await userService.getUserContext(sub)
+        const availableCphs = getDelegatableCphs(userContext)
 
         return h
           .view(
             'delegation/cphs',
             viewModel({
-              checkboxItems: buildCheckboxItems(
+              checkboxItems: buildCphCheckboxItems(
                 availableCphs,
                 normaliseCheckboxPayload(request.payload?.cphs)
               ),
@@ -53,7 +51,7 @@ export const cphsSubmitController = (delegationService, userService) => ({
                 cphs: normaliseCheckboxPayload(request.payload?.cphs)
               },
               errors: {
-                cphs: getErrorFromValidation(err)
+                cphs: getCphValidationError(err)
               }
             })
           )
@@ -66,14 +64,15 @@ export const cphsSubmitController = (delegationService, userService) => ({
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationDraftService(request)
     const cphs = normaliseCheckboxPayload(request.payload.cphs)
-    const availableCphs = await getAvailableCphs(userService, sub)
+    const userContext = await userService.getUserContext(sub)
+    const availableCphs = getDelegatableCphs(userContext)
 
     if (cphs.some((cph) => !availableCphs.includes(cph))) {
       return h
         .view(
           'delegation/cphs',
           viewModel({
-            checkboxItems: buildCheckboxItems(availableCphs, cphs),
+            checkboxItems: buildCphCheckboxItems(availableCphs, cphs),
             formValues: {
               cphs
             },
@@ -87,65 +86,21 @@ export const cphsSubmitController = (delegationService, userService) => ({
 
     draftService.setCphs(cphs)
 
-    await delegationService.createInvite(sub, {
-      name: draftService.getFullName(),
-      email: draftService.getEmail(),
-      species: draftService.getSpecies(),
-      cphs: draftService.getCphs()
-    })
-
-    const email = draftService.getEmail()
-    draftService.clearDraft()
-
-    return h.view('delegation/confirmation', {
-      pageTitle: 'You delegation invite has been sent',
-      heading: 'You delegation invite has been sent',
-      email
-    })
+    return h.redirect('/delegation/create/confirm')
   }
 })
-
-function getErrorFromValidation(validationError) {
-  const details =
-    validationError?.details ?? validationError?.data?.details ?? []
-
-  if (
-    details.some(
-      (detail) =>
-        detail?.type === 'string.pattern.base' ||
-        detail?.type === 'array.includes'
-    )
-  ) {
-    return 'Enter a County Parish Holding in the correct format, like 12/345/6789'
-  }
-
-  return 'Select at least one County Parish Holding'
-}
-
-async function getAvailableCphs(userService, sub) {
-  const userContext = await userService.getUserContext(sub)
-
-  return (userContext.primary_cph || [])
-    .filter((cph) => cph.role === 'Owner')
-    .map(({ cph }) => cph)
-}
-
-function buildCheckboxItems(availableCphs, selectedCphs) {
-  return availableCphs.map((cph) => ({
-    value: cph,
-    text: `County Parish Holding Number ${cph}`,
-    checked: selectedCphs.includes(cph)
-  }))
-}
 
 function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: withErrorPageTitle('Define delegation access', errors),
-    heading: 'Define delegation access',
+    pageTitle: withErrorPageTitle(
+      'Manage access to your County Parish Holdings',
+      errors
+    ),
+    heading: 'Manage access to your County Parish Holdings',
     caption:
-      'Select the County Parish Holdings that your want your delegate to have access to',
+      'Select the County Parish Holdings that you want your delegate to have access to',
     checkboxItems: [],
     formValues: {
       cphs: []

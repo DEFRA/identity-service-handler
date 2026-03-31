@@ -1,0 +1,55 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "cph-checkboxes/macro.njk" import appCphCheckboxes %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a href="/delegation" class="govuk-back-link">Back</a>
+
+      {% if errors.cphs %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errors.cphs,
+              href: "#cphs"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ heading }}</h1>
+
+      <p class="govuk-body">
+        Confirm the county parish holdings that can be managed on your behalf for the following delegate or remove the delegate entirely:
+      </p>
+
+      <dl class="govuk-summary-list govuk-summary-list--no-border">
+        <div class="govuk-summary-list__row">
+          <dd class="govuk-summary-list__value">{{ delegate.email }}</dd>
+          <dd class="govuk-summary-list__actions">
+            <a href="/delegation/{{ delegate.id }}/delete" class="govuk-link">Remove</a>
+          </dd>
+        </div>
+      </dl>
+
+      <h2 class="govuk-heading-m">County Parish Holding Numbers:</h2>
+
+      <form method="post" action="/delegation/{{ delegate.id }}/manage">
+        <input type="hidden" name="crumb" value="{{ crumb }}">
+        {{ appCphCheckboxes({
+          caption: "County Parish Holding Numbers",
+          checkboxItems: checkboxItems,
+          errorMessage: errors.cphs
+        }) }}
+
+        {{ govukButton({
+          text: "Confirm"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
