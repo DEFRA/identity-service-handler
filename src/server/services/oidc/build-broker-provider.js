@@ -1,7 +1,7 @@
 import Provider from 'oidc-provider'
 import { logger } from '../../common/helpers/logging/logger.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
-import { buildClientParams } from './build-client-params.js'
+import { findClient } from './find-client.js'
 
 export function buildBrokerProvider({
   cookiePassword,
@@ -11,14 +11,15 @@ export function buildBrokerProvider({
   clientsService,
   userService
 }) {
-  const configuration = buildBrokerConfiguration({
-    cookiePassword,
-    sessionCookieSecure,
-    redis,
-    userService
-  })
-
-  const oidc = new Provider(issuer, configuration)
+  const oidc = new Provider(
+    issuer,
+    buildBrokerConfiguration({
+      cookiePassword,
+      sessionCookieSecure,
+      redis,
+      userService
+    })
+  )
 
   oidc.on('server_error', (ctx, err) => {
     logger.error(`[oidc-provider] server_error: ${err?.message}`)
@@ -53,11 +54,8 @@ export function buildBrokerProvider({
   })
 
   // Dynamic client loading
-  oidc.Client.find = async (clientId) => {
-    const c = await clientsService.getClient(clientId)
-    if (!c) return undefined
-    return new oidc.Client(buildClientParams(c))
-  }
+  oidc.Client.find = (clientId) =>
+    findClient(clientId, clientsService, oidc.Client)
 
   return oidc
 }
