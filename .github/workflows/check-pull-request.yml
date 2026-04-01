@@ -47,6 +47,6 @@ jobs:
         with:
           args: >
             -Dsonar.organization=defra
-            -Dsonar.projectKey=$SONAR_TOKEN
+            -Dsonar.projectKey=${{ secrets.SONAR_TOKEN }}
             -Dsonar.exclusions=src/**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
