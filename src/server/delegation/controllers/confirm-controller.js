@@ -1,8 +1,8 @@
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 
 export const confirmController = () => ({
   handler: async (request, h) => {
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
 
     return h.view('delegation/confirm', {
       pageTitle: 'Confirm delegate details',
@@ -16,7 +16,7 @@ export const confirmController = () => ({
 export const confirmSubmitController = (delegationService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
     const email = draftService.getEmail()
 
     await delegationService.createInvite(sub, {

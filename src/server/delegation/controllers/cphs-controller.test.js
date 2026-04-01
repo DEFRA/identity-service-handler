@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { cphsController, cphsSubmitController } from './cphs-controller.js'
 
 const mocks = {
@@ -29,7 +29,7 @@ describe('cphsController()', () => {
         { cph: '35/345/0005', role: 'Sole Occupier' }
       ]
     })
-    vi.spyOn(DelegationDraftService.prototype, 'getCphs').mockReturnValue([
+    vi.spyOn(DelegationBuilder.prototype, 'getCphs').mockReturnValue([
       '12/345/6789'
     ])
     mocks.view.mockReturnValue('view-response')
@@ -76,7 +76,7 @@ describe('cphsSubmitController()', () => {
       getUserContext: mocks.getUserContext
     }
     const setCphs = vi
-      .spyOn(DelegationDraftService.prototype, 'setCphs')
+      .spyOn(DelegationBuilder.prototype, 'setCphs')
       .mockReturnValue(undefined)
     mocks.getUserContext.mockResolvedValue({
       primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
@@ -201,9 +201,7 @@ describe('cphsSubmitController()', () => {
     const userService = {
       getUserContext: mocks.getUserContext
     }
-    vi.spyOn(DelegationDraftService.prototype, 'setCphs').mockReturnValue(
-      undefined
-    )
+    vi.spyOn(DelegationBuilder.prototype, 'setCphs').mockReturnValue(undefined)
     mocks.getUserContext.mockResolvedValue({
       primary_cph: [{ cph: '12/345/6789', role: 'Owner' }]
     })

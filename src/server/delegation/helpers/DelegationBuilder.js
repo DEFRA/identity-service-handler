@@ -3,7 +3,7 @@ const DRAFT_KEY = 'delegationDraft'
 /**
  * Session-backed draft storage for the multi-step delegation flow.
  */
-export class DelegationDraftService {
+export class DelegationBuilder {
   /**
    * @param {{ yar?: { get?: (key: string) => unknown, set?: (key: string, value: unknown) => void, clear?: (key: string) => void } } | { get?: (key: string) => unknown, set?: (key: string, value: unknown) => void, clear?: (key: string) => void }} requestOrYar
    */

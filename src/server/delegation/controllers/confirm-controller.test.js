@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   confirmController,
   confirmSubmitController
@@ -18,10 +18,10 @@ describe('confirmController()', () => {
 
   test('it renders the confirm page with masked email and cphs from draft', async () => {
     // Arrange
-    vi.spyOn(DelegationDraftService.prototype, 'getEmail').mockReturnValue(
+    vi.spyOn(DelegationBuilder.prototype, 'getEmail').mockReturnValue(
       'joe@example.gov.uk'
     )
-    vi.spyOn(DelegationDraftService.prototype, 'getCphs').mockReturnValue([
+    vi.spyOn(DelegationBuilder.prototype, 'getCphs').mockReturnValue([
       '12/345/6789'
     ])
     mocks.view.mockReturnValue('view-response')
@@ -51,13 +51,13 @@ describe('confirmSubmitController()', () => {
   test('it creates the invite, clears draft and renders the confirmation page', async () => {
     // Arrange
     const getEmail = vi
-      .spyOn(DelegationDraftService.prototype, 'getEmail')
+      .spyOn(DelegationBuilder.prototype, 'getEmail')
       .mockReturnValue('joe@example.gov.uk')
     const getCphs = vi
-      .spyOn(DelegationDraftService.prototype, 'getCphs')
+      .spyOn(DelegationBuilder.prototype, 'getCphs')
       .mockReturnValue(['12/345/6789'])
     const clearDraft = vi
-      .spyOn(DelegationDraftService.prototype, 'clearDraft')
+      .spyOn(DelegationBuilder.prototype, 'clearDraft')
       .mockReturnValue(undefined)
     const delegationService = { createInvite: mocks.createInvite }
     mocks.createInvite.mockResolvedValue(undefined)

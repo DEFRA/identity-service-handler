@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
@@ -12,7 +12,7 @@ const TEMPLATE = 'delegation/cphs'
 export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
     const userContext = await userService.getUserContext(sub)
     const availableCphs = getDelegatableCphs(userContext)
 
@@ -65,7 +65,7 @@ export const cphsSubmitController = (userService) => ({
   },
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
     const cphs = normaliseCheckboxPayload(request.payload.cphs)
     const userContext = await userService.getUserContext(sub)
     const availableCphs = getDelegatableCphs(userContext)

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   createController,
   createSubmitController
@@ -21,9 +21,7 @@ describe('createController()', () => {
   test('it renders the create page with default view model', async () => {
     // Arrange
     const request = {}
-    vi.spyOn(DelegationDraftService.prototype, 'getEmail').mockReturnValue(
-      undefined
-    )
+    vi.spyOn(DelegationBuilder.prototype, 'getEmail').mockReturnValue(undefined)
     mocks.view.mockReturnValue('view-response')
     const h = { view: mocks.view }
 
@@ -55,7 +53,7 @@ describe('createSubmitController()', () => {
   test('it stores email and redirects on valid payload', async () => {
     // Arrange
     const setEmail = vi
-      .spyOn(DelegationDraftService.prototype, 'setEmail')
+      .spyOn(DelegationBuilder.prototype, 'setEmail')
       .mockReturnValue(undefined)
     const request = {
       payload: {
