@@ -163,6 +163,53 @@ describe('DelegationService', () => {
     })
   })
 
+  describe('updateDelegation()', () => {
+    test('it merges updates onto the matching delegation and persists', async () => {
+      // Arrange
+      const service = new DelegationService(mocks.redis, {})
+      const cached = [
+        { id: '1', email: 'o@example.gov.uk', cphs: [], active: true },
+        { id: '2', email: 't@example.gov.uk', cphs: [], active: false }
+      ]
+      mocks.redis.get.mockResolvedValue(JSON.stringify(cached))
+      mocks.redis.set.mockResolvedValue('OK')
+
+      // Act
+      await service.updateDelegation(userId, '2', {
+        email: 'updated@example.gov.uk',
+        active: true
+      })
+
+      // Assert
+      expect(mocks.redis.set).toHaveBeenCalledWith(
+        `delegates:${userId}`,
+        JSON.stringify([
+          { id: '1', email: 'o@example.gov.uk', cphs: [], active: true },
+          { id: '2', email: 'updated@example.gov.uk', cphs: [], active: true }
+        ])
+      )
+    })
+
+    test('it leaves non-matching delegations unchanged', async () => {
+      // Arrange
+      const service = new DelegationService(mocks.redis, {})
+      const cached = [
+        { id: '1', email: 'o@example.gov.uk', cphs: [], active: true },
+        { id: '2', email: 't@example.gov.uk', cphs: [], active: false }
+      ]
+      mocks.redis.get.mockResolvedValue(JSON.stringify(cached))
+      mocks.redis.set.mockResolvedValue('OK')
+
+      // Act
+      await service.updateDelegation(userId, '2', { active: true })
+
+      // Assert
+      const [, value] = mocks.redis.set.mock.lastCall
+      const persisted = JSON.parse(value)
+      expect(persisted[0]).toEqual(cached[0])
+    })
+  })
+
   describe('deleteDelegation()', () => {
     test('it removes matching delegation and persists updated array', async () => {
       // Arrange
