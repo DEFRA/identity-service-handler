@@ -213,6 +213,78 @@ describe('create()', () => {
     expect(result).toBe(mocks.h.abandon)
   })
 
+  test('it completes consent without adding scopes when details are absent', async () => {
+    // Arrange
+    const request = {
+      params: { uid: 'interaction-123' },
+      raw: { req: {}, res: {} }
+    }
+    const h = mocks.h
+    mocks.brokerProvider.interactionDetails.mockResolvedValue({
+      prompt: { name: 'consent' },
+      params: { client_id: 'client-123' },
+      session: { accountId: 'broker-sub' },
+      grantId: undefined
+    })
+    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    mocks.grantSave.mockResolvedValue('grant-123')
+    const handler = create({
+      config,
+      b2cConfiguration: {},
+      brokerProvider: mocks.brokerProvider,
+      upstreamStateStore: mocks.upstreamStateStore
+    })
+
+    // Act
+    const result = await handler(request, h)
+
+    // Assert
+    expect(mocks.addOIDCScope).not.toHaveBeenCalled()
+    expect(mocks.addOIDCClaims).not.toHaveBeenCalled()
+    expect(mocks.addResourceScope).not.toHaveBeenCalled()
+    expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
+      request.raw.req,
+      request.raw.res,
+      { consent: { grantId: 'grant-123' } },
+      { mergeWithLastSubmission: true }
+    )
+    expect(result).toBe(mocks.h.abandon)
+  })
+
+  test('it skips addResourceScope when a resource entry has an empty scopes array', async () => {
+    // Arrange
+    const request = {
+      params: { uid: 'interaction-123' },
+      raw: { req: {}, res: {} }
+    }
+    const h = mocks.h
+    mocks.brokerProvider.interactionDetails.mockResolvedValue({
+      prompt: {
+        name: 'consent',
+        details: {
+          missingResourceScopes: { api: [] }
+        }
+      },
+      params: { client_id: 'client-123' },
+      session: { accountId: 'broker-sub' },
+      grantId: undefined
+    })
+    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    mocks.grantSave.mockResolvedValue('grant-123')
+    const handler = create({
+      config,
+      b2cConfiguration: {},
+      brokerProvider: mocks.brokerProvider,
+      upstreamStateStore: mocks.upstreamStateStore
+    })
+
+    // Act
+    await handler(request, h)
+
+    // Assert
+    expect(mocks.addResourceScope).not.toHaveBeenCalled()
+  })
+
   test('it finishes login immediately when the user is already authenticated', async () => {
     // Arrange
     const request = {

@@ -110,6 +110,70 @@ describe('listController()', () => {
     )
   })
 
+  test('it renders first page with no previous link when there are multiple pages', async () => {
+    // Arrange
+    const delegationService = { getDelegations: mocks.getDelegations }
+    mocks.getDelegations.mockResolvedValue({
+      page: 1,
+      items: [{ id: '1', email: 'a@example.gov.uk', active: true }],
+      total_pages: 2,
+      total_items: 6
+    })
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      query: { page: '1' },
+      path: '/delegation'
+    }
+    mocks.view.mockReturnValue('view-response')
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    await listController(delegationService).handler(request, h)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/index',
+      expect.objectContaining({
+        pagination: expect.objectContaining({
+          previous: null,
+          next: { labelText: 'Next', href: '/delegation?page=2' }
+        })
+      })
+    )
+  })
+
+  test('it renders last page with no next link when there are multiple pages', async () => {
+    // Arrange
+    const delegationService = { getDelegations: mocks.getDelegations }
+    mocks.getDelegations.mockResolvedValue({
+      page: 2,
+      items: [{ id: '6', email: 'f@example.gov.uk', active: true }],
+      total_pages: 2,
+      total_items: 6
+    })
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      query: { page: '2' },
+      path: '/delegation'
+    }
+    mocks.view.mockReturnValue('view-response')
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    await listController(delegationService).handler(request, h)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/index',
+      expect.objectContaining({
+        pagination: expect.objectContaining({
+          previous: { labelText: 'Previous', href: '/delegation?page=1' },
+          next: null
+        })
+      })
+    )
+  })
+
   test('it redirects to the current path when page query is invalid', async () => {
     // Arrange
     const delegationService = {
