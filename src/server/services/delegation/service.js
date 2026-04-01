@@ -1,3 +1,5 @@
+import helperClient from '../../clients/helperClient.js'
+
 /**
  * @typedef {object} Delegate
  * @property {string} id
@@ -21,47 +23,55 @@
  */
 
 /**
- * @param {string} _userId
- * @param {number} [_page=1]
+ * @param {string} userId
+ * @param {number} [page=1]
  * @returns {Promise<DelegationsPage>}
  */
-export const getDelegations = async (_userId, _page = 1) => {
-  throw new Error('Not implemented')
+export const getDelegations = async (userId, page = 1) => {
+  const response = await helperClient.get(`/delegations/${userId}?page=${page}`)
+
+  return response.payload
 }
 
 /**
- * @param {string} _userId
- * @param {string} _delegateId
+ * @param {string} userId
+ * @param {string} delegateId
  * @returns {Promise<Delegate | undefined>}
  */
-export const getDelegation = async (_userId, _delegateId) => {
-  throw new Error('Not implemented')
+export const getDelegation = async (userId, delegateId) => {
+  const response = await helperClient.get(
+    `/delegations/${userId}/${delegateId}`
+  )
+
+  return response.payload
 }
 
 /**
- * @param {string} _userId
- * @param {DelegateInvite} _invite
+ * @param {string} userId
+ * @param {DelegateInvite} invite
  * @returns {Promise<void>}
  */
-export const createInvite = async (_userId, _invite) => {
-  throw new Error('Not implemented')
+export const createInvite = async (userId, invite) => {
+  await helperClient.post(`/delegations/${userId}`, { payload: invite })
 }
 
 /**
- * @param {string} _userId
- * @param {string} _delegateId
- * @param {Partial<Delegate>} _updates
+ * @param {string} userId
+ * @param {string} delegateId
+ * @param {Partial<Delegate>} updates
  * @returns {Promise<void>}
  */
-export const updateDelegation = async (_userId, _delegateId, _updates) => {
-  throw new Error('Not implemented')
+export const updateDelegation = async (userId, delegateId, updates) => {
+  await helperClient.patch(`/delegations/${userId}/${delegateId}`, {
+    payload: updates
+  })
 }
 
 /**
- * @param {string} _userId
- * @param {string} _delegateId
+ * @param {string} userId
+ * @param {string} delegateId
  * @returns {Promise<void>}
  */
-export const deleteDelegation = async (_userId, _delegateId) => {
-  throw new Error('Not implemented')
+export const deleteDelegation = async (userId, delegateId) => {
+  await helperClient.delete(`/delegations/${userId}/${delegateId}`)
 }
