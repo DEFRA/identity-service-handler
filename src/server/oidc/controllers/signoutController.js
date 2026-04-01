@@ -8,16 +8,35 @@ const OIDC_SIGNOUT_PARAM_NAMES = [
   'logout_hint'
 ]
 
-function asCallerRoot(rawUrl) {
+export function create({ config }) {
+  return async function (request, h) {
+    request.cookieAuth.clear()
+
+    const signoutUrl = buildSignoutUrl(
+      config.get('idService.handler.baseUrl'),
+      request.query
+    )
+    const postLogoutRedirectUri = resolvePostLogoutRedirectUri(request)
+
+    const response = h.redirect(signoutUrl.href)
+    response.state(
+      SIGNOUT_REDIRECT_COOKIE_NAME,
+      encodeURIComponent(postLogoutRedirectUri),
+      signoutCookieOptions(config.get('session.cookie.secure'))
+    )
+
+    return response
+  }
+}
+
+function toRootUrl(rawUrl) {
   if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
     return undefined
   }
 
   try {
     return new URL('/', rawUrl).href
-  } catch {
-    return undefined
-  }
+  } catch {}
 }
 
 function resolvePostLogoutRedirectUri(request) {
@@ -30,43 +49,30 @@ function resolvePostLogoutRedirectUri(request) {
   }
 
   return (
-    asCallerRoot(request?.headers?.referer) ??
-    asCallerRoot(request?.headers?.origin) ??
+    toRootUrl(request?.headers?.referer) ??
+    toRootUrl(request?.headers?.origin) ??
     '/'
   )
 }
 
-export function create({ config }) {
-  return async function (request, h) {
-    request.cookieAuth.clear()
-
-    const signoutUrl = new URL(
-      'oidc/signout',
-      config.get('idService.handler.baseUrl')
-    )
-    for (const paramName of OIDC_SIGNOUT_PARAM_NAMES) {
-      const value = request?.query?.[paramName]
-      if (typeof value === 'string' && value.trim()) {
-        signoutUrl.searchParams.set(paramName, value.trim())
-      }
+function buildSignoutUrl(baseUrl, query) {
+  const url = new URL('oidc/signout', baseUrl)
+  for (const paramName of OIDC_SIGNOUT_PARAM_NAMES) {
+    const value = query?.[paramName]
+    if (typeof value === 'string' && value.trim()) {
+      url.searchParams.set(paramName, value.trim())
     }
+  }
+  return url
+}
 
-    const postLogoutRedirectUri = resolvePostLogoutRedirectUri(request)
-
-    const response = h.redirect(signoutUrl.href)
-    response.state(
-      SIGNOUT_REDIRECT_COOKIE_NAME,
-      encodeURIComponent(postLogoutRedirectUri),
-      {
-        path: '/',
-        isSecure: config.get('session.cookie.secure'),
-        isHttpOnly: true,
-        isSameSite: 'Lax',
-        ttl: 5 * 60 * 1000,
-        encoding: 'none'
-      }
-    )
-
-    return response
+function signoutCookieOptions(isSecure) {
+  return {
+    path: '/',
+    isSecure,
+    isHttpOnly: true,
+    isSameSite: 'Lax',
+    ttl: 5 * 60 * 1000,
+    encoding: 'none'
   }
 }

@@ -114,6 +114,50 @@ describe('createSubmitController()', () => {
     expect(result).toBe('takeover-response')
   })
 
+  test('it re-renders create page from failAction when error is nested under data.details', async () => {
+    // Arrange
+    const request = { payload: { email: '' } }
+    mocks.takeover.mockReturnValue('takeover-response')
+    mocks.code.mockReturnValue({ takeover: mocks.takeover })
+    mocks.view.mockReturnValue({ code: mocks.code })
+    const h = { view: mocks.view }
+    const err = {
+      data: { details: [{ path: ['email'], type: 'string.empty' }] }
+    }
+
+    // Act
+    await createSubmitController().options.validate.failAction(request, h, err)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/create',
+      expect.objectContaining({
+        errors: { email: "Enter the delegate's email address" }
+      })
+    )
+  })
+
+  test('it ignores validation details for unknown fields', async () => {
+    // Arrange
+    const request = { payload: { email: '' } }
+    mocks.takeover.mockReturnValue('takeover-response')
+    mocks.code.mockReturnValue({ takeover: mocks.takeover })
+    mocks.view.mockReturnValue({ code: mocks.code })
+    const h = { view: mocks.view }
+    const err = {
+      details: [{ path: ['unknown-field'], type: 'string.empty' }]
+    }
+
+    // Act
+    await createSubmitController().options.validate.failAction(request, h, err)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/create',
+      expect.objectContaining({ errors: {} })
+    )
+  })
+
   test('it re-renders create page from failAction for invalid email format', async () => {
     // Arrange
     const request = {

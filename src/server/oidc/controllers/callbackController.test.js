@@ -29,6 +29,58 @@ describe('create()', () => {
     vi.clearAllMocks()
   })
 
+  test('it returns 400 when query is null on a get request', async () => {
+    // Arrange
+    const request = {
+      method: 'get',
+      query: null
+    }
+    const h = {
+      response: mocks.response,
+      redirect: mocks.redirect
+    }
+    const handler = create({
+      config,
+      b2cConfiguration: {},
+      brokerProvider: {},
+      subjectsService: mocks.subjectsService,
+      upstreamStateStore: mocks.upstreamStateStore
+    })
+
+    // Act
+    const result = await handler(request, h)
+
+    // Assert
+    expect(mocks.response).toHaveBeenCalledWith('Missing code')
+    expect(result).toBe('Missing code')
+  })
+
+  test('it returns 400 when payload is null on a post request', async () => {
+    // Arrange
+    const request = {
+      method: 'post',
+      payload: null
+    }
+    const h = {
+      response: mocks.response,
+      redirect: mocks.redirect
+    }
+    const handler = create({
+      config,
+      b2cConfiguration: {},
+      brokerProvider: {},
+      subjectsService: mocks.subjectsService,
+      upstreamStateStore: mocks.upstreamStateStore
+    })
+
+    // Act
+    const result = await handler(request, h)
+
+    // Assert
+    expect(mocks.response).toHaveBeenCalledWith('Missing code')
+    expect(result).toBe('Missing code')
+  })
+
   test('it returns 400 when code is missing', async () => {
     // Arrange
     const request = {

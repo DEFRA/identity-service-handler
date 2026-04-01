@@ -1,58 +1,88 @@
-import { vi } from 'vitest'
-
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { Cluster, Redis } from 'ioredis'
-
-import { config } from '../../../config/config.js'
 import { buildRedisClient } from './redis-client.js'
 
 vi.mock('ioredis', () => ({
-  ...vi.importActual('ioredis'),
-  Cluster: vi.fn(function MockCluster() {
-    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
-  }),
-  Redis: vi.fn(function MockRedis() {
-    return { on: () => ({}), get: vi.fn(), set: vi.fn(), del: vi.fn() }
-  })
+  Redis: vi.fn(),
+  Cluster: vi.fn()
 }))
 
-describe('#buildRedisClient', () => {
+Redis.prototype.on = vi.fn()
+Cluster.prototype.on = vi.fn()
+
+describe('buildRedisClient', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
   describe('When Redis Single InstanceCache is requested', () => {
-    beforeEach(() => {
-      buildRedisClient(config.get('redis'))
-    })
+    test('it instantiates Redis with the correct config and registers event handlers', () => {
+      // Arrange
+      const config = {
+        host: 'localhost',
+        keyPrefix: 'test:',
+        useSingleInstanceCache: true,
+        useTLS: false,
+        username: '',
+        password: ''
+      }
 
-    test('Should instantiate a single Redis client', () => {
-      const redisHost = config.get('redis.host')
+      // Act
+      const client = buildRedisClient(config)
 
+      // Assert
+      expect(client).toBeInstanceOf(Redis)
       expect(Redis).toHaveBeenCalledWith({
         db: 0,
-        host: redisHost,
-        keyPrefix: 'identity-service-handler:',
+        host: 'localhost',
+        keyPrefix: 'test:',
         port: 6379
       })
+      expect(Redis.prototype.on).toHaveBeenCalledWith(
+        'connect',
+        expect.any(Function)
+      )
+      expect(Redis.prototype.on).toHaveBeenCalledWith(
+        'error',
+        expect.any(Function)
+      )
     })
   })
 
   describe('When a Redis Cluster is requested', () => {
-    beforeEach(() => {
-      buildRedisClient({
-        ...config.get('redis'),
+    test('it instantiates Cluster with the correct config and registers event handlers', () => {
+      // Arrange
+      const config = {
+        host: 'localhost',
+        keyPrefix: 'test:',
         useSingleInstanceCache: false,
         useTLS: true,
         username: 'user',
         password: 'pass'
-      })
-    })
+      }
 
-    test('Should instantiate a Redis Cluster client', () => {
-      const redisHost = config.get('redis.host')
+      // Act
+      const client = buildRedisClient(config)
 
-      expect(Cluster).toHaveBeenCalledWith([{ host: redisHost, port: 6379 }], {
-        dnsLookup: expect.any(Function),
-        keyPrefix: 'identity-service-handler:',
-        redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
-        slotsRefreshTimeout: 10000
-      })
+      // Assert
+      expect(client).toBeInstanceOf(Cluster)
+      expect(Cluster).toHaveBeenCalledWith(
+        [{ host: 'localhost', port: 6379 }],
+        {
+          dnsLookup: expect.any(Function),
+          keyPrefix: 'test:',
+          redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
+          slotsRefreshTimeout: 10000
+        }
+      )
+      expect(Cluster.prototype.on).toHaveBeenCalledWith(
+        'connect',
+        expect.any(Function)
+      )
+      expect(Cluster.prototype.on).toHaveBeenCalledWith(
+        'error',
+        expect.any(Function)
+      )
     })
   })
 })

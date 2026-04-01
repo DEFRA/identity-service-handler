@@ -19,7 +19,7 @@ import { getCacheEngine } from './common/helpers/session-cache/cache-engine.js'
 import { secureContext } from '@defra/hapi-secure-context'
 import { contentSecurityPolicy } from './common/helpers/content-security-policy.js'
 import { requestContext } from './common/helpers/request-context.js'
-import { createLogger } from './common/helpers/logging/logger.js'
+import { logger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
 import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
@@ -30,9 +30,7 @@ import { SubjectsService } from './services/subjects.js'
 import { ApplicationService } from './services/application/ApplicationService.js'
 import { ApplicationCache } from './services/application/ApplicationCache.js'
 import { UpstreamStateStore } from './upstream/state-store.js'
-import { getOidcRoutes } from './common/helpers/oidc-config.js'
-
-const logger = createLogger()
+import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 
 export async function createServer() {
   setupProxy()
@@ -137,7 +135,7 @@ export async function createServer() {
 
   server.ext('onRequest', async (req, h) => {
     const p = req.path
-    const oidcRoutes = await getOidcRoutes()
+    const oidcRoutes = OIDC_ROUTES
 
     // Let hapi handle anything that is not an oidc route
     if (!oidcRoutes.some((r) => p.startsWith(r))) {

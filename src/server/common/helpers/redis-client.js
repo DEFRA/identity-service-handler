@@ -1,6 +1,8 @@
 import { Cluster, Redis } from 'ioredis'
+import { logger } from './logging/logger.js'
 
-import { createLogger } from './logging/logger.js'
+const port = 6379
+const db = 0
 
 /**
  * Setup Redis and provide a redis client
@@ -8,24 +10,19 @@ import { createLogger } from './logging/logger.js'
  * Local development - 1 Redis instance
  * Environments - Elasticache / Redis Cluster with username and password
  */
-export function buildRedisClient(redisConfig) {
-  const logger = createLogger()
-  const port = 6379
-  const db = 0
-  const keyPrefix = redisConfig.keyPrefix
-  const host = redisConfig.host
+export function buildRedisClient({
+  keyPrefix,
+  host,
+  username,
+  password,
+  useTLS,
+  useSingleInstanceCache
+}) {
+  const credentials = username === '' ? {} : { username, password }
+  const tls = useTLS ? { tls: {} } : {}
   let redisClient
 
-  const credentials =
-    redisConfig.username === ''
-      ? {}
-      : {
-          username: redisConfig.username,
-          password: redisConfig.password
-        }
-  const tls = redisConfig.useTLS ? { tls: {} } : {}
-
-  if (redisConfig.useSingleInstanceCache) {
+  if (useSingleInstanceCache) {
     redisClient = new Redis({
       port,
       host,
@@ -64,24 +61,6 @@ export function buildRedisClient(redisConfig) {
       `Redis connection error ${error}\nErrors:\n${error.errors}\nStack:\n${error.stack}`
     )
   })
-
-  const originalGet = redisClient.get.bind(redisClient)
-  redisClient.get = (key, ...args) => {
-    logger.debug(`Redis GET key: ${key}`)
-    return originalGet(key, ...args)
-  }
-
-  const originalSet = redisClient.set.bind(redisClient)
-  redisClient.set = (key, ...args) => {
-    logger.debug(`Redis SET key: ${key}`)
-    return originalSet(key, ...args)
-  }
-
-  const originalDel = redisClient.del.bind(redisClient)
-  redisClient.del = (key, ...args) => {
-    logger.debug(`Redis DEL key: ${key}`)
-    return originalDel(key, ...args)
-  }
 
   return redisClient
 }
