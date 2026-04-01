@@ -1,3 +1,4 @@
+import { pick } from '../../../common/pick.js'
 import { SubjectsService } from '../subjects.js'
 import data from '../../../data/users.json' with { type: 'json' }
 
@@ -28,13 +29,12 @@ const users = new Map(
  * @param {string} sub
  * @returns {Promise<UserCphAssignments>}
  */
-export async function getUserCphs(sub) {
-  const context = users.get(sub) || users.get(DEFAULT_USER)
-  return {
-    primary_cph: context.primary_cph || [],
-    delegated_cph: context.delegated_cph || []
-  }
-}
+export const getUserCphs = async (sub) =>
+  pick(
+    users.get(sub) || users.get(DEFAULT_USER),
+    'primary_cph',
+    'delegated_cph'
+  )
 
 /**
  * Fetches the details for a given user identifier.
@@ -42,12 +42,11 @@ export async function getUserCphs(sub) {
  * @param {string} sub
  * @returns {Promise<UserDetails>}
  */
-export async function getUserDetails(sub) {
-  const context = users.get(sub) || users.get(DEFAULT_USER)
-  return {
-    email: context.email || '',
-    display_name: context.display_name || '',
-    given_name: context.given_name || '',
-    family_name: context.family_name || ''
-  }
-}
+export const getUserDetails = async (sub) =>
+  pick(
+    users.get(sub) || users.get(DEFAULT_USER),
+    'email',
+    'display_name',
+    'given_name',
+    'family_name'
+  )
