@@ -30,7 +30,7 @@ import { SubjectsService } from './services/subjects.js'
 import { ApplicationService } from './services/application/ApplicationService.js'
 import { ApplicationCache } from './services/application/ApplicationCache.js'
 import { UpstreamStateStore } from './upstream/state-store.js'
-import { getOidcRoutes } from './common/helpers/oidc-config.js'
+import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 
 export async function createServer() {
   setupProxy()
@@ -135,7 +135,7 @@ export async function createServer() {
 
   server.ext('onRequest', async (req, h) => {
     const p = req.path
-    const oidcRoutes = await getOidcRoutes()
+    const oidcRoutes = OIDC_ROUTES
 
     // Let hapi handle anything that is not an oidc route
     if (!oidcRoutes.some((r) => p.startsWith(r))) {

@@ -1,6 +1,6 @@
 import { createServer } from '../../server.js'
 import { config } from '../../../config/config.js'
-import { getFormatedOidcRoutes } from './oidc-config.js'
+import { OIDC_ROUTES } from './oidc-config.js'
 
 async function startServer() {
   const server = await createServer()
@@ -15,8 +15,7 @@ async function startServer() {
 }
 
 async function logServerRoutes(server) {
-  const oidcRoutes = getFormatedOidcRoutes()
-
+  const oidcRoutes = OIDC_ROUTES.map((r) => `${'GET'.padEnd(7)} ${r}`)
   const serverRoutes = server
     .table()
     .filter((r) => !r.settings?.isInternal)

@@ -1,11 +1,8 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
-import * as oidcConfig from './oidc-config.js'
+import { OIDC_ROUTES } from './oidc-config.js'
 import { logServerRoutes } from './start-server.js'
 
-vi.mock('./oidc-config.js')
-
 const mocks = {
-  getFormatedOidcRoutes: vi.mocked(oidcConfig.getFormatedOidcRoutes),
   loggerInfo: vi.fn()
 }
 
@@ -16,10 +13,6 @@ afterEach(() => {
 describe('logServerRoutes()', () => {
   test('it logs oidc and server routes sorted alphabetically', async () => {
     // Arrange
-    mocks.getFormatedOidcRoutes.mockReturnValue([
-      'GET     /authorize',
-      'GET     /jwks'
-    ])
     const server = {
       table: vi.fn().mockReturnValue([
         { method: 'get', path: '/health', settings: {} },
@@ -27,17 +20,20 @@ describe('logServerRoutes()', () => {
       ]),
       logger: { info: mocks.loggerInfo }
     }
+    const expectedRoutes = [
+      ...OIDC_ROUTES.map((r) => `${'GET'.padEnd(7)} ${r}`),
+      'GET     /health',
+      'POST    /auth'
+    ]
+      .sort()
+      .join('\n')
 
     // Act
     await logServerRoutes(server)
 
     // Assert
     expect(mocks.loggerInfo).toHaveBeenCalledWith(
-      '\nSupported routes:\n' +
-        'GET     /authorize\n' +
-        'GET     /health\n' +
-        'GET     /jwks\n' +
-        'POST    /auth'
+      '\nSupported routes:\n' + expectedRoutes
     )
   })
 })
