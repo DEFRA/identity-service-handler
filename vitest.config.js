@@ -10,6 +10,12 @@ export default defineConfig({
       reportsDirectory: './coverage',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
+      thresholds: {
+        lines: 95,
+        branches: 95,
+        functions: 95,
+        statements: 95
+      },
       exclude: [
         ...configDefaults.exclude,
         '.public',
