@@ -37,3 +37,10 @@ jobs:
           set +e
           docker build --no-cache --tag cdp-node-frontend-template .
           exit $?
+
+      - name: Analyze with SonarQube
+        if: github.actor != 'dependabot[bot]'
+        uses: sonarsource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0 run `git ls-remote https://github.com/SonarSource/sonarqube-scan-action` to get the sha1 list
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
