@@ -39,6 +39,7 @@ RUN apk add --no-cache curl
 USER node
 
 COPY --from=production_build /home/node/package*.json ./
+COPY --from=production_build /home/node/certs ./certs/
 COPY --from=production_build /home/node/src ./src/
 COPY --from=production_build /home/node/.public/ ./.public/
 
