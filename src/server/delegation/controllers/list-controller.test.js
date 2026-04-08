@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { listController } from './list-controller.js'
 
 const mocks = {
-  getDelegations: vi.fn(),
+  getUserDelegates: vi.fn(),
   view: vi.fn(),
   redirect: vi.fn()
 }
@@ -15,23 +15,20 @@ describe('listController()', () => {
 
   test('it renders first page when no page query is provided', async () => {
     // Arrange
-    const delegationService = {
-      getDelegations: mocks.getDelegations
-    }
+    const userService = { getUserDelegates: mocks.getUserDelegates }
     const pageResult = {
-      page: 1,
+      page_number: 1,
       items: [
         {
-          id: 'delegate-1',
-          name: 'Joe Bloggs',
-          email: 'j@example.gov.uk',
-          active: true
+          id: 'user-1',
+          email: 'joe@example.gov.uk',
+          display_name: 'Joe Bloggs'
         }
       ],
       total_pages: 1,
-      total_items: 1
+      total_count: 1
     }
-    mocks.getDelegations.mockResolvedValue(pageResult)
+    mocks.getUserDelegates.mockResolvedValue(pageResult)
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
@@ -41,10 +38,10 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await listController(delegationService).handler(request, h)
+    const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getDelegations).toHaveBeenCalledWith('user-123', 1)
+    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', { page: 1 })
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
@@ -61,23 +58,16 @@ describe('listController()', () => {
 
   test('it renders the requested page and pagination links', async () => {
     // Arrange
-    const delegationService = {
-      getDelegations: mocks.getDelegations
-    }
+    const userService = { getUserDelegates: mocks.getUserDelegates }
     const pageResult = {
-      page: 2,
+      page_number: 2,
       items: [
-        {
-          id: 'delegate-6',
-          name: 'A Another',
-          email: 'a@example.gov.uk',
-          active: false
-        }
+        { id: 'user-6', email: 'a@example.gov.uk', display_name: 'A Another' }
       ],
       total_pages: 3,
-      total_items: 11
+      total_count: 11
     }
-    mocks.getDelegations.mockResolvedValue(pageResult)
+    mocks.getUserDelegates.mockResolvedValue(pageResult)
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
@@ -87,10 +77,10 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    await listController(delegationService).handler(request, h)
+    await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getDelegations).toHaveBeenCalledWith('user-123', 2)
+    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', { page: 2 })
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
@@ -112,12 +102,12 @@ describe('listController()', () => {
 
   test('it renders first page with no previous link when there are multiple pages', async () => {
     // Arrange
-    const delegationService = { getDelegations: mocks.getDelegations }
-    mocks.getDelegations.mockResolvedValue({
-      page: 1,
-      items: [{ id: '1', email: 'a@example.gov.uk', active: true }],
+    const userService = { getUserDelegates: mocks.getUserDelegates }
+    mocks.getUserDelegates.mockResolvedValue({
+      page_number: 1,
+      items: [{ id: '1', email: 'a@example.gov.uk', display_name: 'A' }],
       total_pages: 2,
-      total_items: 6
+      total_count: 6
     })
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -128,7 +118,7 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    await listController(delegationService).handler(request, h)
+    await listController(userService).handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -144,12 +134,12 @@ describe('listController()', () => {
 
   test('it renders last page with no next link when there are multiple pages', async () => {
     // Arrange
-    const delegationService = { getDelegations: mocks.getDelegations }
-    mocks.getDelegations.mockResolvedValue({
-      page: 2,
-      items: [{ id: '6', email: 'f@example.gov.uk', active: true }],
+    const userService = { getUserDelegates: mocks.getUserDelegates }
+    mocks.getUserDelegates.mockResolvedValue({
+      page_number: 2,
+      items: [{ id: '6', email: 'f@example.gov.uk', display_name: 'F' }],
       total_pages: 2,
-      total_items: 6
+      total_count: 6
     })
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -160,7 +150,7 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    await listController(delegationService).handler(request, h)
+    await listController(userService).handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -176,9 +166,7 @@ describe('listController()', () => {
 
   test('it redirects to the current path when page query is invalid', async () => {
     // Arrange
-    const delegationService = {
-      getDelegations: mocks.getDelegations
-    }
+    const userService = { getUserDelegates: mocks.getUserDelegates }
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: 'abc' },
@@ -188,24 +176,22 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await listController(delegationService).handler(request, h)
+    const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getDelegations).not.toHaveBeenCalled()
+    expect(mocks.getUserDelegates).not.toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
   })
 
   test('it redirects to the current path when requested page exceeds total pages', async () => {
     // Arrange
-    const delegationService = {
-      getDelegations: mocks.getDelegations
-    }
-    mocks.getDelegations.mockResolvedValue({
-      page: 3,
+    const userService = { getUserDelegates: mocks.getUserDelegates }
+    mocks.getUserDelegates.mockResolvedValue({
+      page_number: 3,
       items: [],
       total_pages: 3,
-      total_items: 15
+      total_count: 15
     })
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -216,10 +202,12 @@ describe('listController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await listController(delegationService).handler(request, h)
+    const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getDelegations).toHaveBeenCalledWith('user-123', 999)
+    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', {
+      page: 999
+    })
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
   })

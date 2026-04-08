@@ -25,7 +25,6 @@ import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { UserService } from './services/user/UserService.js'
-import { DelegationService } from './services/delegation/DelegationService.js'
 import { SubjectsService } from './services/subjects.js'
 import { ApplicationService } from './services/application/ApplicationService.js'
 import { ApplicationCache } from './services/application/ApplicationCache.js'
@@ -102,14 +101,12 @@ function bootstrapServices(redis) {
   })
   const subjectsService = new SubjectsService(redis)
   const userService = new UserService(redis, config)
-  const delegationService = new DelegationService(redis, config)
   const upstreamStateStore = new UpstreamStateStore(redis)
   return {
     applicationService,
     clientsService,
     subjectsService,
     userService,
-    delegationService,
     upstreamStateStore
   }
 }

@@ -43,7 +43,7 @@ describe('DelegationBuilder', () => {
       }
       const builder = new DelegationBuilder(request)
       mocks.get.mockReturnValue({
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
 
       // Act
@@ -52,11 +52,11 @@ describe('DelegationBuilder', () => {
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
       expect(result).toEqual({
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
     })
   })
@@ -70,10 +70,10 @@ describe('DelegationBuilder', () => {
         }
       }
       const builder = new DelegationBuilder(request)
-      mocks.get.mockReturnValue({ cphs: ['12/345/6789'] })
+      mocks.get.mockReturnValue({ cphIds: ['12/345/6789'] })
 
       // Act
-      const result = builder.getCphs()
+      const result = builder.getCphIds()
 
       // Assert
       expect(result).toEqual(['12/345/6789'])
@@ -90,7 +90,7 @@ describe('DelegationBuilder', () => {
       mocks.get.mockReturnValue({})
 
       // Act
-      const result = builder.getCphs()
+      const result = builder.getCphIds()
 
       // Assert
       expect(result).toEqual([])
@@ -110,16 +110,16 @@ describe('DelegationBuilder', () => {
       mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
 
       // Act
-      const result = builder.setCphs(['12/345/6789'])
+      const result = builder.setCphIds(['12/345/6789'])
 
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
       expect(result).toEqual({
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
     })
   })

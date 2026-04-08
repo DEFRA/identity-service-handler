@@ -4,10 +4,10 @@ describe('buildClientParams()', () => {
   test('it maps client fields to OIDC params', () => {
     // Arrange
     const client = {
-      client_id: 'abc-123',
+      id: 'abc-123',
       name: 'Test App',
       secret: 'secret',
-      redirect_uri: ['https://example.com/callback'],
+      redirect_uris: ['https://example.com/callback'],
       scopes: ['openid', 'profile']
     }
 

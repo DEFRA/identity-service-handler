@@ -1,35 +1,40 @@
-function viewModel(delegate) {
-  const isActive = delegate.active
+import * as delegationService from '../../services/delegation.js'
 
-  return {
-    pageTitle: isActive ? 'Delete delegate' : 'Revoke invite',
-    heading: isActive
-      ? 'Are you sure you want to delete this delegate?'
-      : 'Are you sure you want to revoke this invite?',
-    delegate
-  }
-}
-
-export const deleteController = (delegationService) => ({
+export const deleteController = (userService) => ({
   handler: async (request, h) => {
-    const sub = request.auth?.credentials?.sub
-    const { delegateId } = request.params
-    const delegate = await delegationService.getDelegation(sub, delegateId)
+    const delegatingUserId = request.auth?.credentials?.sub
+    const { delegated_user_id: delegatedUserId } = request.params
+    const delegatedUser = await userService.getDelegatedUser(
+      delegatingUserId,
+      delegatedUserId
+    )
 
-    if (!delegate) {
-      return h.redirect('/delegation')
-    }
-
-    return h.view('delegation/delete', viewModel(delegate))
+    return h.view('delegation/delete', {
+      pageTitle: 'Remove delegate',
+      heading: 'Are you sure you want to remove this delegate?',
+      delegated_user_id: delegatedUser.id,
+      delegated_user_email: delegatedUser.email
+    })
   }
 })
 
-export const deleteSubmitController = (delegationService) => ({
+export const deleteSubmitController = (userService) => ({
   handler: async (request, h) => {
-    const sub = request.auth?.credentials?.sub
-    const { delegateId } = request.params
+    const delegatingUserId = request.auth?.credentials?.sub
+    const { delegated_user_id: delegatedUserId } = request.params
+    const delegatedUser = await userService.getDelegatedUser(
+      delegatingUserId,
+      delegatedUserId
+    )
 
-    await delegationService.deleteDelegation(sub, delegateId)
+    await Promise.all(
+      delegatedUser.cphs.reduce((acc, cph) => {
+        if (cph.delegation_id) {
+          acc.push(delegationService.revokeDelegation(cph.delegation_id))
+        }
+        return acc
+      }, [])
+    )
 
     return h.redirect('/delegation')
   }

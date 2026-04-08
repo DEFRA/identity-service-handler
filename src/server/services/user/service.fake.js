@@ -34,6 +34,39 @@ export const getUserCphs = async (sub) =>
  * @param {string} sub
  * @returns {Promise<UserDetails>}
  */
+/**
+ * @param {string} _userId
+ * @param {{ page?: number, pageSize?: number }} [_options]
+ * @returns {Promise<import('./service.js').DelegatedUsersPage>}
+ */
+export const getUserDelegates = async (_userId, _options = {}) => ({
+  items: [],
+  total_count: 0,
+  total_pages: 0,
+  page_number: 1,
+  page_size: 10
+})
+
+/**
+ * @param {string} _userId
+ * @param {string} _delegatingUserId
+ * @param {{ page?: number, pageSize?: number }} [_options]
+ * @returns {Promise<import('./service.js').DelegatedUsersPage>}
+ */
+export const getUserDelegatedCphsByDelegatingUser = async (
+  _userId,
+  _delegatingUserId,
+  _options = {}
+) => {
+  return {
+    items: [],
+    total_count: 0,
+    total_pages: 0,
+    page_number: 1,
+    page_size: 10
+  }
+}
+
 export const getUserDetails = async (sub) => ({
   id: sub,
   ...pick(

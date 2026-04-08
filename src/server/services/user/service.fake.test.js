@@ -1,5 +1,10 @@
 import { describe, expect, test, vi } from 'vitest'
-import { getUserCphs, getUserDetails } from './service.fake.js'
+import {
+  getUserCphs,
+  getUserDetails,
+  getUserDelegates,
+  getUserDelegatedCphsByDelegatingUser
+} from './service.fake.js'
 
 vi.mock('../../../data/users.json', () => ({
   default: [
@@ -116,6 +121,37 @@ describe('service.fake', () => {
       expect(result).toEqual({
         associations: [{ county_parish_holding_number: '00/000/0000' }],
         delegations: []
+      })
+    })
+  })
+
+  describe('getUserDelegates()', () => {
+    test('it returns an empty paginated result', async () => {
+      const result = await getUserDelegates('any-user-id')
+
+      expect(result).toEqual({
+        items: [],
+        total_count: 0,
+        total_pages: 0,
+        page_number: 1,
+        page_size: 10
+      })
+    })
+  })
+
+  describe('getUserDelegatedCphsByDelegatingUser()', () => {
+    test('it returns an empty paginated result', async () => {
+      const result = await getUserDelegatedCphsByDelegatingUser(
+        'delegate-id',
+        'owner-id'
+      )
+
+      expect(result).toEqual({
+        items: [],
+        total_count: 0,
+        total_pages: 0,
+        page_number: 1,
+        page_size: 10
       })
     })
   })
