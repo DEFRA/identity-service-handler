@@ -10,6 +10,7 @@ describe('application fake service', () => {
 
       // Assert
       expect(result).toMatchObject({
+        allowAnyScope: true,
         client_id: KNOWN_CLIENT_ID,
         name: 'Auth Test Application'
       })

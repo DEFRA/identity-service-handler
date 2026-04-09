@@ -13,6 +13,7 @@ import helperClient from '../../clients/helperClient.js'
  * @property {string} tenant_name
  * @property {string} description
  * @property {string[]} scopes
+ * @property {boolean} [allowAnyScope]
  * @property {string[]} redirect_uri
  */
 

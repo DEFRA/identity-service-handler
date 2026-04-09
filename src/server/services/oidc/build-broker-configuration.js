@@ -1,15 +1,6 @@
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 
-const CUSTOM_USERINFO_CLAIM = [
-  'email',
-  'given_name',
-  'family_name',
-  'display_name',
-  'primary_cph',
-  'delegated_cph'
-]
-
 /**
  * Builds the oidc-provider configuration object.
  *
@@ -74,8 +65,14 @@ export function buildBrokerConfiguration({
     },
 
     claims: {
-      openid: ['sub', ...CUSTOM_USERINFO_CLAIM],
-      profile: ['first_name', 'family_name', 'display_name'],
+      openid: ['sub', 'iss'],
+      profile: [
+        'given_name',
+        'family_name',
+        'display_name',
+        'primary_cph',
+        'delegated_cph'
+      ],
       email: ['email']
     },
 
@@ -91,11 +88,21 @@ export function buildBrokerConfiguration({
       userinfo: '/userinfo'
     },
 
-    async findAccount(ctx, sub) {
+    async findAccount(ctx, sub, token) {
       return {
         accountId: sub,
         async claims(use) {
-          return await userService.getUserContext(sub)
+          const userContext = await userService.getUserContext(sub)
+
+          if (use !== 'userinfo') {
+            return userContext
+          }
+
+          const issuer = ctx?.oidc?.provider?.issuer
+          return {
+            ...userContext,
+            ...(issuer ? { iss: issuer } : {})
+          }
         }
       }
     }

@@ -11,7 +11,7 @@ import { resolveClientGrantTypes } from './resolve-client-grant-types.js'
  * @returns {object}
  */
 export function buildClientParams(clientApplication) {
-  return {
+  const params = {
     client_id: clientApplication.client_id,
     client_name: clientApplication.name,
     redirect_uris: clientApplication.redirect_uri,
@@ -19,10 +19,15 @@ export function buildClientParams(clientApplication) {
       clientApplication.post_logout_redirect_uris ?? [],
     grant_types: resolveClientGrantTypes(clientApplication),
     client_secret: clientApplication.secret,
-    scope: clientApplication.scopes?.length
-      ? clientApplication.scopes.join(' ')
-      : 'openid',
     response_types: ['code'],
     token_endpoint_auth_method: 'client_secret_post'
   }
+
+  if (!clientApplication.allowAnyScope) {
+    params.scope = clientApplication.scopes?.length
+      ? clientApplication.scopes.join(' ')
+      : 'openid'
+  }
+
+  return params
 }
