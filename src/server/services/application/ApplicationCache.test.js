@@ -24,7 +24,7 @@ describe('ApplicationCache', () => {
       mocks.get.mockResolvedValue(JSON.stringify(client))
 
       // Act
-      const result = await cache.getClient('client-1')
+      const result = await cache.get('client-1')
 
       // Assert
       expect(result).toEqual(client)
@@ -43,7 +43,7 @@ describe('ApplicationCache', () => {
       mocks.clientGet.mockResolvedValue(client)
 
       // Act
-      const result = await cache.getClient('client-1')
+      const result = await cache.get('client-1')
 
       // Assert
       expect(mocks.clientGet).toHaveBeenCalledWith('client-1')
@@ -66,7 +66,7 @@ describe('ApplicationCache', () => {
       mocks.clientGet.mockResolvedValue(null)
 
       // Act
-      const result = await cache.getClient('client-1')
+      const result = await cache.get('client-1')
 
       // Assert
       expect(result).toBeNull()
