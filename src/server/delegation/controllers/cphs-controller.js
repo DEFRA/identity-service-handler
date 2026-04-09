@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
@@ -55,7 +56,7 @@ export const cphsSubmitController = (userService) => ({
               }
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }
@@ -81,7 +82,7 @@ export const cphsSubmitController = (userService) => ({
             }
           })
         )
-        .code(400)
+        .code(statusCodes.badRequest)
     }
 
     draftService.setCphs(cphs)

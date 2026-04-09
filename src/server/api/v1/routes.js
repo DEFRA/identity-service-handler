@@ -9,7 +9,7 @@ export const routes = (options = {}) => {
       path: contextPath,
       ...contextController(userService),
       options: {
-        ...(contextController.options ?? {}),
+        ...contextController.options,
         auth: {
           strategy: 'bearer',
           mode: 'required'

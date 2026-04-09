@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
@@ -56,7 +57,7 @@ export const manageUpdateController = (delegationService, userService) => ({
               cphs: getCphValidationError(err)
             }
           })
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }

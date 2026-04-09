@@ -1,19 +1,17 @@
-// TODO move this out of src
-
 import { fileURLToPath } from 'node:url'
-import path from 'path'
+import path from 'node:path'
 import nunjucks from 'nunjucks'
 import { load } from 'cheerio'
 import { camelCase } from 'lodash'
 
-import * as filters from '../../../config/nunjucks/filters/filters.js'
+import * as filters from '../config/nunjucks/filters/filters.js'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const nunjucksTestEnv = nunjucks.configure(
   [
     '../../../../node_modules/govuk-frontend/dist/',
-    path.normalize(path.resolve(dirname, '../templates')),
-    path.normalize(path.resolve(dirname, '../components'))
+    path.normalize(path.resolve(dirname, '../server/templates')),
+    path.normalize(path.resolve(dirname, '../server/common/components'))
   ],
   {
     trimBlocks: true,

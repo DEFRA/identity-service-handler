@@ -5,6 +5,7 @@ import {
   randomPKCECodeVerifier,
   randomState
 } from 'openid-client'
+import { buildGrantFromInteraction } from './helpers/build-grant-from-interaction.js'
 
 export function create({
   config,
@@ -12,7 +13,7 @@ export function create({
   brokerProvider,
   upstreamStateStore
 }) {
-  return async function (request, h) {
+  return async (request, h) => {
     const { uid } = request.params
     const b2cConfig = config.get('idService.b2c')
     const interaction = await brokerProvider.interactionDetails(
@@ -35,45 +36,13 @@ export function create({
     }
 
     if (promptName === 'consent') {
-      const { prompt, params, session, grantId } = interaction
-      const details = prompt?.details ?? {}
-
-      let grant
-      if (grantId) {
-        grant = await brokerProvider.Grant.find(grantId)
-      } else {
-        grant = new brokerProvider.Grant({
-          accountId: session?.accountId,
-          clientId: params?.client_id
-        })
-      }
-
-      const missingOIDCScope = details.missingOIDCScope
-      if (Array.isArray(missingOIDCScope) && missingOIDCScope.length) {
-        grant.addOIDCScope(missingOIDCScope.join(' '))
-      }
-
-      const missingOIDCClaims = details.missingOIDCClaims
-      if (Array.isArray(missingOIDCClaims) && missingOIDCClaims.length) {
-        grant.addOIDCClaims(missingOIDCClaims)
-      }
-
-      const missingResourceScopes = details.missingResourceScopes
-      if (missingResourceScopes && typeof missingResourceScopes === 'object') {
-        for (const [indicator, scopes] of Object.entries(
-          missingResourceScopes
-        )) {
-          if (Array.isArray(scopes) && scopes.length) {
-            grant.addResourceScope(indicator, scopes.join(' '))
-          }
-        }
-      }
+      const grant = await buildGrantFromInteraction(brokerProvider, interaction)
 
       const result = { consent: {} }
-      if (!grantId) {
-        result.consent.grantId = await grant.save()
-      } else {
+      if (interaction.grantId) {
         await grant.save()
+      } else {
+        result.consent.grantId = await grant.save()
       }
 
       await brokerProvider.interactionFinished(

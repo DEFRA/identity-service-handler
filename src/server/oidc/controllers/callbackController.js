@@ -1,5 +1,6 @@
 import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
+import { statusCodes } from '../../common/constants/status-codes.js'
 
 export function create({
   config,
@@ -17,11 +18,17 @@ export function create({
     const code = params.code
     const state = params.state
 
-    if (!code) return h.response('Missing code').code(400)
-    if (!state) return h.response('Missing state').code(400)
+    if (!code) {
+      return h.response('Missing code').code(statusCodes.badRequest)
+    }
+    if (!state) {
+      return h.response('Missing state').code(statusCodes.badRequest)
+    }
 
     const record = await upstreamStateStore.get(state)
-    if (!record) return h.response('Unknown/expired state').code(400)
+    if (!record) {
+      return h.response('Unknown/expired state').code(statusCodes.badRequest)
+    }
 
     const { uid, nonce, pkceCodeVerifier } = record
 

@@ -7,17 +7,12 @@ import {
   randomState
 } from 'openid-client'
 import { config } from '../../../config/config.js'
+import * as buildGrantModule from './helpers/build-grant-from-interaction.js'
 
 import { create } from './interactionController.js'
 
 vi.mock('openid-client')
-
-function MockGrant() {
-  this.addOIDCScope = mocks.addOIDCScope
-  this.addOIDCClaims = mocks.addOIDCClaims
-  this.addResourceScope = mocks.addResourceScope
-  this.save = mocks.grantSave
-}
+vi.mock('./helpers/build-grant-from-interaction.js')
 
 const mocks = {
   randomPKCECodeVerifier: vi.mocked(randomPKCECodeVerifier),
@@ -25,28 +20,24 @@ const mocks = {
   randomState: vi.mocked(randomState),
   randomNonce: vi.mocked(randomNonce),
   buildAuthorizationUrl: vi.mocked(buildAuthorizationUrl),
+  buildGrantFromInteraction: vi.mocked(
+    buildGrantModule.buildGrantFromInteraction
+  ),
   brokerProvider: {
     interactionDetails: vi.fn(),
-    interactionFinished: vi.fn(),
-    Grant: MockGrant
+    interactionFinished: vi.fn()
   },
   upstreamStateStore: {
     getByUid: vi.fn(),
     delByUid: vi.fn(),
     put: vi.fn()
   },
-  grantFind: vi.fn(),
   grantSave: vi.fn(),
-  addOIDCScope: vi.fn(),
-  addOIDCClaims: vi.fn(),
-  addResourceScope: vi.fn(),
   h: {
     redirect: vi.fn((value) => value),
     abandon: Symbol('abandon')
   }
 }
-
-mocks.brokerProvider.Grant.find = mocks.grantFind
 
 describe('create()', () => {
   beforeEach(() => {
@@ -95,38 +86,21 @@ describe('create()', () => {
     expect(result).toBe(mocks.h.abandon)
   })
 
-  test('it completes consent using a new grant when no grant id exists', async () => {
+  test('it saves a new grant id into the consent result when no grantId exists', async () => {
     // Arrange
     const request = {
       params: { uid: 'interaction-123' },
-      raw: {
-        req: {},
-        res: {}
-      }
+      raw: { req: {}, res: {} }
     }
-    const h = mocks.h
-    mocks.brokerProvider.interactionDetails.mockResolvedValue({
-      prompt: {
-        name: 'consent',
-        details: {
-          missingOIDCScope: ['openid', 'email'],
-          missingOIDCClaims: ['email'],
-          missingResourceScopes: {
-            api: ['read', 'write']
-          }
-        }
-      },
-      params: {
-        client_id: 'client-123'
-      },
-      session: {
-        accountId: 'broker-sub'
-      },
+    const interaction = {
+      prompt: { name: 'consent' },
       grantId: undefined
-    })
+    }
+    const grant = { save: mocks.grantSave }
+    mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
     mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue('grant-123')
-
     const handler = create({
       config,
       b2cConfiguration: {},
@@ -135,12 +109,13 @@ describe('create()', () => {
     })
 
     // Act
-    const result = await handler(request, h)
+    const result = await handler(request, mocks.h)
 
     // Assert
-    expect(mocks.addOIDCScope).toHaveBeenCalledWith('openid email')
-    expect(mocks.addOIDCClaims).toHaveBeenCalledWith(['email'])
-    expect(mocks.addResourceScope).toHaveBeenCalledWith('api', 'read write')
+    expect(mocks.buildGrantFromInteraction).toHaveBeenCalledWith(
+      mocks.brokerProvider,
+      interaction
+    )
     expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
       request.raw.req,
       request.raw.res,
@@ -150,43 +125,20 @@ describe('create()', () => {
     expect(result).toBe(mocks.h.abandon)
   })
 
-  test('it completes consent using an existing grant when grant id is present', async () => {
+  test('it saves the grant without updating the consent result when grantId exists', async () => {
     // Arrange
     const request = {
       params: { uid: 'interaction-123' },
-      raw: {
-        req: {},
-        res: {}
-      }
+      raw: { req: {}, res: {} }
     }
-    const h = mocks.h
-    const grant = {
-      addOIDCScope: mocks.addOIDCScope,
-      addOIDCClaims: mocks.addOIDCClaims,
-      addResourceScope: mocks.addResourceScope,
-      save: mocks.grantSave
-    }
-    mocks.brokerProvider.interactionDetails.mockResolvedValue({
-      prompt: {
-        name: 'consent',
-        details: {
-          missingOIDCScope: ['openid', 'email'],
-          missingOIDCClaims: ['email'],
-          missingResourceScopes: {
-            api: ['read', 'write']
-          }
-        }
-      },
-      params: {
-        client_id: 'client-123'
-      },
-      session: {
-        accountId: 'broker-sub'
-      },
+    const interaction = {
+      prompt: { name: 'consent' },
       grantId: 'grant-123'
-    })
+    }
+    const grant = { save: mocks.grantSave }
+    mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
     mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
-    mocks.grantFind.mockResolvedValue(grant)
+    mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue(undefined)
     const handler = create({
       config,
@@ -196,13 +148,9 @@ describe('create()', () => {
     })
 
     // Act
-    const result = await handler(request, h)
+    const result = await handler(request, mocks.h)
 
     // Assert
-    expect(mocks.grantFind).toHaveBeenCalledWith('grant-123')
-    expect(mocks.addOIDCScope).toHaveBeenCalledWith('openid email')
-    expect(mocks.addOIDCClaims).toHaveBeenCalledWith(['email'])
-    expect(mocks.addResourceScope).toHaveBeenCalledWith('api', 'read write')
     expect(mocks.grantSave).toHaveBeenCalledTimes(1)
     expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
       request.raw.req,
@@ -211,78 +159,6 @@ describe('create()', () => {
       { mergeWithLastSubmission: true }
     )
     expect(result).toBe(mocks.h.abandon)
-  })
-
-  test('it completes consent without adding scopes when details are absent', async () => {
-    // Arrange
-    const request = {
-      params: { uid: 'interaction-123' },
-      raw: { req: {}, res: {} }
-    }
-    const h = mocks.h
-    mocks.brokerProvider.interactionDetails.mockResolvedValue({
-      prompt: { name: 'consent' },
-      params: { client_id: 'client-123' },
-      session: { accountId: 'broker-sub' },
-      grantId: undefined
-    })
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
-    mocks.grantSave.mockResolvedValue('grant-123')
-    const handler = create({
-      config,
-      b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
-    })
-
-    // Act
-    const result = await handler(request, h)
-
-    // Assert
-    expect(mocks.addOIDCScope).not.toHaveBeenCalled()
-    expect(mocks.addOIDCClaims).not.toHaveBeenCalled()
-    expect(mocks.addResourceScope).not.toHaveBeenCalled()
-    expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
-      request.raw.req,
-      request.raw.res,
-      { consent: { grantId: 'grant-123' } },
-      { mergeWithLastSubmission: true }
-    )
-    expect(result).toBe(mocks.h.abandon)
-  })
-
-  test('it skips addResourceScope when a resource entry has an empty scopes array', async () => {
-    // Arrange
-    const request = {
-      params: { uid: 'interaction-123' },
-      raw: { req: {}, res: {} }
-    }
-    const h = mocks.h
-    mocks.brokerProvider.interactionDetails.mockResolvedValue({
-      prompt: {
-        name: 'consent',
-        details: {
-          missingResourceScopes: { api: [] }
-        }
-      },
-      params: { client_id: 'client-123' },
-      session: { accountId: 'broker-sub' },
-      grantId: undefined
-    })
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
-    mocks.grantSave.mockResolvedValue('grant-123')
-    const handler = create({
-      config,
-      b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
-    })
-
-    // Act
-    await handler(request, h)
-
-    // Assert
-    expect(mocks.addResourceScope).not.toHaveBeenCalled()
   })
 
   test('it finishes login immediately when the user is already authenticated', async () => {
