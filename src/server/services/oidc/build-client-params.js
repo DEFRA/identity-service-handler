@@ -1,23 +1,28 @@
 import { resolveClientGrantTypes } from './resolve-client-grant-types.js'
 
 /**
+ * @typedef {import('../application/service.js').Application} Application
+ */
+
+/**
  * Maps a client record from the clients service to OIDC client parameters.
  *
- * @param {object} client
+ * @param {Application} clientApplication
  * @returns {object}
  */
-export function buildClientParams(client) {
+export function buildClientParams(clientApplication) {
   return {
-    client_id: client.client_id,
-    client_name: client.name,
-    redirect_uris: client.redirect_uri,
-    post_logout_redirect_uris: client.post_logout_redirect_uris ?? [],
-    response_types: client.response_types ?? ['code'],
-    grant_types: resolveClientGrantTypes(client),
-    token_endpoint_auth_method:
-      client.token_endpoint_auth_method ?? 'client_secret_post',
-    client_secret: client.secret,
-    ...(client.jwks && { jwks: client.jwks }),
-    scope: client.scopes?.length ? client.scopes.join(' ') : 'openid'
+    client_id: clientApplication.client_id,
+    client_name: clientApplication.name,
+    redirect_uris: clientApplication.redirect_uri,
+    post_logout_redirect_uris:
+      clientApplication.post_logout_redirect_uris ?? [],
+    grant_types: resolveClientGrantTypes(clientApplication),
+    client_secret: clientApplication.secret,
+    scope: clientApplication.scopes?.length
+      ? clientApplication.scopes.join(' ')
+      : 'openid',
+    response_types: ['code'],
+    token_endpoint_auth_method: 'client_secret_post'
   }
 }
