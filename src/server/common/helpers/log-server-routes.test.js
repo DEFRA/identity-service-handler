@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
 import { OIDC_ROUTES } from './oidc-config.js'
-import { logServerRoutes } from './start-server.js'
+import { logServerRoutes } from './log-server-routes.js'
 
 const mocks = {
   loggerInfo: vi.fn()
@@ -21,19 +21,19 @@ describe('logServerRoutes()', () => {
       logger: { info: mocks.loggerInfo }
     }
     const expectedRoutes = [
-      ...OIDC_ROUTES.map((r) => `${'GET'.padEnd(7)} ${r}`),
-      'GET     /health',
-      'POST    /auth'
+      { method: 'get', path: '/health' },
+      { method: 'post', path: '/auth' },
+      ...OIDC_ROUTES.map((path) => ({ method: 'GET', path }))
     ]
-      .sort()
-      .join('\n')
+      .map((r) => '\n' + r.method.toUpperCase().padEnd(8) + r.path)
+      .sort((a, b) => a.localeCompare(b))
 
     // Act
-    await logServerRoutes(server)
+    logServerRoutes(server)
 
     // Assert
     expect(mocks.loggerInfo).toHaveBeenCalledWith(
-      '\nSupported routes:\n' + expectedRoutes
+      `\nSupported routes:` + expectedRoutes
     )
   })
 })
