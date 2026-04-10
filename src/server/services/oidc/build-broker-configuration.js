@@ -1,6 +1,13 @@
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 
+const minuteInSeconds = 60
+const hourInMinutes = 60
+const twoMinutesInSeconds = 2 * minuteInSeconds
+const fifteenMinutesInMinutes = 15
+const fifteenMinutesInSeconds = fifteenMinutesInMinutes * minuteInSeconds
+const eightHoursInSeconds = 8 * hourInMinutes * minuteInSeconds
+
 /**
  * Builds the oidc-provider configuration object.
  *
@@ -27,20 +34,7 @@ export function buildBrokerConfiguration({
         async logoutSource(ctx, form) {
           ctx.type = 'html'
           ctx.status = 200
-          ctx.body = `<!DOCTYPE html>
-            <html lang="en">
-              <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>Signing out</title>
-              </head>
-              <body>
-                ${form}
-                <script>
-                  document.getElementById('op.logoutForm')?.submit()
-                </script>
-              </body>
-            </html>`
+          ctx.body = generateLogoutPage(form)
         },
         async postLogoutSuccessSource(ctx) {
           postLogoutSuccessSource(ctx, sessionCookieSecure)
@@ -52,10 +46,10 @@ export function buildBrokerConfiguration({
     scopes: ['openid', 'offline_access', 'profile', 'email'],
 
     ttl: {
-      AccessToken: 15 * 60,
-      AuthorizationCode: 2 * 60,
-      IdToken: 15 * 60,
-      Session: 8 * 60 * 60
+      AccessToken: fifteenMinutesInSeconds,
+      AuthorizationCode: twoMinutesInSeconds,
+      IdToken: fifteenMinutesInSeconds,
+      Session: eightHoursInSeconds
     },
 
     cookies: {
@@ -77,7 +71,7 @@ export function buildBrokerConfiguration({
     },
 
     interactions: {
-      url(ctx, interaction) {
+      url(_ctx, interaction) {
         return `/interaction/${interaction.uid}`
       }
     },
@@ -88,7 +82,7 @@ export function buildBrokerConfiguration({
       userinfo: '/userinfo'
     },
 
-    async findAccount(ctx, sub, token) {
+    async findAccount(ctx, sub, _token) {
       return {
         accountId: sub,
         async claims(use) {
@@ -107,4 +101,21 @@ export function buildBrokerConfiguration({
       }
     }
   }
+}
+
+function generateLogoutPage(form) {
+  return `<!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Signing out</title>
+              </head>
+              <body>
+                ${form}
+                <script>
+                  document.getElementById('op.logoutForm')?.submit()
+                </script>
+              </body>
+            </html>`
 }
