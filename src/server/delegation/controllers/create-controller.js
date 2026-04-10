@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { statusCodes } from '../../common/constants/status-codes.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
 
@@ -39,7 +40,7 @@ export const createSubmitController = () => ({
               errors
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }

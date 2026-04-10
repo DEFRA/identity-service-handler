@@ -46,6 +46,18 @@ describe('onServerError()', () => {
     // Assert
     expect(mocks.loggerError).toHaveBeenCalledWith(err.stack)
   })
+
+  test('it does not log the stack when absent', () => {
+    // Arrange
+    const ctx = {}
+    const err = { message: 'No stack here' }
+
+    // Act
+    onServerError(ctx, err)
+
+    // Assert
+    expect(mocks.loggerError).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('onInteractionError()', () => {
@@ -74,6 +86,18 @@ describe('onInteractionError()', () => {
     // Assert
     expect(mocks.loggerError).toHaveBeenCalledWith(err.stack)
   })
+
+  test('it does not log the stack when absent', () => {
+    // Arrange
+    const ctx = {}
+    const err = { message: 'No stack here' }
+
+    // Act
+    onInteractionError(ctx, err)
+
+    // Assert
+    expect(mocks.loggerError).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('onAuthorizationError()', () => {
@@ -101,5 +125,17 @@ describe('onAuthorizationError()', () => {
 
     // Assert
     expect(mocks.loggerError).toHaveBeenCalledWith(err.stack)
+  })
+
+  test('it does not log the stack when absent', () => {
+    // Arrange
+    const ctx = {}
+    const err = { message: 'No stack here' }
+
+    // Act
+    onAuthorizationError(ctx, err)
+
+    // Assert
+    expect(mocks.loggerError).toHaveBeenCalledTimes(1)
   })
 })

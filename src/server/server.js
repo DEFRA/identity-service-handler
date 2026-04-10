@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import fs from 'node:fs'
 import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'

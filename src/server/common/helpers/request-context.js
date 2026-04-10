@@ -17,6 +17,14 @@ export const requestContext = {
   }
 }
 
+const getStore = () => {
+  const store = storage.getStore()
+  if (store === undefined) {
+    throw new Error('No request context available')
+  }
+  return store
+}
+
 /**
  * Gets a value from the current request context.
  * Returns null if no context is available or the key is not set.
@@ -33,11 +41,7 @@ export const get = (key) => storage.getStore()?.get(key) ?? null
  * @param {string} key
  * @param {string | number | boolean | null} value
  */
-export const set = (key, value) => {
-  const store = storage.getStore()
-  if (store === undefined) throw new Error('No request context available')
-  store.set(key, value)
-}
+export const set = (key, value) => getStore().set(key, value)
 
 /**
  * Removes a key from the current request context.
@@ -45,18 +49,10 @@ export const set = (key, value) => {
  *
  * @param {string} key
  */
-export const clear = (key) => {
-  const store = storage.getStore()
-  if (store === undefined) throw new Error('No request context available')
-  store.delete(key)
-}
+export const clear = (key) => getStore().delete(key)
 
 /**
  * Removes all keys from the current request context.
  * Throws if called outside a request context.
  */
-export const clearAll = () => {
-  const store = storage.getStore()
-  if (store === undefined) throw new Error('No request context available')
-  store.clear()
-}
+export const clearAll = () => getStore().clear()

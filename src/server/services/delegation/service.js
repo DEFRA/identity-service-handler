@@ -33,7 +33,7 @@ export class DelegationService {
       value = DUMMY_DELEGATES
       await this.#setValue(userId, value)
     } else if (!Array.isArray(value)) {
-      throw new Error('Malformed delegations')
+      throw new TypeError('Malformed delegations')
     }
     return value
   }
