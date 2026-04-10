@@ -13,5 +13,13 @@ const applications = new Map(data.map((app) => [app.client_id, app]))
  * @returns {Promise<Application>}
  */
 export async function get(clientId) {
-  return applications.get(clientId)
+  const application = applications.get(clientId)
+  if (!application) {
+    return undefined
+  }
+
+  return {
+    ...application,
+    allowAnyScope: true
+  }
 }

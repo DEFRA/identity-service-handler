@@ -12,9 +12,13 @@ vi.mock('@hapi/wreck', () => ({
 }))
 
 describe('home controller auth flow', () => {
-  test('login should include state and PKCE challenge', () => {
+  test('login should always include openid in the selected scopes', () => {
     const session = new Map()
     const request = {
+      method: 'post',
+      payload: {
+        scopes: ['profile']
+      },
       yar: {
         reset: vi.fn(() => session.clear()),
         set: vi.fn((key, value) => session.set(key, value))
@@ -28,6 +32,9 @@ describe('home controller auth flow', () => {
     const redirectUrl = new URL(redirectTo)
 
     expect(redirectUrl.pathname).toBe('/authorize')
+    expect(redirectUrl.searchParams.get('scope')).toBe(
+      'openid profile offline_access'
+    )
     expect(redirectUrl.searchParams.get('code_challenge_method')).toBe('S256')
     expect(redirectUrl.searchParams.get('prompt')).toBe('consent')
     expect(redirectUrl.searchParams.get('state')).toBe(
@@ -36,6 +43,28 @@ describe('home controller auth flow', () => {
     expect(redirectUrl.searchParams.get('code_challenge')).toBe(
       createPkceChallenge(session.get('brokerPkceVerifier'))
     )
+  })
+
+  test('login should default to openid when no optional scopes are selected', () => {
+    const session = new Map()
+    const request = {
+      method: 'post',
+      payload: {
+        scopes: 'openid'
+      },
+      yar: {
+        reset: vi.fn(() => session.clear()),
+        set: vi.fn((key, value) => session.set(key, value))
+      }
+    }
+    const h = {
+      redirect: vi.fn((value) => value)
+    }
+
+    const redirectTo = loginController.handler(request, h)
+    const redirectUrl = new URL(redirectTo)
+
+    expect(redirectUrl.searchParams.get('scope')).toBe('openid offline_access')
   })
 
   test('callback should send the PKCE verifier to the token endpoint', async () => {

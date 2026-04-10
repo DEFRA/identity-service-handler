@@ -75,4 +75,19 @@ describe('buildClientParams()', () => {
     // Assert
     expect(result.scope).toBe('openid')
   })
+
+  test('it omits scope when the client can request any broker-supported scope', () => {
+    // Arrange
+    const client = {
+      client_id: 'abc-123',
+      scopes: ['openid', 'profile'],
+      allowAnyScope: true
+    }
+
+    // Act
+    const result = buildClientParams(client)
+
+    // Assert
+    expect(result.scope).toBeUndefined()
+  })
 })
