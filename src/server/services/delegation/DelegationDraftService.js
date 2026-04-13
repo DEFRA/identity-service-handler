@@ -9,7 +9,7 @@ export class DelegationDraftService {
    */
   constructor(requestOrYar) {
     this.yar = requestOrYar?.yar ?? requestOrYar
-    this.draft = undefined
+    this.draft = null
   }
 
   /**
@@ -17,7 +17,7 @@ export class DelegationDraftService {
    * @returns {{ email?: string, cphs?: string[] }}
    */
   getDraft() {
-    if (this.draft !== undefined) {
+    if (this.draft !== null) {
       return this.draft
     }
 

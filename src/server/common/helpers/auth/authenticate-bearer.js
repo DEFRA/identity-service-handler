@@ -2,7 +2,9 @@ import { jwtVerify } from 'jose'
 
 export async function authenticateBearer(req, h, jwks, brokerProvider) {
   const auth = req.headers.authorization
-  if (!auth?.startsWith('Bearer ')) throw h.unauthorized()
+  if (!auth?.startsWith('Bearer ')) {
+    throw h.unauthorized()
+  }
   const token = auth.slice('Bearer '.length)
 
   try {

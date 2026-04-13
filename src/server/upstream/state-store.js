@@ -1,3 +1,5 @@
+import { seconds } from '../common/helpers/duration.js'
+
 export class UpstreamStateStore {
   constructor(redis) {
     this.redis = redis
@@ -12,7 +14,7 @@ export class UpstreamStateStore {
     return `${this.prefix}:uid:${uid}`
   }
 
-  async put(state, record, ttlSeconds = 600) {
+  async put(state, record, ttlSeconds = seconds.tenMinutes) {
     await this.redis.set(
       this.key(state),
       JSON.stringify(record),
@@ -30,7 +32,7 @@ export class UpstreamStateStore {
     await this.redis.del(this.key(state))
   }
 
-  async putByUid(uid, record, ttlSeconds = 600) {
+  async putByUid(uid, record, ttlSeconds = seconds.tenMinutes) {
     await this.redis.set(
       this.uidKey(uid),
       JSON.stringify(record),

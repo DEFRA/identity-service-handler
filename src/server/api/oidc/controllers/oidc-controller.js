@@ -2,7 +2,7 @@ import { statusCodes } from '../../../common/constants/status-codes.js'
 import { config } from '../../../../config/config.js'
 
 export const oidcController = {
-  handler(request, h) {
+  handler(_request, h) {
     const baseUrl = new URL(config.get('idService.handler.baseUrl'))
 
     return h

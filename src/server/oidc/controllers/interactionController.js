@@ -6,6 +6,7 @@ import {
   randomState
 } from 'openid-client'
 import { buildGrantFromInteraction } from './helpers/build-grant-from-interaction.js'
+import { seconds } from '../../common/helpers/duration.js'
 
 export function create({
   config,
@@ -13,75 +14,79 @@ export function create({
   brokerProvider,
   upstreamStateStore
 }) {
-  return async (request, h) => {
-    const { uid } = request.params
-    const b2cConfig = config.get('idService.b2c')
-    const interaction = await brokerProvider.interactionDetails(
-      request.raw.req,
-      request.raw.res
-    )
-    const promptName = interaction?.prompt?.name
+  return (request, h) =>
+    handleInteraction(request, h, {
+      config,
+      b2cConfiguration,
+      brokerProvider,
+      upstreamStateStore
+    })
+}
 
-    const pendingLogin = await upstreamStateStore.getByUid(uid)
-    if (pendingLogin?.brokerSub) {
-      await upstreamStateStore.delByUid(uid)
-      const result = { login: { accountId: pendingLogin.brokerSub } }
-      await brokerProvider.interactionFinished(
-        request.raw.req,
-        request.raw.res,
-        result,
-        { mergeWithLastSubmission: false }
-      )
-      return h.abandon
+async function handleInteraction(
+  request,
+  h,
+  { config, b2cConfiguration, brokerProvider, upstreamStateStore }
+) {
+  const { uid } = request.params
+  const { req, res } = request.raw
+  const b2cConfig = config.get('idService.b2c')
+  const interaction = await brokerProvider.interactionDetails(req, res)
+  const pendingLogin = await upstreamStateStore.getByUid(uid)
+  if (pendingLogin?.brokerSub) {
+    await upstreamStateStore.delByUid(uid)
+    const result = { login: { accountId: pendingLogin.brokerSub } }
+    await brokerProvider.interactionFinished(req, res, result, {
+      mergeWithLastSubmission: false
+    })
+    return h.abandon
+  }
+
+  if (interaction?.prompt?.name === 'consent') {
+    const grant = await buildGrantFromInteraction(brokerProvider, interaction)
+
+    const result = { consent: {} }
+    if (interaction.grantId) {
+      await grant.save()
+    } else {
+      result.consent.grantId = await grant.save()
     }
 
-    if (promptName === 'consent') {
-      const grant = await buildGrantFromInteraction(brokerProvider, interaction)
+    await brokerProvider.interactionFinished(req, res, result, {
+      mergeWithLastSubmission: true
+    })
+    return h.abandon
+  }
 
-      const result = { consent: {} }
-      if (interaction.grantId) {
-        await grant.save()
-      } else {
-        result.consent.grantId = await grant.save()
-      }
+  if (request.auth.isAuthenticated) {
+    const result = { login: { accountId: request.auth.credentials.sub } }
+    await brokerProvider.interactionFinished(req, res, result, {
+      mergeWithLastSubmission: false
+    })
+    return h.abandon
+  }
 
-      await brokerProvider.interactionFinished(
-        request.raw.req,
-        request.raw.res,
-        result,
-        { mergeWithLastSubmission: true }
-      )
-      return h.abandon
-    }
+  const scope = `openid offline_access ${b2cConfig.clientId}`
 
-    if (request.auth.isAuthenticated) {
-      const result = { login: { accountId: request.auth.credentials.sub } }
-      await brokerProvider.interactionFinished(
-        request.raw.req,
-        request.raw.res,
-        result,
-        { mergeWithLastSubmission: false }
-      )
-      return h.abandon
-    }
+  // (recommended) PKCE + state
+  const pkceCodeVerifier = randomPKCECodeVerifier()
+  const pkceCodeChallenge = await calculatePKCECodeChallenge(pkceCodeVerifier)
 
-    const redirectUri = b2cConfig.redirectUrl
-    const scope = `openid offline_access ${b2cConfig.clientId}`
+  const state = randomState()
+  // (OIDC) nonce is still useful for id_token replay protection
+  const nonce = randomNonce()
 
-    // (recommended) PKCE + state
-    const pkceCodeVerifier = randomPKCECodeVerifier()
-    const pkceCodeChallenge = await calculatePKCECodeChallenge(pkceCodeVerifier)
+  // store correlation for callback
+  await upstreamStateStore.put(
+    state,
+    { uid, nonce, pkceCodeVerifier },
+    seconds.tenMinutes
+  )
 
-    const state = randomState()
-
-    // (OIDC) nonce is still useful for id_token replay protection
-    const nonce = randomNonce()
-
-    // store correlation for callback
-    await upstreamStateStore.put(state, { uid, nonce, pkceCodeVerifier }, 600)
-
-    const parameters = {
-      redirect_uri: redirectUri,
+  // Build authorize URL and redirect the user to B2C (hosted UI)
+  return h.redirect(
+    buildAuthorizationUrl(b2cConfiguration, {
+      redirect_uri: b2cConfig.redirectUrl,
       scope,
       state,
       nonce,
@@ -89,10 +94,6 @@ export function create({
       code_challenge: pkceCodeChallenge,
       code_challenge_method: 'S256',
       serviceId: b2cConfig.serviceId
-    }
-
-    // Build authorize URL and redirect the user to B2C (hosted UI)
-    const redirectTo = buildAuthorizationUrl(b2cConfiguration, parameters)
-    return h.redirect(redirectTo.href)
-  }
+    }).href
+  )
 }

@@ -1,12 +1,6 @@
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
-
-const minuteInSeconds = 60
-const hourInMinutes = 60
-const twoMinutesInSeconds = 2 * minuteInSeconds
-const fifteenMinutesInMinutes = 15
-const fifteenMinutesInSeconds = fifteenMinutesInMinutes * minuteInSeconds
-const eightHoursInSeconds = 8 * hourInMinutes * minuteInSeconds
+import { seconds } from '../../common/helpers/duration.js'
 
 /**
  * Builds the oidc-provider configuration object.
@@ -26,7 +20,6 @@ export function buildBrokerConfiguration({
 }) {
   return {
     adapter: (model) => new RedisAdapter(model, redis, 'oidc'),
-
     features: {
       devInteractions: { enabled: false },
       rpInitiatedLogout: {
@@ -46,10 +39,10 @@ export function buildBrokerConfiguration({
     scopes: ['openid', 'offline_access', 'profile', 'email'],
 
     ttl: {
-      AccessToken: fifteenMinutesInSeconds,
-      AuthorizationCode: twoMinutesInSeconds,
-      IdToken: fifteenMinutesInSeconds,
-      Session: eightHoursInSeconds
+      AccessToken: seconds.fifteenMinutes,
+      AuthorizationCode: seconds.twoMinutes,
+      IdToken: seconds.fifteenMinutes,
+      Session: seconds.eightHours
     },
 
     cookies: {
@@ -83,21 +76,25 @@ export function buildBrokerConfiguration({
     },
 
     async findAccount(ctx, sub, _token) {
+      return findUserAccount(ctx, sub, userService)
+    }
+  }
+}
+
+function findUserAccount(ctx, sub, userService) {
+  return {
+    accountId: sub,
+    async claims(use) {
+      const userContext = await userService.getUserContext(sub)
+
+      if (use !== 'userinfo') {
+        return userContext
+      }
+
+      const issuer = ctx?.oidc?.provider?.issuer
       return {
-        accountId: sub,
-        async claims(use) {
-          const userContext = await userService.getUserContext(sub)
-
-          if (use !== 'userinfo') {
-            return userContext
-          }
-
-          const issuer = ctx?.oidc?.provider?.issuer
-          return {
-            ...userContext,
-            ...(issuer ? { iss: issuer } : {})
-          }
-        }
+        ...userContext,
+        ...(issuer ? { iss: issuer } : {})
       }
     }
   }

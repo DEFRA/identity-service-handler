@@ -1,4 +1,5 @@
 import { SIGNOUT_REDIRECT_COOKIE_NAME } from '../constants.js'
+import { milliseconds } from '../../common/helpers/duration.js'
 
 const OIDC_SIGNOUT_PARAM_NAMES = [
   'id_token_hint',
@@ -31,12 +32,13 @@ export function create({ config }) {
 
 function toRootUrl(rawUrl) {
   if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
-    return undefined
+    return null
   }
 
   try {
     return new URL('/', rawUrl).href
   } catch {}
+  return null
 }
 
 function resolvePostLogoutRedirectUri(request) {
@@ -72,7 +74,7 @@ function signoutCookieOptions(isSecure) {
     isSecure,
     isHttpOnly: true,
     isSameSite: 'Lax',
-    ttl: 5 * 60 * 1000,
+    ttl: milliseconds.fiveMinutes,
     encoding: 'none'
   }
 }

@@ -296,7 +296,8 @@ describe('create()', () => {
     mocks.configGet.mockImplementation((key) => {
       if (key === 'idService.handler.baseUrl') {
         return 'https://identity-service-handler.defra.gov.uk'
-      } else if (key === 'session.cookie.secure') {
+      }
+      if (key === 'session.cookie.secure') {
         return false
       }
     })

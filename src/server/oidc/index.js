@@ -55,7 +55,6 @@ export async function registerOidcRoutes(
     handler: callbackCreate({
       config,
       b2cConfiguration,
-      brokerProvider,
       subjectsService,
       upstreamStateStore
     })

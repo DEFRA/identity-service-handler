@@ -1,3 +1,7 @@
+import { unixEpoch } from '../../common/helpers/duration.js'
+
+const CURSOR_SIZE = 100
+
 /**
  * Minimal Redis adapter for oidc-provider using ioredis.
  * Good MVP base; production: add metrics, structured errors, prefixes per env, etc.
@@ -82,7 +86,7 @@ export class RedisAdapter {
         'MATCH',
         pattern,
         'COUNT',
-        100
+        CURSOR_SIZE
       )
       cursor = result[0]
       keys.push(...result[1])
@@ -115,13 +119,15 @@ export class RedisAdapter {
   async revokeByGrantId(grantId) {
     const gk = this.grantIndexKey(grantId)
     const gkType = await this.redis.type(gk)
+
     if (gkType === 'set') {
       const keys = await this.redis.smembers(gk)
       if (keys.length) {
         await this.redis.del(keys)
       }
-      await this.redis.del(gk)
-    } else if (gkType !== 'none') {
+    }
+
+    if (gkType === 'set' || gkType !== 'none') {
       await this.redis.del(gk)
     }
 
@@ -150,7 +156,7 @@ export class RedisAdapter {
     }
 
     const payload = JSON.parse(data)
-    payload.consumed = Math.floor(Date.now() / 1000)
+    payload.consumed = unixEpoch()
     await this.redis.set(key, JSON.stringify(payload))
   }
 }
