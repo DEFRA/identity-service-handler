@@ -1,5 +1,6 @@
 import * as service from './service.js'
 import * as serviceFake from './service.fake.js'
+import { seconds } from '../../common/helpers/duration.js'
 
 /**
  * @typedef {import('ioredis').Redis | import('ioredis').Cluster} RedisClient
@@ -41,6 +42,7 @@ export class UserService {
     if (raw) {
       return JSON.parse(raw)
     }
+    return null
   }
 
   async #setCachedContext(userContext) {
@@ -48,7 +50,7 @@ export class UserService {
       `${this.#contextCacheKeyPrefix}:${userContext.sub}`,
       JSON.stringify(userContext),
       'EX',
-      300
+      seconds.fiveMinutes
     )
   }
 

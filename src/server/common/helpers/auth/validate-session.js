@@ -1,4 +1,4 @@
-export function validateSession(req, session) {
+export function validateSession(_req, session) {
   if (!session?.sub) {
     return { isValid: false }
   }

@@ -2,8 +2,14 @@
  * @typedef {import('./service.js').Application} Application
  */
 
+import { seconds } from '../../common/helpers/duration.js'
+
 export class ApplicationCache {
-  constructor(redis, applicationClient, { ttlSeconds = 300 } = {}) {
+  constructor(
+    redis,
+    applicationClient,
+    { ttlSeconds = seconds.fiveMinutes } = {}
+  ) {
     this.redis = redis
     this.applicationClient = applicationClient
     this.ttlSeconds = ttlSeconds

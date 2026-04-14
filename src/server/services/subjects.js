@@ -44,7 +44,7 @@ export class SubjectsService {
 
   /**
    * @param {string} brokerSub
-   * @returns {Promise<SubjectMapping | undefined>}
+   * @returns {Promise<SubjectMapping | null>}
    */
   async get(brokerSub) {
     const key = this.#key(brokerSub)
@@ -52,6 +52,7 @@ export class SubjectsService {
     if (raw) {
       return JSON.parse(raw)
     }
+    return null
   }
 
   /**

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const delegatesPath = path.resolve(dirname, '../../../data/delegates.json')
 const DUMMY_DELEGATES = JSON.parse(readFileSync(delegatesPath, 'utf-8'))
+const PAGE_SIZE = 5
 
 /**
  * Delegation data access service.
@@ -20,8 +21,6 @@ export class DelegationService {
     this.config = config
   }
 
-  #page_size = 5
-
   async #getValue(userId) {
     const raw = await this.redis.get(`delegates:${userId}`)
     let value
@@ -32,7 +31,8 @@ export class DelegationService {
     if (!value) {
       value = DUMMY_DELEGATES
       await this.#setValue(userId, value)
-    } else if (!Array.isArray(value)) {
+    }
+    if (!Array.isArray(value)) {
       throw new TypeError('Malformed delegations')
     }
     return value
@@ -51,10 +51,10 @@ export class DelegationService {
   async getDelegations(userId, page = 1) {
     const all = await this.#getValue(userId)
     const safePage = Number.isInteger(page) && page > 0 ? page : 1
-    const totalPages = Math.max(1, Math.ceil(all.length / this.#page_size))
+    const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE))
     const currentPage = Math.min(safePage, totalPages)
-    const startIndex = this.#page_size * (currentPage - 1)
-    const endIndex = startIndex + this.#page_size
+    const startIndex = PAGE_SIZE * (currentPage - 1)
+    const endIndex = startIndex + PAGE_SIZE
 
     return {
       page: currentPage,

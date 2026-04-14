@@ -5,6 +5,8 @@ import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
 
+const TEMPLATE = 'delegation/manage'
+const PAGE_TITLE = 'Manage delegate'
 export const manageController = (delegationService, userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
@@ -18,9 +20,9 @@ export const manageController = (delegationService, userService) => ({
     const userContext = await userService.getUserContext(sub)
     const availableCphs = getDelegatableCphs(userContext)
 
-    return h.view('delegation/manage', {
-      pageTitle: 'Manage delegate',
-      heading: 'Manage delegate',
+    return h.view(TEMPLATE, {
+      pageTitle: PAGE_TITLE,
+      heading: PAGE_TITLE,
       delegate,
       checkboxItems: buildCphCheckboxItems(availableCphs, delegate.cphs ?? [])
     })
@@ -45,9 +47,9 @@ export const manageUpdateController = (delegationService, userService) => ({
         const availableCphs = getDelegatableCphs(userContext)
 
         return h
-          .view('delegation/manage', {
-            pageTitle: 'Error: Manage delegate',
-            heading: 'Manage delegate',
+          .view(TEMPLATE, {
+            pageTitle: `Error: ${PAGE_TITLE}`,
+            heading: PAGE_TITLE,
             delegate,
             checkboxItems: buildCphCheckboxItems(
               availableCphs,

@@ -7,6 +7,8 @@ import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
 
+const TEMPLATE = 'delegation/cphs'
+
 export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
@@ -15,7 +17,7 @@ export const cphsController = (userService) => ({
     const availableCphs = getDelegatableCphs(userContext)
 
     return h.view(
-      'delegation/cphs',
+      TEMPLATE,
       viewModel({
         checkboxItems: buildCphCheckboxItems(
           availableCphs,
@@ -42,7 +44,7 @@ export const cphsSubmitController = (userService) => ({
 
         return h
           .view(
-            'delegation/cphs',
+            TEMPLATE,
             viewModel({
               checkboxItems: buildCphCheckboxItems(
                 availableCphs,
@@ -71,7 +73,7 @@ export const cphsSubmitController = (userService) => ({
     if (cphs.some((cph) => !availableCphs.includes(cph))) {
       return h
         .view(
-          'delegation/cphs',
+          TEMPLATE,
           viewModel({
             checkboxItems: buildCphCheckboxItems(availableCphs, cphs),
             formValues: {

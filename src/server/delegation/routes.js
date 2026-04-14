@@ -33,11 +33,6 @@ export const routes = (options = {}) => {
     delegationService,
     userService
   } = options
-  const createSubmit = createSubmitController()
-  const cphsSubmit = cphsSubmitController(userService)
-  const confirmSubmit = confirmSubmitController(delegationService)
-  const manageUpdate = manageUpdateController(delegationService, userService)
-
   return [
     {
       method: 'GET',
@@ -45,6 +40,16 @@ export const routes = (options = {}) => {
       options: sessionAuth,
       ...listController(delegationService)
     },
+    ...createFlowRoutes(delegationPath, delegationService, userService),
+    ...managementRoutes(delegationPath, delegationService, userService)
+  ]
+}
+
+function createFlowRoutes(delegationPath, delegationService, userService) {
+  const createSubmit = createSubmitController()
+  const cphsSubmit = cphsSubmitController(userService)
+  const confirmSubmit = confirmSubmitController(delegationService)
+  return [
     {
       method: 'GET',
       path: `${delegationPath}/create`,
@@ -86,7 +91,13 @@ export const routes = (options = {}) => {
       options: sessionAuth,
       path: `${delegationPath}/create/confirm`,
       ...confirmSubmit
-    },
+    }
+  ]
+}
+
+function managementRoutes(delegationPath, delegationService, userService) {
+  const manageUpdate = manageUpdateController(delegationService, userService)
+  return [
     {
       method: 'GET',
       options: sessionAuth,
