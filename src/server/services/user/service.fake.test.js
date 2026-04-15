@@ -1,12 +1,11 @@
-import { describe, test, expect, vi } from 'vitest'
-import { SubjectsService } from '../subjects.js'
-import { getUserDetails, getUserCphs } from './service.fake.js'
+import { describe, expect, test, vi } from 'vitest'
+import { getUserCphs, getUserDetails } from './service.fake.js'
 
 vi.mock('../../../data/users.json', () => ({
   default: [
     {
       iss: 'dummy-issuer',
-      sub: '043f9538-b6b3-41aa-8010-3fb4f310e2b1',
+      sub: 'default-sub-987',
       email: 'default_user@example.com',
       display_name: 'Default User',
       given_name: 'Default',
@@ -27,29 +26,18 @@ vi.mock('../../../data/users.json', () => ({
   ]
 }))
 
-const DEFAULT_SUB = SubjectsService.generateBrokerSub(
-  'dummy-issuer',
-  '043f9538-b6b3-41aa-8010-3fb4f310e2b1',
-  'default_user@example.com'
-)
-
-const TEST_SUB = SubjectsService.generateBrokerSub(
-  'test-issuer',
-  'test-sub-123',
-  'test@example.com'
-)
-
 describe('service.fake', () => {
   describe('getUserDetails()', () => {
     test('it returns user details for a known sub', async () => {
       // Arrange
-      const sub = TEST_SUB
+      const sub = 'test-sub-123'
 
       // Act
       const result = await getUserDetails(sub)
 
       // Assert
       expect(result).toEqual({
+        id: 'test-sub-123',
         email: 'test@example.com',
         display_name: 'Test User',
         given_name: 'Test',
@@ -59,13 +47,14 @@ describe('service.fake', () => {
 
     test('it returns the default user details when looked up by default sub', async () => {
       // Arrange
-      const sub = DEFAULT_SUB
+      const sub = 'default-sub-987'
 
       // Act
       const result = await getUserDetails(sub)
 
       // Assert
       expect(result).toEqual({
+        id: 'default-sub-987',
         email: 'default_user@example.com',
         display_name: 'Default User',
         given_name: 'Default',
@@ -82,6 +71,7 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toEqual({
+        id: 'unknown-sub',
         email: 'default_user@example.com',
         display_name: 'Default User',
         given_name: 'Default',
@@ -93,7 +83,7 @@ describe('service.fake', () => {
   describe('getUserCphs()', () => {
     test('it returns cph assignments for a known sub', async () => {
       // Arrange
-      const sub = TEST_SUB
+      const sub = 'test-sub-123'
 
       // Act
       const result = await getUserCphs(sub)

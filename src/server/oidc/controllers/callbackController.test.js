@@ -200,8 +200,10 @@ describe('create()', () => {
       lastName: 'User'
     })
     mocks.subjectsService.getOrCreateBrokerSub.mockResolvedValue({
-      sub: 'broker-sub',
-      email: 'user@example.com'
+      sub: 'upstream-sub',
+      email: 'user@example.com',
+      firstName: 'Test',
+      lastName: 'User'
     })
     const handler = create({
       config,
@@ -229,20 +231,22 @@ describe('create()', () => {
       `${config.get('idService.b2c.redirectUrl')}?code=auth-code&state=test-state&scope=openid+offline_access+${config.get('idService.b2c.clientId')}`
     )
     expect(mocks.decode).toHaveBeenCalledWith('id-token')
-    expect(mocks.subjectsService.getOrCreateBrokerSub).toHaveBeenCalledWith(
-      'https://issuer.example',
-      'upstream-sub',
-      'user@example.com'
-    )
-    expect(request.cookieAuth.set).toHaveBeenCalledWith({
-      sub: 'broker-sub',
+    expect(mocks.subjectsService.getOrCreateBrokerSub).toHaveBeenCalledWith({
+      iss: 'https://issuer.example',
+      sub: 'upstream-sub',
+      email: 'user@example.com',
       firstName: 'Test',
-      lastName: 'User',
-      email: 'user@example.com'
+      lastName: 'User'
+    })
+    expect(request.cookieAuth.set).toHaveBeenCalledWith({
+      sub: 'upstream-sub',
+      email: 'user@example.com',
+      firstName: 'Test',
+      lastName: 'User'
     })
     expect(mocks.upstreamStateStore.putByUid).toHaveBeenCalledWith(
       'interaction-123',
-      { brokerSub: 'broker-sub' },
+      { brokerSub: 'upstream-sub' },
       120
     )
     expect(mocks.upstreamStateStore.del).toHaveBeenCalledWith('test-state')

@@ -11,10 +11,6 @@ import { seconds } from '../../common/helpers/duration.js'
  */
 
 /**
- * @typedef {import('../subjects.js').SubjectMapping} SubjectMapping
- */
-
-/**
  * @typedef {object} UserContext
  * @property {string} sub
  * @property {string} email

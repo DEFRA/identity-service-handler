@@ -47,26 +47,21 @@ export function create({
     )
 
     // Validate the ID Token and its nonce (OIDC step)
-    const { iss, sub, email, firstName, lastName } = jwt.decode(tokens.id_token)
-
     // Map upstream (iss, sub) to broker sub
-    const { sub: brokerSub } = await subjectsService.getOrCreateBrokerSub(
-      iss,
-      sub,
-      email
+    const subject = await subjectsService.getOrCreateBrokerSub(
+      jwt.decode(tokens.id_token)
     )
 
     // Set broker SSO cookie
-    request.cookieAuth.set({
-      sub: brokerSub,
-      firstName,
-      lastName,
-      email
-    })
+    request.cookieAuth.set(subject)
 
     // Persist resolved login by interaction UID so /interaction/{uid} can finish
     // even if browser cookie persistence is unreliable in local cross-domain hops.
-    await upstreamStateStore.putByUid(uid, { brokerSub }, seconds.twoMinutes)
+    await upstreamStateStore.putByUid(
+      uid,
+      { brokerSub: subject.sub },
+      seconds.twoMinutes
+    )
 
     await upstreamStateStore.del(state)
 

@@ -15,6 +15,7 @@ import helperClient from '../../clients/helperClient.js'
  */
 /**
  * @typedef {object} UserDetails
+ * @property {string} id
  * @property {email} email
  * @property {string} display_name
  * @property {string} given_name

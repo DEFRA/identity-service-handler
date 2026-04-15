@@ -1,5 +1,4 @@
 import { pick } from '../../../common/pick.js'
-import { SubjectsService } from '../subjects.js'
 import data from '../../../data/users.json' with { type: 'json' }
 
 /**
@@ -10,18 +9,11 @@ import data from '../../../data/users.json' with { type: 'json' }
  * @typedef {import('./service.js').UserCphAssignments} UserCphAssignments
  */
 
-const DEFAULT_USER = SubjectsService.generateBrokerSub(
-  'dummy-issuer',
-  '043f9538-b6b3-41aa-8010-3fb4f310e2b1',
-  'default_user@example.com'
-)
+const DEFAULT_USER_SUBJECT_ID = data.find(
+  (user) => user.email === 'default_user@example.com'
+).sub
 
-const users = new Map(
-  data.map((user) => [
-    SubjectsService.generateBrokerSub(user.iss, user.sub, user.email),
-    user
-  ])
-)
+const users = new Map(data.map((user) => [user.sub, user]))
 
 /**
  * Fetches the users CPH assignments for a given user identifier.
@@ -31,7 +23,7 @@ const users = new Map(
  */
 export const getUserCphs = async (sub) =>
   pick(
-    users.get(sub) || users.get(DEFAULT_USER),
+    users.get(sub) || users.get(DEFAULT_USER_SUBJECT_ID),
     'primary_cph',
     'delegated_cph'
   )
@@ -42,11 +34,13 @@ export const getUserCphs = async (sub) =>
  * @param {string} sub
  * @returns {Promise<UserDetails>}
  */
-export const getUserDetails = async (sub) =>
-  pick(
-    users.get(sub) || users.get(DEFAULT_USER),
+export const getUserDetails = async (sub) => ({
+  id: sub,
+  ...pick(
+    users.get(sub) || users.get(DEFAULT_USER_SUBJECT_ID),
     'email',
     'display_name',
     'given_name',
     'family_name'
   )
+})
