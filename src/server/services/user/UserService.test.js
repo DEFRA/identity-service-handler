@@ -26,7 +26,12 @@ describe('UserService', () => {
   describe('getUserContext()', () => {
     test('it returns cached user context when present', async () => {
       // Arrange
-      const cached = { sub: 'broker-sub', email: 'user@example.com' }
+      const cached = {
+        sub: 'broker-sub',
+        email: 'user@example.com',
+        primary_cph: [],
+        delegated_cph: []
+      }
       mocks.configGet.mockReturnValue({ useFakeClient: false })
       mocks.redis.get.mockResolvedValue(JSON.stringify(cached))
       const userService = new UserService(mocks.redis, config)
@@ -49,12 +54,20 @@ describe('UserService', () => {
       mocks.serviceGetUserDetails.mockResolvedValue({
         email: 'user@example.com',
         display_name: 'Test User',
-        given_name: 'Test',
-        family_name: 'User'
+        first_name: 'Test',
+        last_name: 'User'
       })
       mocks.serviceGetUserCphs.mockResolvedValue({
-        primary_cph: [{ cph: '123', role: 'Owner' }],
-        delegated_cph: []
+        associations: [
+          {
+            county_parish_holding_number: '123',
+            association_id: 'a1',
+            county_parish_holding_id: 'c1',
+            application_id: 'ap1',
+            role_id: 'r1'
+          }
+        ],
+        delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -71,7 +84,7 @@ describe('UserService', () => {
         display_name: 'Test User',
         given_name: 'Test',
         family_name: 'User',
-        primary_cph: [{ cph: '123', role: 'Owner' }],
+        primary_cph: [{ cph: '123', expires: null }],
         delegated_cph: []
       })
     })
@@ -84,12 +97,12 @@ describe('UserService', () => {
       mocks.serviceFakeGetUserDetails.mockResolvedValue({
         email: 'fake@example.com',
         display_name: 'Fake User',
-        given_name: 'Fake',
-        family_name: 'User'
+        first_name: 'Fake',
+        last_name: 'User'
       })
       mocks.serviceFakeGetUserCphs.mockResolvedValue({
-        primary_cph: [],
-        delegated_cph: []
+        associations: [],
+        delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -111,6 +124,50 @@ describe('UserService', () => {
       })
     })
 
+    test('it filters out expired delegated cphs', async () => {
+      // Arrange
+      const future = Date.now() + 100000
+      const past = Date.now() - 100000
+      mocks.configGet.mockReturnValue({ useFakeClient: false })
+      mocks.redis.get.mockResolvedValue(undefined)
+      mocks.redis.set.mockResolvedValue('OK')
+      mocks.serviceGetUserDetails.mockResolvedValue({
+        email: 'user@example.com',
+        display_name: 'Test User',
+        first_name: 'Test',
+        last_name: 'User'
+      })
+      mocks.serviceGetUserCphs.mockResolvedValue({
+        associations: [],
+        delegations: [
+          {
+            county_parish_holding_number: '111',
+            delegated_user_role_name: 'Agent',
+            expires_at: new Date(future).toISOString()
+          },
+          {
+            county_parish_holding_number: '222',
+            delegated_user_role_name: 'Agent',
+            expires_at: new Date(past).toISOString()
+          },
+          {
+            county_parish_holding_number: '333',
+            delegated_user_role_name: 'Agent'
+          }
+        ]
+      })
+      const userService = new UserService(mocks.redis, config)
+
+      // Act
+      const result = await userService.getUserContext(sub)
+
+      // Assert
+      expect(result.delegated_cph).toEqual([
+        { cph: '111', expires: new Date(future).toISOString() },
+        { cph: '333', expires: null }
+      ])
+    })
+
     test('it caches the built user context', async () => {
       // Arrange
       mocks.configGet.mockReturnValue({ useFakeClient: false })
@@ -119,12 +176,20 @@ describe('UserService', () => {
       mocks.serviceGetUserDetails.mockResolvedValue({
         email: 'user@example.com',
         display_name: 'Test User',
-        given_name: 'Test',
-        family_name: 'User'
+        first_name: 'Test',
+        last_name: 'User'
       })
       mocks.serviceGetUserCphs.mockResolvedValue({
-        primary_cph: [{ cph: '123', role: 'Owner' }],
-        delegated_cph: []
+        associations: [
+          {
+            county_parish_holding_number: '123',
+            association_id: 'a1',
+            county_parish_holding_id: 'c1',
+            application_id: 'ap1',
+            role_id: 'r1'
+          }
+        ],
+        delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -137,10 +202,10 @@ describe('UserService', () => {
         JSON.stringify({
           sub: 'broker-sub',
           email: 'user@example.com',
-          display_name: 'Test User',
           given_name: 'Test',
           family_name: 'User',
-          primary_cph: [{ cph: '123', role: 'Owner' }],
+          display_name: 'Test User',
+          primary_cph: [{ cph: '123', expires: null }],
           delegated_cph: []
         }),
         'EX',

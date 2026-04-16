@@ -10,8 +10,8 @@ vi.mock('../../../data/users.json', () => ({
       display_name: 'Default User',
       given_name: 'Default',
       family_name: 'User',
-      primary_cph: [{ cph: '00/000/0000', role: 'Owner' }],
-      delegated_cph: []
+      associations: [{ county_parish_holding_number: '00/000/0000' }],
+      delegations: []
     },
     {
       iss: 'test-issuer',
@@ -20,8 +20,13 @@ vi.mock('../../../data/users.json', () => ({
       display_name: 'Test User',
       given_name: 'Test',
       family_name: 'User',
-      primary_cph: [{ cph: '12/500/0001', role: 'Owner' }],
-      delegated_cph: [{ cph: '99/888/0001', role: 'Delegate' }]
+      associations: [{ county_parish_holding_number: '12/500/0001' }],
+      delegations: [
+        {
+          county_parish_holding_number: '99/888/0001',
+          delegated_user_role_name: 'Delegate'
+        }
+      ]
     }
   ]
 }))
@@ -90,8 +95,13 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toEqual({
-        primary_cph: [{ cph: '12/500/0001', role: 'Owner' }],
-        delegated_cph: [{ cph: '99/888/0001', role: 'Delegate' }]
+        associations: [{ county_parish_holding_number: '12/500/0001' }],
+        delegations: [
+          {
+            county_parish_holding_number: '99/888/0001',
+            delegated_user_role_name: 'Delegate'
+          }
+        ]
       })
     })
 
@@ -104,8 +114,8 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toEqual({
-        primary_cph: [{ cph: '00/000/0000', role: 'Owner' }],
-        delegated_cph: []
+        associations: [{ county_parish_holding_number: '00/000/0000' }],
+        delegations: []
       })
     })
   })

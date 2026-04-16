@@ -23,7 +23,7 @@ describe('User Service', () => {
       })
 
       // Act
-      const result = await getUserDetails('user@example.com')
+      const result = await getUserDetails('sub-1')
 
       // Assert
       expect(result).toEqual({
@@ -31,9 +31,7 @@ describe('User Service', () => {
         given_name: 'Test',
         family_name: 'User'
       })
-      expect(mocks.helperClientGet).toHaveBeenCalledWith(
-        '/user/user@example.com'
-      )
+      expect(mocks.helperClientGet).toHaveBeenCalledWith('/users/sub-1')
     })
   })
 
@@ -42,22 +40,36 @@ describe('User Service', () => {
       // Arrange
       mocks.helperClientGet.mockResolvedValue({
         payload: {
-          primary_cph: [{ cph: '123', role: 'Owner' }],
-          delegated_cph: []
+          associations: [
+            {
+              county_parish_holding_number: '123',
+              association_id: 'a1',
+              county_parish_holding_id: 'c1',
+              application_id: 'ap1',
+              role_id: 'r1'
+            }
+          ],
+          delegations: []
         }
       })
 
       // Act
-      const result = await getUserCphs('user@example.com')
+      const result = await getUserCphs('sub-2')
 
       // Assert
       expect(result).toEqual({
-        primary_cph: [{ cph: '123', role: 'Owner' }],
-        delegated_cph: []
+        associations: [
+          {
+            county_parish_holding_number: '123',
+            association_id: 'a1',
+            county_parish_holding_id: 'c1',
+            application_id: 'ap1',
+            role_id: 'r1'
+          }
+        ],
+        delegations: []
       })
-      expect(mocks.helperClientGet).toHaveBeenCalledWith(
-        '/user/user@example.com/cphs'
-      )
+      expect(mocks.helperClientGet).toHaveBeenCalledWith('/users/sub-2/cphs')
     })
   })
 })

@@ -6,35 +6,30 @@
     "display_name": "Default User",
     "given_name": "Default",
     "family_name": "User",
-    "primary_cph": [
+    "associations": [{ "county_parish_holding_number": "44/081/0006" }],
+    "delegations": [
       {
-        "cph": "44/081/0006",
-        "role": "Owner"
-      }
-    ],
-    "delegated_cph": [
-      {
-        "cph": "44/081/0001",
-        "role": "Keeper"
+        "county_parish_holding_number": "44/081/0001",
+        "delegated_user_role_name": "Keeper"
       },
       {
-        "cph": "44/081/0002",
-        "role": "Keeper",
-        "expiry_date": "2029-01-01"
+        "county_parish_holding_number": "44/081/0002",
+        "delegated_user_role_name": "Keeper",
+        "expires_at": "2029-01-01"
       },
       {
-        "cph": "44/081/0003",
-        "role": "Agent"
+        "county_parish_holding_number": "44/081/0003",
+        "delegated_user_role_name": "Agent"
       },
       {
-        "cph": "44/081/0004",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
+        "county_parish_holding_number": "44/081/0004",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
       },
       {
-        "cph": "44/081/0005",
-        "role": "Agent",
-        "expiry_date": "2029-01-01"
+        "county_parish_holding_number": "44/081/0005",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
       }
     ]
   },
@@ -45,21 +40,29 @@
     "display_name": "Max Bladen-Clark",
     "given_name": "Max",
     "family_name": "Bladen-Clark",
-    "primary_cph": [
-      { "cph": "12/500/0001", "role": "Owner" },
-      { "cph": "12/500/0002", "role": "Owner" },
-      { "cph": "12/500/0003", "role": "Owner" },
-      { "cph": "12/500/0004", "role": "Owner" },
-      { "cph": "12/500/0005", "role": "Owner" },
-      { "cph": "12/500/0006", "role": "Owner" },
-      { "cph": "12/500/0007", "role": "Sole Occupier" },
-      { "cph": "12/500/0008", "role": "Keeper" },
-      { "cph": "12/500/0009", "role": "Keeper" },
-      { "cph": "12/500/0010", "role": "Agent" }
+    "associations": [
+      { "county_parish_holding_number": "12/500/0001" },
+      { "county_parish_holding_number": "12/500/0002" },
+      { "county_parish_holding_number": "12/500/0003" },
+      { "county_parish_holding_number": "12/500/0004" },
+      { "county_parish_holding_number": "12/500/0005" },
+      { "county_parish_holding_number": "12/500/0006" },
+      { "county_parish_holding_number": "12/500/0007" },
+      { "county_parish_holding_number": "12/500/0008" },
+      { "county_parish_holding_number": "12/500/0009" },
+      { "county_parish_holding_number": "12/500/0010" }
     ],
-    "delegated_cph": [
-      { "cph": "01/028/0043", "role": "Agent", "expiry_date": "2029-01-01" },
-      { "cph": "01/030/0034", "role": "Agent", "expiry_date": "2029-01-01" }
+    "delegations": [
+      {
+        "county_parish_holding_number": "01/028/0043",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
+      },
+      {
+        "county_parish_holding_number": "01/030/0034",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
+      }
     ]
   },
   {
@@ -69,21 +72,29 @@
     "display_name": "Cedric Brasey",
     "given_name": "Cedric",
     "family_name": "Brasey",
-    "primary_cph": [
-      { "cph": "12/500/0001", "role": "Owner" },
-      { "cph": "12/500/0002", "role": "Owner" },
-      { "cph": "12/500/0003", "role": "Owner" },
-      { "cph": "12/500/0004", "role": "Owner" },
-      { "cph": "12/500/0005", "role": "Owner" },
-      { "cph": "12/500/0006", "role": "Owner" },
-      { "cph": "12/500/0007", "role": "Sole Occupier" },
-      { "cph": "12/500/0008", "role": "Keeper" },
-      { "cph": "12/500/0009", "role": "Keeper" },
-      { "cph": "12/500/0010", "role": "Agent" }
+    "associations": [
+      { "county_parish_holding_number": "12/500/0001" },
+      { "county_parish_holding_number": "12/500/0002" },
+      { "county_parish_holding_number": "12/500/0003" },
+      { "county_parish_holding_number": "12/500/0004" },
+      { "county_parish_holding_number": "12/500/0005" },
+      { "county_parish_holding_number": "12/500/0006" },
+      { "county_parish_holding_number": "12/500/0007" },
+      { "county_parish_holding_number": "12/500/0008" },
+      { "county_parish_holding_number": "12/500/0009" },
+      { "county_parish_holding_number": "12/500/0010" }
     ],
-    "delegated_cph": [
-      { "cph": "01/028/0043", "role": "Agent", "expiry_date": "2029-01-01" },
-      { "cph": "01/030/0034", "role": "Agent", "expiry_date": "2029-01-01" }
+    "delegations": [
+      {
+        "county_parish_holding_number": "01/028/0043",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
+      },
+      {
+        "county_parish_holding_number": "01/030/0034",
+        "delegated_user_role_name": "Agent",
+        "expires_at": "2029-01-01"
+      }
     ]
   }
 ]
