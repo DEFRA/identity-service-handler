@@ -1,6 +1,5 @@
 version: '3.4'
 services:
-
   localstack:
     image: localstack/localstack:3.0.2
     ports:
@@ -17,7 +16,7 @@ services:
       - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
       - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
     healthcheck:
-      test: ['CMD', 'curl', 'localhost:4566/_localstack/health']
+      test: ['CMD', 'curl', 'localhost:4566']
       interval: 5s
       start_period: 5s
       retries: 3
@@ -46,9 +45,8 @@ services:
 
   your-frontend:
     build: ./
-    platform: linux
     ports:
-      - '${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}'
+      - '3000:3000'
     links:
       - 'localstack:localstack'
       - 'redis:redis'
@@ -60,24 +58,14 @@ services:
     env_file:
       - 'compose/aws.env'
     environment:
-      PORT: ${FRONTEND_PORT:-3000}
+      PORT: 3000
       NODE_ENV: development
       REDIS_HOST: redis
       LOCALSTACK_ENDPOINT: http://localstack:4566
       USE_SINGLE_INSTANCE_CACHE: true
-      USE_FAKE_EXTERNAL_API: ${HELPER_USE_FAKE_CLIENT:-true}
-      IDENTITY_HELPER_BASE_URL: ${HELPER_BASEURL:-http://localhost:3001}
-      HELPER_API_KEY: ${HELPER_API_KEY:-your-helper-api-key}
-      B2C_CLIENT_ID: ${B2C_CLIENT_ID:-your-default-client-id}
-      B2C_CLIENT_SECRET: ${B2C_CLIENT_SECRET}
-      B2C_SERVICE_ID: ${B2C_SERVICE_ID:-your-default-service-id}
-      DEBUG: ${DEBUG}
-      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}
-      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
-      TLS_ENABLED: ${TLS_ENABLED:-true}
-      BROKER_BASE_URL2: ${BROKER_BASE_URL2}
-      BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-http://localhost:3000/callback}
+      USE_FAKE_EXTERNAL_API: true
+      IDENTITY_HELPER_BASE_URL: http://identity-helper:3000
+      IDENTITY_HELPER_API_KEY: test
     networks:
       - cdp-tenant
 
