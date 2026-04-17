@@ -1,5 +1,5 @@
 services:
-localstack:
+  localstack:
     image: localstack/localstack:3.0.2
     ports:
       - '4566:4566' # LocalStack Gateway
