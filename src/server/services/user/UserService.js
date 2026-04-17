@@ -11,7 +11,9 @@ import { seconds } from '../../common/helpers/duration.js'
  */
 
 /**
- * @typedef {import('../subjects.js').SubjectMapping} SubjectMapping
+ * @typedef {object} UserCph
+ * @property {string} cph
+ * @property {string | null} [expires]
  */
 
 /**
@@ -36,7 +38,10 @@ export class UserService {
     this.helperConfig = config.get('idService.helper')
     this._impl = this.helperConfig.useFakeClient ? serviceFake : service
   }
-
+  /**
+   * @param {string} sub
+   * @returns {Promise<UserContext | null>}
+   */
   async #getCachedContext(sub) {
     const raw = await this.redis.get(`${this.#contextCacheKeyPrefix}:${sub}`)
     if (raw) {
@@ -55,26 +60,52 @@ export class UserService {
   }
 
   /**
-   * @param {sub} string
+   * @param {string} sub
+   * @returns {Promise<UserContext>}
+   */
+  async #fetchContext(sub) {
+    const [userResult, cphResult] = await Promise.all([
+      this._impl.getUserDetails(sub),
+      this._impl.getUserCphs(sub)
+    ])
+
+    const context = {
+      sub,
+      email: userResult.email,
+      given_name: userResult.first_name,
+      family_name: userResult.last_name,
+      display_name: userResult.display_name,
+      primary_cph: cphResult.associations.map((a) => ({
+        cph: a.county_parish_holding_number,
+        expires: null
+      })),
+      delegated_cph: cphResult.delegations.map((d) => ({
+        cph: d.county_parish_holding_number,
+        expires: d.expires_at || null
+      }))
+    }
+
+    await this.#setCachedContext(context)
+
+    return context
+  }
+
+  /**
+   * @param {string} sub
    * @returns {Promise<UserContext>}
    */
   async getUserContext(sub) {
-    const cached = await this.#getCachedContext(sub)
-    if (cached) {
-      return cached
+    const now = Date.now()
+    let context = await this.#getCachedContext(sub)
+    if (!context) {
+      context = await this.#fetchContext(sub)
     }
 
-    const userResult = await this._impl.getUserDetails(sub)
-    const cphResult = await this._impl.getUserCphs(sub)
-
-    const userContext = {
-      sub,
-      ...userResult,
-      ...cphResult
+    return {
+      ...context,
+      delegated_cph: context.delegated_cph.filter(
+        ({ expires }) => !expires || new Date(expires).getTime() > now
+      )
     }
-
-    await this.#setCachedContext(userContext)
-
-    return userContext
   }
 }
