@@ -1,18 +1,5 @@
-import assign from 'lodash/assign.js'
-import { formatDate } from './format-date.js'
-import { formatCurrency } from './format-currency.js'
-import { sort, filterByKeyValue } from './array-funcs.js'
-import { dump } from './debug-funcs.js'
-
-export {
-  assign,
-  // Format Date functions
-  formatDate,
-  // Format Currency functions
-  formatCurrency,
-  // Array functions
-  sort,
-  filterByKeyValue,
-  // Debug functions
-  dump
-}
+export { default as assign } from 'lodash/assign.js'
+export { formatDate } from './format-date.js'
+export { formatCurrency } from './format-currency.js'
+export { sort, filterByKeyValue } from './array-funcs.js'
+export { dump } from './debug-funcs.js'

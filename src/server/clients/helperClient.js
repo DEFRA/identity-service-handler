@@ -1,6 +1,7 @@
 import Wreck from '@hapi/wreck'
 import { config } from '../../config/config.js'
 import { generateHeaders } from '../common/helpers/api-headers.js'
+import { statusCodes } from '../common/constants/status-codes.js'
 
 const buildOptions = (options = {}) => ({
   baseUrl: config.get('idService.helper.baseUrl'),
@@ -19,7 +20,7 @@ const parseError = (statusCode, payload) => {
   if (payload?.detail || payload?.title) {
     return new Error(`${payload.status} - ${payload.detail || payload.title}`)
   }
-  if (statusCode === 422) {
+  if (statusCode === statusCodes.unprocessableEntity) {
     return new Error('Validation failed')
   }
   return new Error(`Request failed - ${statusCode}`)
@@ -33,7 +34,7 @@ const request = async (call) => {
     throw parseError(err.output?.statusCode, err.data?.payload)
   }
 
-  if (result.res?.statusCode >= 400) {
+  if (result.res?.statusCode >= statusCodes.badRequest) {
     throw parseError(result.res.statusCode, result.payload)
   }
 

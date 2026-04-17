@@ -18,7 +18,7 @@ describe('findClient()', () => {
   test('it returns undefined when the client is not found', async () => {
     // Arrange
     const clientId = 'unknown-client'
-    const clientsService = { getClient: mocks.clientsServiceGet }
+    const clientsService = { get: mocks.clientsServiceGet }
     mocks.clientsServiceGet.mockResolvedValue(null)
 
     // Act
@@ -34,7 +34,7 @@ describe('findClient()', () => {
     const clientId = 'client-1'
     const clientRecord = { client_id: 'client-1', name: 'Test App' }
     const clientParams = { client_id: 'client-1', client_name: 'Test App' }
-    const clientsService = { getClient: mocks.clientsServiceGet }
+    const clientsService = { get: mocks.clientsServiceGet }
     mocks.clientsServiceGet.mockResolvedValue(clientRecord)
     mocks.buildClientParams.mockReturnValue(clientParams)
     mocks.OidcClient.mockImplementation(function (params) {

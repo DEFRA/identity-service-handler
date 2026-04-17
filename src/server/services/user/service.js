@@ -4,27 +4,36 @@ import helperClient from '../../clients/helperClient.js'
  * @typedef {import('../../../config/config.js').AppConfig} AppConfig
  */
 /**
- * @typedef {'Owner' | 'Keeper' | 'Agent'} UserCphRole
+ * @typedef {object} UserDetails
+ * @property {string} id
+ * @property {string} email
+ * @property {string} display_name
+ * @property {string} first_name
+ * @property {string} last_name
  */
 
 /**
- * @typedef {object} UserCph
- * @property {string} cph
- * @property {UserCphRole} role
- * @property {string} [expiry_date]
+ * @typedef {object} UserAssociatedCph
+ * @property {string} association_id
+ * @property {string} county_parish_holding_id
+ * @property {string} county_parish_holding_number
+ * @property {string} application_id
+ * @property {string} role_id
  */
+
 /**
- * @typedef {object} UserDetails
- * @property {email} email
- * @property {string} display_name
- * @property {string} given_name
- * @property {string} family_name
+ * @typedef {object} UserDelegatedCph
+ * @property {string} delegation_id
+ * @property {string} county_parish_holding_id
+ * @property {string} county_parish_holding_number
+ * @property {string} delegated_user_role_name
+ * @property {string} [expires_at]
  */
 
 /**
  * @typedef {object} UserCphAssignments
- * @property {UserCph[]} primary_cph
- * @property {UserCph[]} delegated_cph
+ * @property {UserAssociatedCph[]} associations
+ * @property {UserDelegatedCph[]} delegations
  */
 
 /**
@@ -34,7 +43,7 @@ import helperClient from '../../clients/helperClient.js'
  * @returns {Promise<UserCphAssignments>}
  */
 export async function getUserCphs(sub) {
-  const response = await helperClient.get(`/user/${sub}/cphs`)
+  const response = await helperClient.get(`/users/${sub}/cphs`)
 
   return response.payload
 }
@@ -46,7 +55,7 @@ export async function getUserCphs(sub) {
  * @returns {Promise<UserDetails>}
  */
 export async function getUserDetails(sub) {
-  const response = await helperClient.get(`/user/${sub}`)
+  const response = await helperClient.get(`/users/${sub}`)
 
   return response.payload
 }

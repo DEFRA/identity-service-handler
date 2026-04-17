@@ -22,7 +22,7 @@ export const home = {
           ...homeController
         },
         {
-          method: 'GET',
+          method: ['GET', 'POST'],
           path: '/login',
           ...loginController
         },
@@ -32,17 +32,17 @@ export const home = {
           ...loginCallbackController
         },
         {
-          method: 'GET',
+          method: ['GET', 'POST'],
           path: '/context',
           ...getContextController
         },
         {
-          method: 'GET',
+          method: ['GET', 'POST'],
           path: '/refresh',
           ...refreshTokenController
         },
         {
-          method: 'GET',
+          method: ['GET', 'POST'],
           path: '/signout',
           ...signoutController
         }

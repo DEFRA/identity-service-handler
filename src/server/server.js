@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import fs from 'node:fs'
 import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
@@ -37,7 +37,65 @@ export async function createServer() {
 
   logger.info(`Starting server with configuration: ${config}`)
   const redis = buildRedisClient(config.get('redis'))
+  const services = bootstrapServices(redis)
+  const brokerProvider = buildBrokerProvider({
+    cookiePassword: config.get('session.cookie.password'),
+    sessionCookieSecure: config.get('session.cookie.secure'),
+    issuer: config.get('idService.oidc.issuer'),
+    redis,
+    ...services
+  })
 
+  const server = await bootstrapServer()
+  await server.register([
+    Cookie,
+    Crumb,
+    Inert,
+    requestLogger,
+    requestTracing,
+    secureContext,
+    pulse,
+    sessionCache,
+    nunjucksConfig,
+    Scooter,
+    contentSecurityPolicy,
+    requestContext,
+    {
+      plugin: auth.plugin,
+      options: { brokerProvider }
+    },
+    {
+      plugin: router.plugin,
+      options: services
+    }
+  ])
+
+  await registerOidcRoutes(server, {
+    config,
+    brokerProvider,
+    ...services
+  })
+
+  server.ext('onRequest', async (req, h) => {
+    // Let hapi handle anything that is not an oidc route
+    if (!OIDC_ROUTES.some((r) => req.path.startsWith(r))) {
+      return h.continue
+    }
+
+    await new Promise((resolve) =>
+      brokerProvider.callback()(req.raw.req, req.raw.res, resolve)
+    )
+    return h.abandon
+  })
+
+  logger.info(`Current working directory: ${process.cwd()}`)
+
+  server.ext('onPreResponse', catchAll)
+
+  return server
+}
+
+function bootstrapServices(redis) {
   const applicationService = new ApplicationService(config)
   const clientsService = new ApplicationCache(redis, applicationService, {
     ttlSeconds: 300
@@ -46,17 +104,17 @@ export async function createServer() {
   const userService = new UserService(redis, config)
   const delegationService = new DelegationService(redis, config)
   const upstreamStateStore = new UpstreamStateStore(redis)
-
-  const brokerProvider = buildBrokerProvider({
-    cookiePassword: config.get('session.cookie.password'),
-    sessionCookieSecure: config.get('session.cookie.secure'),
-    issuer: config.get('idService.oidc.issuer'),
-    redis,
+  return {
+    applicationService,
     clientsService,
+    subjectsService,
     userService,
-    subjectsService
-  })
+    delegationService,
+    upstreamStateStore
+  }
+}
 
+function bootstrapServer() {
   const serverOptions = {
     host: config.get('host'),
     port: config.get('port'),
@@ -100,57 +158,5 @@ export async function createServer() {
       cert: fs.readFileSync(config.get('tls.cert'))
     }
   }
-
-  const server = hapi.server(serverOptions)
-
-  await server.register([
-    Cookie,
-    Crumb,
-    Inert,
-    requestLogger,
-    requestTracing,
-    secureContext,
-    pulse,
-    sessionCache,
-    nunjucksConfig,
-    Scooter,
-    contentSecurityPolicy,
-    requestContext,
-    {
-      plugin: auth.plugin,
-      options: { brokerProvider }
-    },
-    {
-      plugin: router.plugin,
-      options: { userService, delegationService, subjectsService }
-    }
-  ])
-
-  await registerOidcRoutes(server, {
-    config,
-    brokerProvider,
-    subjectsService,
-    upstreamStateStore
-  })
-
-  server.ext('onRequest', async (req, h) => {
-    const p = req.path
-    const oidcRoutes = OIDC_ROUTES
-
-    // Let hapi handle anything that is not an oidc route
-    if (!oidcRoutes.some((r) => p.startsWith(r))) {
-      return h.continue
-    }
-
-    await new Promise((resolve) =>
-      brokerProvider.callback()(req.raw.req, req.raw.res, resolve)
-    )
-    return h.abandon
-  })
-
-  logger.info(`Current working directory: ${process.cwd()}`)
-
-  server.ext('onPreResponse', catchAll)
-
-  return server
+  return hapi.server(serverOptions)
 }

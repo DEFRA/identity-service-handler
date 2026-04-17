@@ -533,7 +533,7 @@ describe('RedisAdapter', () => {
       const stored = JSON.parse(storedValue)
       expect(stored.sub).toBe('user-1')
       expect(stored.consumed).toBeGreaterThanOrEqual(before)
-      expect(stored.consumed).toBeLessThanOrEqual(Math.floor(Date.now() / 1000))
+      expect(stored.consumed).toBeLessThanOrEqual(Math.round(Date.now() / 1000))
     })
   })
 })

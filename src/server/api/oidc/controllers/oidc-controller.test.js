@@ -33,7 +33,6 @@ describe('oidcController', () => {
       'end_session_endpoint',
       'https://test.example.com/signout'
     )
-    expect(body).toHaveProperty('jwks_uri', 'https://test.example.com/jwks')
     expect(body).toHaveProperty(
       'token_endpoint',
       'https://test.example.com/token'

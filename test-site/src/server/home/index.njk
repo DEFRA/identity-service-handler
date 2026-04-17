@@ -1,4 +1,5 @@
 {% extends 'layouts/page.njk' %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block content %}
   {{ appHeading({
@@ -8,34 +9,81 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <div class="govuk-body" data-testid="app-page-body">
+        {% if errors.scopes %}
+          {{ govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: [
+              {
+                text: errors.scopes,
+                href: "#scopes"
+              }
+            ]
+          }) }}
+        {% endif %}
 
-        <p>Trigger logon on ISH {{ govukButton({
-            text: "Login",
-            href: "/login"
+        <form method="post">
+          <input type="hidden" name="scopes" value="openid">
+          {{ govukCheckboxes({
+            idPrefix: "scopes",
+            classes: "govuk-checkboxes--small",
+            name: "scopes",
+            fieldset: {
+              legend: {
+                text: "Which scopes to use?",
+                isPageHeading: true,
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            hint: {
+              text: "Select all that apply"
+            },
+            errorMessage: ({ text: errors.scopes } if errors.scopes),
+            items: scopeItems
           }) }}
-        </p>
-        <pre>{{ logon_response | trim }}</pre>
-       <hr>
-        <p>Use refresh token on ISH {{ govukButton({
-            text: "Refresh token",
-            href: "/refresh",
-            disabled: not refresh_token_present
+          <hr>
+          <h2 class="govuk-heading-s">Trigger logon on ISH</h2>
+          {{ govukButton({
+              text: "Login",
+              type: "submit",
+              disabled: login_token_present,
+              attributes: {
+                formaction: "/login"
+              }
           }) }}
-        </p>
-        <hr>
-        <p>Get user context {{ govukButton({
-            text: "Context",
-            href: "/context"
+          <pre>{{ logon_response | trim }}</pre>
+          <hr>
+          <h2 class="govuk-heading-s">Use refresh token on ISH</h2>
+          {{ govukButton({
+              text: "Refresh token",
+              type: "submit",
+              disabled: not login_token_present,
+              attributes: {
+                formaction: "/refresh"
+              }
           }) }}
-        </p>
-        <pre>{{ context_response }}</pre>
-        <hr>
-        <p>Trigger signout on ISH {{ govukButton({
-            text: "Signout",
-            href: "/signout"
+          <hr>
+          <h2 class="govuk-heading-s">Get user context</h2>
+          {{ govukButton({
+              text: "Context",
+              type: "submit",
+              disabled: not login_token_present,
+              attributes: {
+                formaction: "/context"
+              }
           }) }}
-        </p>
-        <pre>{{ logout_response }}</pre>
+          <pre>{{ context_response }}</pre>
+          <hr>
+          <h2 class="govuk-heading-s">Trigger signout on ISH</h2>
+          {{ govukButton({
+              text: "Signout",
+              type: "submit",
+              disabled: not login_token_present,
+              attributes: {
+                formaction: "/signout"
+              }
+            }) }}
+          <pre>{{ logout_response }}</pre>
+        </form>
       </div>
     </div>
   </div>

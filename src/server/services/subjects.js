@@ -1,9 +1,3 @@
-import { createHash } from 'node:crypto'
-/**
- * Replace with DB table subject_map.
- * Stable mapping: upstream (iss,sub) -> brokerSub
- */
-
 /**
  * @typedef {import('ioredis').Redis | import('ioredis').Cluster} RedisClient
  */
@@ -12,6 +6,8 @@ import { createHash } from 'node:crypto'
  * @typedef {object} SubjectMapping
  * @property {string} sub
  * @property {string} email
+ * @property {string} firstName
+ * @property {string} lastName
  */
 
 export class SubjectsService {
@@ -23,65 +19,46 @@ export class SubjectsService {
     this.redis = redis
   }
   /**
-   * @param {string} brokerSub
+   * @param {string} sub
    * @returns {string}
    */
-  #key(brokerSub) {
-    return `${this.#prefix}:${brokerSub}`
+  #key(sub) {
+    return `${this.#prefix}:${sub}`
   }
 
   /**
-   * @param {string} iss
-   * @param {string} upstreamSub
-   * @param {string} email
-   * @returns {string}
+   * @param {string} sub
+   * @returns {Promise<SubjectMapping | null>}
    */
-  static generateBrokerSub(iss, upstreamSub, email) {
-    return createHash('sha256')
-      .update(`${iss}|${upstreamSub}|${email}`)
-      .digest('hex')
-  }
-
-  /**
-   * @param {string} brokerSub
-   * @returns {Promise<SubjectMapping | undefined>}
-   */
-  async get(brokerSub) {
-    const key = this.#key(brokerSub)
+  async get(sub) {
+    const key = this.#key(sub)
     const raw = await this.redis.get(key)
     if (raw) {
       return JSON.parse(raw)
     }
+    return null
   }
 
   /**
-   * @param {string} brokerSub
-   * @param {string} email
+   * @param {SubjectMapping} subjectMapping
    * @returns {Promise<SubjectMapping>}
    */
-  async create(brokerSub, email) {
-    const key = this.#key(brokerSub)
-    const value = {
-      sub: brokerSub,
-      email
-    }
-    await this.redis.set(key, JSON.stringify(value))
-    return value
+  async create(subjectMapping) {
+    const key = this.#key(subjectMapping.sub)
+    await this.redis.set(key, JSON.stringify(subjectMapping))
+    return subjectMapping
   }
 
   /**
-   * @param {string} iss
-   * @param {string} upstreamSub
-   * @param {string} email
+   * @param {SubjectMapping} subjectMapping
    * @returns {Promise<SubjectMapping>}
    */
-  async getOrCreateBrokerSub(iss, upstreamSub, email) {
-    const brokerSub = SubjectsService.generateBrokerSub(iss, upstreamSub, email)
-    const existing = await this.get(brokerSub)
+  async getOrCreateBrokerSub({ sub, email, firstName, lastName }) {
+    const existing = await this.get(sub)
     if (existing) {
       return existing
     } else {
-      return this.create(brokerSub, email)
+      return this.create({ sub, email, firstName, lastName })
     }
   }
 }

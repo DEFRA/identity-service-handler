@@ -1,5 +1,15 @@
+/**
+ * @typedef {import('./service.js').Application} Application
+ */
+
+import { seconds } from '../../common/helpers/duration.js'
+
 export class ApplicationCache {
-  constructor(redis, applicationClient, { ttlSeconds = 300 } = {}) {
+  constructor(
+    redis,
+    applicationClient,
+    { ttlSeconds = seconds.fiveMinutes } = {}
+  ) {
     this.redis = redis
     this.applicationClient = applicationClient
     this.ttlSeconds = ttlSeconds
@@ -10,20 +20,28 @@ export class ApplicationCache {
     return `${this.prefix}:${clientId}`
   }
 
-  async getClient(clientId) {
+  /**
+   * @param {string} clientId
+   * @returns {Promise<Application | null>}
+   */
+  async get(clientId) {
     const cached = await this.redis.get(this.key(clientId))
-    if (cached) return JSON.parse(cached)
+    if (cached) {
+      return JSON.parse(cached)
+    }
 
-    const client = await this.applicationClient.get(clientId)
-    if (!client) return null
+    const application = await this.applicationClient.get(clientId)
+    if (!application) {
+      return null
+    }
 
     await this.redis.set(
       this.key(clientId),
-      JSON.stringify(client),
+      JSON.stringify(application),
       'EX',
       this.ttlSeconds
     )
-    return client
+    return application
   }
 
   async invalidate(clientId) {

@@ -1,10 +1,13 @@
 import Joi from 'joi'
+import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
 import { getDelegatableCphs } from '../helpers/get-delegatable-cphs.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
+
+const TEMPLATE = 'delegation/cphs'
 
 export const cphsController = (userService) => ({
   handler: async (request, h) => {
@@ -14,7 +17,7 @@ export const cphsController = (userService) => ({
     const availableCphs = getDelegatableCphs(userContext)
 
     return h.view(
-      'delegation/cphs',
+      TEMPLATE,
       viewModel({
         checkboxItems: buildCphCheckboxItems(
           availableCphs,
@@ -41,7 +44,7 @@ export const cphsSubmitController = (userService) => ({
 
         return h
           .view(
-            'delegation/cphs',
+            TEMPLATE,
             viewModel({
               checkboxItems: buildCphCheckboxItems(
                 availableCphs,
@@ -55,7 +58,7 @@ export const cphsSubmitController = (userService) => ({
               }
             })
           )
-          .code(400)
+          .code(statusCodes.badRequest)
           .takeover()
       }
     }
@@ -70,7 +73,7 @@ export const cphsSubmitController = (userService) => ({
     if (cphs.some((cph) => !availableCphs.includes(cph))) {
       return h
         .view(
-          'delegation/cphs',
+          TEMPLATE,
           viewModel({
             checkboxItems: buildCphCheckboxItems(availableCphs, cphs),
             formValues: {
@@ -81,7 +84,7 @@ export const cphsSubmitController = (userService) => ({
             }
           })
         )
-        .code(400)
+        .code(statusCodes.badRequest)
     }
 
     draftService.setCphs(cphs)

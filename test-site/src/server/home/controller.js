@@ -12,6 +12,9 @@ const clientId =
 const clientSecret = process.env.OIDC_CLIENT_SECRET ?? 'secret123'
 const pkceVerifierKey = 'brokerPkceVerifier'
 const loginStateKey = 'brokerLoginState'
+const selectedScopesKey = 'selectedScopeState'
+const selectableScopes = ['openid', 'email', 'profile']
+const defaultLoginScopes = ['openid', 'email']
 
 export function createPkceVerifier() {
   return randomBytes(32).toString('base64url')
@@ -37,16 +40,56 @@ function formatForView(value) {
   return JSON.stringify(value, null, 2).trim()
 }
 
-function buildHomePayload(request) {
+function withErrorPageTitle(title, errors = {}) {
+  return `${Object.keys(errors).length > 0 ? 'Error: ' : ''}${title}`
+}
+
+function normaliseScopes(scopes) {
+  const selectedScopes = Array.isArray(scopes)
+    ? scopes
+    : typeof scopes === 'string' && scopes
+      ? [scopes]
+      : []
+
+  return selectableScopes.filter(
+    (scope) => scope === 'openid' || selectedScopes.includes(scope)
+  )
+}
+
+function buildScopeItems(selectedScopes = [], isLoginFlow = false) {
+  return selectableScopes.map((scope) => ({
+    value: scope,
+    text: scope,
+    checked: scope === 'openid' || selectedScopes.includes(scope),
+    disabled: scope === 'openid' || isLoginFlow
+  }))
+}
+
+function getScopeValidationError(selectedScopes) {
+  return selectedScopes.length === 0 ? 'Select at least one scope' : null
+}
+
+function buildHomePayload(request, overrides = {}) {
   const refreshToken = request.yar.get('brokerRefreshToken')
+  const loginToken = request.yar.get('brokerTokenResponse')
+  const selectedScopes =
+    request.yar.get(selectedScopesKey) ?? overrides.formValues?.scopes ?? []
+  const errors = overrides.errors ?? {}
 
   return {
-    pageTitle: 'Home',
+    pageTitle: withErrorPageTitle('Home', errors),
     heading: 'Home',
-    logon_response: formatForView(request.yar.get('brokerTokenResponse')),
+    logon_response: formatForView(loginToken),
     context_response: formatForView(request.yar.get('brokerContextResponse')),
     logout_response: request.path === '/success' ? 'Logged out' : '',
-    refresh_token_present: Boolean(refreshToken)
+    refresh_token_present: Boolean(refreshToken),
+    login_token_present: Boolean(loginToken),
+    errors,
+    formValues: {
+      scopes: selectedScopes
+    },
+    scopeItems: buildScopeItems(selectedScopes, Boolean(loginToken)),
+    ...overrides
   }
 }
 
@@ -96,6 +139,30 @@ export const signoutController = {
 
 export const loginController = {
   handler(request, h) {
+    const selectedScopes =
+      request.method === 'post'
+        ? normaliseScopes(request.payload?.scopes)
+        : defaultLoginScopes
+    const scopeError =
+      request.method === 'post' ? getScopeValidationError(selectedScopes) : null
+
+    if (scopeError) {
+      return h
+        .view(
+          'home/index',
+          buildHomePayload(request, {
+            errors: {
+              scopes: scopeError
+            },
+            formValues: {
+              scopes: selectedScopes
+            }
+          })
+        )
+        .code(400)
+        .takeover()
+    }
+
     request.yar.reset()
 
     const codeVerifier = createPkceVerifier()
@@ -103,12 +170,16 @@ export const loginController = {
 
     request.yar.set(pkceVerifierKey, codeVerifier)
     request.yar.set(loginStateKey, state)
+    request.yar.set(selectedScopesKey, selectedScopes)
 
     const authUrl = new URL('authorize', brokerBaseUrl)
     authUrl.searchParams.append('client_id', clientId)
     authUrl.searchParams.append('response_type', 'code')
     authUrl.searchParams.append('redirect_uri', redirectUrl.href)
-    authUrl.searchParams.append('scope', 'openid offline_access')
+    authUrl.searchParams.append(
+      'scope',
+      [...selectedScopes, 'offline_access'].join(' ')
+    )
     authUrl.searchParams.append('prompt', 'consent')
     authUrl.searchParams.append('state', state)
     authUrl.searchParams.append(

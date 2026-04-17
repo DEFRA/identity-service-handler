@@ -1,3 +1,7 @@
+import { unixEpoch } from '../../common/helpers/duration.js'
+
+const CURSOR_SIZE = 100
+
 /**
  * Minimal Redis adapter for oidc-provider using ioredis.
  * Good MVP base; production: add metrics, structured errors, prefixes per env, etc.
@@ -48,14 +52,18 @@ export class RedisAdapter {
         await this.redis.del(gk)
       }
       await this.redis.sadd(gk, key)
-      if (expiresIn) await this.redis.expire(gk, expiresIn)
+      if (expiresIn) {
+        await this.redis.expire(gk, expiresIn)
+      }
     }
   }
 
   async find(id) {
     const key = this.key(id)
     const type = await this.redis.type(key)
-    if (type === 'none') return undefined
+    if (type === 'none') {
+      return undefined
+    }
     if (type !== 'string') {
       // Self-heal corrupted key; caller can recreate entity if required.
       await this.redis.del(key)
@@ -78,7 +86,7 @@ export class RedisAdapter {
         'MATCH',
         pattern,
         'COUNT',
-        100
+        CURSOR_SIZE
       )
       cursor = result[0]
       keys.push(...result[1])
@@ -111,11 +119,15 @@ export class RedisAdapter {
   async revokeByGrantId(grantId) {
     const gk = this.grantIndexKey(grantId)
     const gkType = await this.redis.type(gk)
+
     if (gkType === 'set') {
       const keys = await this.redis.smembers(gk)
-      if (keys.length) await this.redis.del(keys)
-      await this.redis.del(gk)
-    } else if (gkType !== 'none') {
+      if (keys.length) {
+        await this.redis.del(keys)
+      }
+    }
+
+    if (gkType === 'set' || gkType !== 'none') {
       await this.redis.del(gk)
     }
 
@@ -124,7 +136,9 @@ export class RedisAdapter {
     const legacyType = await this.redis.type(legacyKey)
     if (legacyType === 'set') {
       const legacyKeys = await this.redis.smembers(legacyKey)
-      if (legacyKeys.length) await this.redis.del(legacyKeys)
+      if (legacyKeys.length) {
+        await this.redis.del(legacyKeys)
+      }
       await this.redis.del(legacyKey)
     }
   }
@@ -132,13 +146,17 @@ export class RedisAdapter {
   async consume(id) {
     const key = this.key(id)
     const type = await this.redis.type(key)
-    if (type !== 'string') return
+    if (type !== 'string') {
+      return
+    }
 
     const data = await this.redis.get(key)
-    if (!data) return
+    if (!data) {
+      return
+    }
 
     const payload = JSON.parse(data)
-    payload.consumed = Math.floor(Date.now() / 1000)
+    payload.consumed = unixEpoch()
     await this.redis.set(key, JSON.stringify(payload))
   }
 }

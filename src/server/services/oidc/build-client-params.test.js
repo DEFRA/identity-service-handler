@@ -76,26 +76,18 @@ describe('buildClientParams()', () => {
     expect(result.scope).toBe('openid')
   })
 
-  test('it includes jwks when present on the client', () => {
+  test('it omits scope when the client can request any broker-supported scope', () => {
     // Arrange
-    const jwks = { keys: [{ kty: 'RSA' }] }
-    const client = { client_id: 'abc-123', scopes: ['openid'], jwks }
+    const client = {
+      client_id: 'abc-123',
+      scopes: ['openid', 'profile'],
+      allowAnyScope: true
+    }
 
     // Act
     const result = buildClientParams(client)
 
     // Assert
-    expect(result.jwks).toEqual(jwks)
-  })
-
-  test('it omits jwks when not present on the client', () => {
-    // Arrange
-    const client = { client_id: 'abc-123', scopes: ['openid'] }
-
-    // Act
-    const result = buildClientParams(client)
-
-    // Assert
-    expect(result).not.toHaveProperty('jwks')
+    expect(result.scope).toBeUndefined()
   })
 })
