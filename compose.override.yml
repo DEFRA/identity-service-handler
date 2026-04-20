@@ -23,7 +23,9 @@ services:
       - cdp-tenant
 
   your-frontend:
-    build: ./
+    build:
+      context: ./
+      target: ${NODE_ENV:-development}
     platform: linux
     ports:
       - '${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}'
@@ -39,7 +41,7 @@ services:
       - 'compose/aws.env'
     environment:
       PORT: ${FRONTEND_PORT:-3000}
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       REDIS_HOST: redis
       LOCALSTACK_ENDPOINT: http://localstack:4566
       USE_SINGLE_INSTANCE_CACHE: true
