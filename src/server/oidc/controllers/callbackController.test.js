@@ -178,6 +178,9 @@ describe('create()', () => {
       },
       cookieAuth: {
         set: vi.fn()
+      },
+      yar: {
+        set: vi.fn()
       }
     }
     const h = {
@@ -242,8 +245,13 @@ describe('create()', () => {
       sub: 'upstream-sub',
       email: 'user@example.com',
       firstName: 'Test',
-      lastName: 'User'
+      lastName: 'User',
+      upstreamIdTokenHint: 'id-token'
     })
+    expect(request.yar.set).toHaveBeenCalledWith(
+      'upstreamIdTokenHint',
+      'id-token'
+    )
     expect(mocks.upstreamStateStore.putByUid).toHaveBeenCalledWith(
       'interaction-123',
       { brokerSub: 'upstream-sub' },
@@ -267,6 +275,9 @@ describe('create()', () => {
         state: 'query-state'
       },
       cookieAuth: {
+        set: vi.fn()
+      },
+      yar: {
         set: vi.fn()
       }
     }

@@ -11,8 +11,6 @@ const OIDC_SIGNOUT_PARAM_NAMES = [
 
 export function create({ config, b2cConfiguration }) {
   return async function (request, h) {
-    request.cookieAuth.clear()
-
     const brokerSignoutUrl = buildBrokerSignoutUrl(
       config.get('idService.handler.baseUrl'),
       request.query
@@ -23,6 +21,9 @@ export function create({ config, b2cConfiguration }) {
       brokerSignoutUrl.href,
       request
     )
+
+    request.cookieAuth.clear()
+    request.yar?.reset?.()
 
     const response = h.redirect(signoutUrl.href)
     response.state(
@@ -90,11 +91,6 @@ function buildUpstreamSignoutUrl(b2cConfiguration, brokerSignoutUrl, request) {
 }
 
 function resolveUpstreamIdTokenHint(request) {
-  const requestedIdTokenHint = request?.query?.id_token_hint
-  if (typeof requestedIdTokenHint === 'string' && requestedIdTokenHint.trim()) {
-    return requestedIdTokenHint
-  }
-
   const sessionIdTokenHint = request?.auth?.credentials?.upstreamIdTokenHint
   if (typeof sessionIdTokenHint === 'string' && sessionIdTokenHint.trim()) {
     return sessionIdTokenHint

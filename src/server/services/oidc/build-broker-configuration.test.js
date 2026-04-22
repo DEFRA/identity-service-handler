@@ -127,7 +127,9 @@ describe('buildBrokerConfiguration()', () => {
 
     expect(ctx.type).toBe('html')
     expect(ctx.status).toBe(200)
-    expect(ctx.body).toContain(form)
+    expect(ctx.body).toContain(
+      '<form id="op.logoutForm"><input type="hidden" name="logout" value="yes"></form>'
+    )
     expect(ctx.body).toContain(
       "document.getElementById('op.logoutForm')?.submit()"
     )
