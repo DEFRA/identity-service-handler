@@ -12,9 +12,9 @@ import { resolveClientGrantTypes } from './resolve-client-grant-types.js'
  */
 export function buildClientParams(clientApplication) {
   const params = {
-    client_id: clientApplication.client_id,
+    client_id: clientApplication.id,
     client_name: clientApplication.name,
-    redirect_uris: clientApplication.redirect_uri,
+    redirect_uris: clientApplication.redirect_uris,
     post_logout_redirect_uris:
       clientApplication.post_logout_redirect_uris ?? [],
     grant_types: resolveClientGrantTypes(clientApplication),

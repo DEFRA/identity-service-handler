@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { DelegationDraftService } from './DelegationDraftService.js'
+import { DelegationBuilder } from './DelegationBuilder.js'
 
 const mocks = {
   get: vi.fn(),
@@ -8,7 +8,7 @@ const mocks = {
   clear: vi.fn()
 }
 
-describe('DelegationDraftService', () => {
+describe('DelegationBuilder', () => {
   afterEach(() => {
     vi.resetAllMocks()
   })
@@ -21,11 +21,11 @@ describe('DelegationDraftService', () => {
           get: mocks.get
         }
       }
-      const service = new DelegationDraftService(request)
+      const builder = new DelegationBuilder(request)
       mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
 
       // Act
-      const result = service.getEmail()
+      const result = builder.getEmail()
 
       // Assert
       expect(result).toBe('joe@example.gov.uk')
@@ -41,22 +41,22 @@ describe('DelegationDraftService', () => {
           set: mocks.set
         }
       }
-      const service = new DelegationDraftService(request)
+      const builder = new DelegationBuilder(request)
       mocks.get.mockReturnValue({
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
 
       // Act
-      const result = service.setEmail('joe@example.gov.uk')
+      const result = builder.setEmail('joe@example.gov.uk')
 
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
       expect(result).toEqual({
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
     })
   })
@@ -69,11 +69,11 @@ describe('DelegationDraftService', () => {
           get: mocks.get
         }
       }
-      const service = new DelegationDraftService(request)
-      mocks.get.mockReturnValue({ cphs: ['12/345/6789'] })
+      const builder = new DelegationBuilder(request)
+      mocks.get.mockReturnValue({ cphIds: ['12/345/6789'] })
 
       // Act
-      const result = service.getCphs()
+      const result = builder.getCphIds()
 
       // Assert
       expect(result).toEqual(['12/345/6789'])
@@ -86,11 +86,11 @@ describe('DelegationDraftService', () => {
           get: mocks.get
         }
       }
-      const service = new DelegationDraftService(request)
+      const builder = new DelegationBuilder(request)
       mocks.get.mockReturnValue({})
 
       // Act
-      const result = service.getCphs()
+      const result = builder.getCphIds()
 
       // Assert
       expect(result).toEqual([])
@@ -106,20 +106,20 @@ describe('DelegationDraftService', () => {
           set: mocks.set
         }
       }
-      const service = new DelegationDraftService(request)
+      const builder = new DelegationBuilder(request)
       mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
 
       // Act
-      const result = service.setCphs(['12/345/6789'])
+      const result = builder.setCphIds(['12/345/6789'])
 
       // Assert
       expect(mocks.set).toHaveBeenCalledWith('delegationDraft', {
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
       expect(result).toEqual({
         email: 'joe@example.gov.uk',
-        cphs: ['12/345/6789']
+        cphIds: ['12/345/6789']
       })
     })
   })
@@ -132,10 +132,10 @@ describe('DelegationDraftService', () => {
           clear: mocks.clear
         }
       }
-      const service = new DelegationDraftService(request)
+      const builder = new DelegationBuilder(request)
 
       // Act
-      service.clearDraft()
+      builder.clearDraft()
 
       // Assert
       expect(mocks.clear).toHaveBeenCalledWith('delegationDraft')
