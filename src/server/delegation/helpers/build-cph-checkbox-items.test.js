@@ -4,8 +4,11 @@ import { buildCphCheckboxItems } from './build-cph-checkbox-items.js'
 describe('buildCphCheckboxItems()', () => {
   test('it marks selected CPHs as checked', () => {
     // Arrange
-    const availableCphs = ['12/345/6789', '35/345/0005']
-    const selectedCphs = ['12/345/6789']
+    const availableCphs = new Map([
+      ['cph-id-1', '12/345/6789'],
+      ['cph-id-2', '35/345/0005']
+    ])
+    const selectedCphs = new Set(['cph-id-1'])
 
     // Act
     const result = buildCphCheckboxItems(availableCphs, selectedCphs)
@@ -13,12 +16,12 @@ describe('buildCphCheckboxItems()', () => {
     // Assert
     expect(result).toEqual([
       {
-        value: '12/345/6789',
+        value: 'cph-id-1',
         text: 'County Parish Holding Number 12/345/6789',
         checked: true
       },
       {
-        value: '35/345/0005',
+        value: 'cph-id-2',
         text: 'County Parish Holding Number 35/345/0005',
         checked: false
       }
@@ -27,10 +30,13 @@ describe('buildCphCheckboxItems()', () => {
 
   test('it returns all unchecked when nothing is selected', () => {
     // Arrange
-    const availableCphs = ['12/345/6789', '35/345/0005']
+    const availableCphs = new Map([
+      ['cph-id-1', '12/345/6789'],
+      ['cph-id-2', '35/345/0005']
+    ])
 
     // Act
-    const result = buildCphCheckboxItems(availableCphs, [])
+    const result = buildCphCheckboxItems(availableCphs, new Set())
 
     // Assert
     expect(result.every((item) => item.checked === false)).toBe(true)
@@ -38,7 +44,7 @@ describe('buildCphCheckboxItems()', () => {
 
   test('it returns an empty array when there are no available CPHs', () => {
     // Act
-    const result = buildCphCheckboxItems([], ['12/345/6789'])
+    const result = buildCphCheckboxItems(new Map(), new Set(['cph-id-1']))
 
     // Assert
     expect(result).toEqual([])

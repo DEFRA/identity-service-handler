@@ -1,15 +1,36 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
 import {
   deleteController,
   deleteSubmitController
 } from './delete-controller.js'
+import * as delegationService from '../../services/delegation.js'
 
 const mocks = {
-  getDelegation: vi.fn(),
-  deleteDelegation: vi.fn(),
+  getDelegatedUser: vi.fn(),
+  revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
   view: vi.fn(),
   redirect: vi.fn()
+}
+
+const userService = {
+  getDelegatedUser: mocks.getDelegatedUser
+}
+
+const delegatedUser = {
+  id: 'delegated-user-456',
+  email: 'joe@example.gov.uk',
+  cphs: [
+    {
+      county_parish_holding_id: 'cph-id-1',
+      county_parish_holding_number: '12/345/6789',
+      delegation_id: 'del-1'
+    },
+    {
+      county_parish_holding_id: 'cph-id-2',
+      county_parish_holding_number: '35/345/0005',
+      delegation_id: 'del-2'
+    }
+  ]
 }
 
 describe('deleteController()', () => {
@@ -17,100 +38,31 @@ describe('deleteController()', () => {
     vi.clearAllMocks()
   })
 
-  test('it renders the delete confirmation view for an active delegate', async () => {
+  test('it renders the delete confirmation view with delegated user details', async () => {
     // Arrange
-    const delegate = {
-      id: 'delegate-1',
-      name: 'Joe Bloggs',
-      email: 'j*****@gmail.com',
-      active: true
-    }
-    const delegationService = {
-      getDelegation: mocks.getDelegation
-    }
-    mocks.getDelegation.mockResolvedValue(delegate)
+    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
-      params: { delegateId: 'delegate-1' }
+      params: { delegated_user_id: 'delegated-user-456' }
     }
-    mocks.view.mockReturnValue('view-response')
     const h = { view: mocks.view }
 
     // Act
-    const result = await deleteController(delegationService).handler(request, h)
+    const result = await deleteController(userService).handler(request, h)
 
     // Assert
-    expect(delegationService.getDelegation).toHaveBeenCalledWith(
+    expect(mocks.getDelegatedUser).toHaveBeenCalledWith(
       'user-123',
-      'delegate-1'
+      'delegated-user-456'
     )
-    expect(mocks.view).toHaveBeenCalledWith(
-      'delegation/delete',
-      expect.objectContaining({
-        pageTitle: 'Delete delegate',
-        heading: 'Are you sure you want to delete this delegate?',
-        delegate
-      })
-    )
+    expect(mocks.view).toHaveBeenCalledWith('delegation/delete', {
+      pageTitle: 'Remove delegate',
+      heading: 'Are you sure you want to remove this delegate?',
+      delegated_user_id: 'delegated-user-456',
+      delegated_user_email: 'joe@example.gov.uk'
+    })
     expect(result).toBe('view-response')
-  })
-
-  test('it renders the revoke confirmation view for an inactive delegate', async () => {
-    // Arrange
-    const delegate = {
-      id: 'delegate-2',
-      name: 'A Another',
-      email: 'a*****@farminc.com',
-      active: false
-    }
-    const delegationService = {
-      getDelegation: mocks.getDelegation
-    }
-    mocks.getDelegation.mockResolvedValue(delegate)
-    const request = {
-      auth: { credentials: { sub: 'user-123' } },
-      params: { delegateId: 'delegate-2' }
-    }
-    mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view }
-
-    // Act
-    await deleteController(delegationService).handler(request, h)
-
-    // Assert
-    expect(mocks.view).toHaveBeenCalledWith(
-      'delegation/delete',
-      expect.objectContaining({
-        pageTitle: 'Revoke invite',
-        heading: 'Are you sure you want to revoke this invite?',
-        delegate
-      })
-    )
-  })
-
-  test('it redirects to delegation list when delegate is not found', async () => {
-    // Arrange
-    const delegationService = {
-      getDelegation: mocks.getDelegation
-    }
-    mocks.getDelegation.mockResolvedValue(undefined)
-    const request = {
-      auth: { credentials: { sub: 'user-123' } },
-      params: { delegateId: 'missing-id' }
-    }
-    mocks.redirect.mockReturnValue('redirect-response')
-    const h = { redirect: mocks.redirect }
-
-    // Act
-    const result = await deleteController(delegationService).handler(request, h)
-
-    // Assert
-    expect(delegationService.getDelegation).toHaveBeenCalledWith(
-      'user-123',
-      'missing-id'
-    )
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
-    expect(result).toBe('redirect-response')
   })
 })
 
@@ -119,30 +71,27 @@ describe('deleteSubmitController()', () => {
     vi.clearAllMocks()
   })
 
-  test('it deletes the delegation and redirects to list', async () => {
+  test('it revokes all delegations for the user and redirects to list', async () => {
     // Arrange
-    const delegationService = {
-      deleteDelegation: mocks.deleteDelegation
-    }
-    mocks.deleteDelegation.mockResolvedValue(undefined)
+    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.revokeDelegation.mockResolvedValue(undefined)
+    mocks.redirect.mockReturnValue('redirect-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
-      params: { delegateId: 'delegate-1' }
+      params: { delegated_user_id: 'delegated-user-456' }
     }
-    mocks.redirect.mockReturnValue('redirect-response')
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await deleteSubmitController(delegationService).handler(
-      request,
-      h
-    )
+    const result = await deleteSubmitController(userService).handler(request, h)
 
     // Assert
-    expect(delegationService.deleteDelegation).toHaveBeenCalledWith(
+    expect(mocks.getDelegatedUser).toHaveBeenCalledWith(
       'user-123',
-      'delegate-1'
+      'delegated-user-456'
     )
+    expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
+    expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-2')
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
   })

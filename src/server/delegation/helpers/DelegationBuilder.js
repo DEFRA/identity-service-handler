@@ -3,7 +3,7 @@ const DRAFT_KEY = 'delegationDraft'
 /**
  * Session-backed draft storage for the multi-step delegation flow.
  */
-export class DelegationDraftService {
+export class DelegationBuilder {
   /**
    * @param {{ yar?: { get?: (key: string) => unknown, set?: (key: string, value: unknown) => void, clear?: (key: string) => void } } | { get?: (key: string) => unknown, set?: (key: string, value: unknown) => void, clear?: (key: string) => void }} requestOrYar
    */
@@ -14,7 +14,7 @@ export class DelegationDraftService {
 
   /**
    * Get the full draft from the session.
-   * @returns {{ email?: string, cphs?: string[] }}
+   * @returns {{ email?: string, cphIds?: string[] }}
    */
   getDraft() {
     if (this.draft !== null) {
@@ -28,8 +28,8 @@ export class DelegationDraftService {
 
   /**
    * Persist the full draft to the session.
-   * @param {{ email?: string, cphs?: string[] }} draft
-   * @returns {{ email?: string, cphs?: string[] }}
+   * @param {{ email?: string, cphIds?: string[] }} draft
+   * @returns {{ email?: string, cphIds?: string[] }}
    */
   setDraft(draft) {
     this.draft = draft
@@ -55,7 +55,7 @@ export class DelegationDraftService {
 
   /**
    * @param {string} email
-   * @returns {{ email?: string, cphs?: string[] }}
+   * @returns {{ email?: string, cphIds?: string[] }}
    */
   setEmail(email) {
     return this.setDraft({
@@ -67,18 +67,18 @@ export class DelegationDraftService {
   /**
    * @returns {string[]}
    */
-  getCphs() {
-    return this.getDraft().cphs ?? []
+  getCphIds() {
+    return this.getDraft()?.cphIds || []
   }
 
   /**
-   * @param {string[]} cphs
-   * @returns {{ email?: string, cphs?: string[] }}
+   * @param {string[]} cphIds
+   * @returns {{ email?: string, cphIds?: string[] }}
    */
-  setCphs(cphs) {
+  setCphIds(cphIds) {
     return this.setDraft({
       ...this.getDraft(),
-      cphs
+      cphIds
     })
   }
 }

@@ -1,13 +1,13 @@
 /**
  * Builds govuk checkbox items for a list of CPHs.
- * @param {string[]} availableCphs
- * @param {string[]} selectedCphs
+ * @param {Map<string, string>} availableCphs
+ * @param {Set<string>} selectedCphIds
  * @returns {{ value: string, text: string, checked: boolean }[]}
  */
-export function buildCphCheckboxItems(availableCphs, selectedCphs) {
-  return availableCphs.map((cph) => ({
-    value: cph,
-    text: `County Parish Holding Number ${cph}`,
-    checked: selectedCphs.includes(cph)
+export function buildCphCheckboxItems(availableCphs, selectedCphIds) {
+  return Array.from(availableCphs.entries()).map(([id, cphNumber]) => ({
+    value: id,
+    text: `County Parish Holding Number ${cphNumber}`,
+    checked: selectedCphIds.has(id)
   }))
 }

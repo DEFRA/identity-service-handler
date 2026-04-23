@@ -7,10 +7,9 @@
 
       <h1 class="govuk-heading-l">{{ heading }}</h1>
 
-      <p class="govuk-body"><strong>{{ delegate.name }}</strong></p>
-      <p class="govuk-body">{{ delegate.email }}</p>
+      <p class="govuk-body">{{ delegated_user_email }}</p>
 
-      <form method="post">
+      <form method="post" action="/delegation/{{ delegated_user_id }}/delete">
         <input type="hidden" name="crumb" value="{{ crumb }}">
 
         {{ govukButton({

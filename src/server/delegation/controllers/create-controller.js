@@ -1,11 +1,11 @@
 import Joi from 'joi'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
-import { DelegationDraftService } from '../../services/delegation/DelegationDraftService.js'
+import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 
 export const createController = () => ({
   handler: async (request, h) => {
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
 
     return h.view(
       'delegation/create',
@@ -46,7 +46,7 @@ export const createSubmitController = () => ({
     }
   },
   handler: async (request, h) => {
-    const draftService = new DelegationDraftService(request)
+    const draftService = new DelegationBuilder(request)
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())
 

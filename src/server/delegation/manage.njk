@@ -29,16 +29,16 @@
 
       <dl class="govuk-summary-list govuk-summary-list--no-border">
         <div class="govuk-summary-list__row">
-          <dd class="govuk-summary-list__value">{{ delegate.email }}</dd>
+          <dd class="govuk-summary-list__value">{{ delegated_user_email }}</dd>
           <dd class="govuk-summary-list__actions">
-            <a href="/delegation/{{ delegate.id }}/delete" class="govuk-link">Remove</a>
+            <a href="/delegation/{{ delegated_user_id }}/delete" class="govuk-link">Remove</a>
           </dd>
         </div>
       </dl>
 
       <h2 class="govuk-heading-m">County Parish Holding Numbers:</h2>
 
-      <form method="post" action="/delegation/{{ delegate.id }}/manage">
+      <form method="post" action="/delegation/{{ delegated_user_id }}/manage">
         <input type="hidden" name="crumb" value="{{ crumb }}">
         {{ appCphCheckboxes({
           caption: "County Parish Holding Numbers",

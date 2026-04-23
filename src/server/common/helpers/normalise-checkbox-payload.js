@@ -1,11 +1,14 @@
-export const normaliseCheckboxPayload = (value) => {
-  if (Array.isArray(value)) {
-    return value
+export const normaliseCheckboxPayload = (rawValue) => {
+  const values = new Set()
+  if (Array.isArray(rawValue)) {
+    for (const item of rawValue) {
+      values.add(item)
+    }
   }
 
-  if (typeof value === 'string') {
-    return [value]
+  if (typeof rawValue === 'string') {
+    values.add(rawValue)
   }
 
-  return []
+  return values
 }
