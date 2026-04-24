@@ -24,7 +24,7 @@ const users = new Map(data.map((user) => [user.sub, user]))
 export const getUserCphs = async (sub) =>
   pick(
     users.get(sub) || users.get(DEFAULT_USER_SUBJECT_ID),
-    'associations',
+    'assignments',
     'delegations'
   )
 

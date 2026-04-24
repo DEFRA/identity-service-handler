@@ -32,7 +32,7 @@ describe('cphsController()', () => {
     }
     const request = {}
     mocks.getUserCphs.mockResolvedValue({
-      associations: [ASSOCIATION_1, ASSOCIATION_2]
+      assignments: [ASSOCIATION_1, ASSOCIATION_2]
     })
     vi.spyOn(DelegationBuilder.prototype, 'getCphIds').mockReturnValue([
       'cph-id-1'
@@ -89,7 +89,7 @@ describe('cphsSubmitController()', () => {
       .spyOn(DelegationBuilder.prototype, 'setCphIds')
       .mockReturnValue(undefined)
     mocks.getUserCphs.mockResolvedValue({
-      associations: [ASSOCIATION_1]
+      assignments: [ASSOCIATION_1]
     })
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -119,7 +119,7 @@ describe('cphsSubmitController()', () => {
       payload: {}
     }
     mocks.getUserCphs.mockResolvedValue({
-      associations: [ASSOCIATION_1]
+      assignments: [ASSOCIATION_1]
     })
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
@@ -167,7 +167,7 @@ describe('cphsSubmitController()', () => {
       }
     }
     mocks.getUserCphs.mockResolvedValue({
-      associations: [ASSOCIATION_1]
+      assignments: [ASSOCIATION_1]
     })
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
@@ -215,7 +215,7 @@ describe('cphsSubmitController()', () => {
       undefined
     )
     mocks.getUserCphs.mockResolvedValue({
-      associations: [ASSOCIATION_1]
+      assignments: [ASSOCIATION_1]
     })
     mocks.code.mockReturnValue('code-response')
     mocks.view.mockReturnValue({ code: mocks.code })

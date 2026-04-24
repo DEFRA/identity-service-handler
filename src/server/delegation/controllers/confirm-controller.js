@@ -5,9 +5,9 @@ export const confirmController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const { associations } = await userService.getUserCphs(sub)
+    const { assignments } = await userService.getUserCphs(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
-    const cphs = associations.reduce((acc, cph) => {
+    const cphs = assignments.reduce((acc, cph) => {
       if (selectedCphIds.has(cph.county_parish_holding_id)) {
         acc.push(cph.county_parish_holding_number)
       }

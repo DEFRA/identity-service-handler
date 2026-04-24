@@ -68,7 +68,7 @@ describe('UserService', () => {
         last_name: 'User'
       })
       mocks.serviceGetUserCphs.mockResolvedValue({
-        associations: [
+        assignments: [
           {
             county_parish_holding_number: '123',
             association_id: 'a1',
@@ -111,7 +111,7 @@ describe('UserService', () => {
         last_name: 'User'
       })
       mocks.serviceFakeGetUserCphs.mockResolvedValue({
-        associations: [],
+        assignments: [],
         delegations: []
       })
       const userService = new UserService(mocks.redis, config)
@@ -148,7 +148,7 @@ describe('UserService', () => {
         last_name: 'User'
       })
       mocks.serviceGetUserCphs.mockResolvedValue({
-        associations: [],
+        assignments: [],
         delegations: [
           {
             county_parish_holding_number: '111',
@@ -190,7 +190,7 @@ describe('UserService', () => {
         last_name: 'User'
       })
       mocks.serviceGetUserCphs.mockResolvedValue({
-        associations: [
+        assignments: [
           {
             county_parish_holding_number: '123',
             association_id: 'a1',
@@ -355,8 +355,8 @@ describe('UserService', () => {
       })
       mocks.serviceGetUserCphs
         .mockResolvedValueOnce({
-          // delegating user's associations
-          associations: [
+          // delegating user's assignments
+          assignments: [
             {
               county_parish_holding_id: 'cph-id-1',
               county_parish_holding_number: '12/345/6789'
@@ -370,7 +370,7 @@ describe('UserService', () => {
         })
         .mockResolvedValueOnce({
           // delegated user's delegations — one from the delegating user
-          associations: [],
+          assignments: [],
           delegations: [
             {
               county_parish_holding_id: 'cph-id-1',
@@ -415,7 +415,7 @@ describe('UserService', () => {
       })
       mocks.serviceGetUserCphs
         .mockResolvedValueOnce({
-          associations: [
+          assignments: [
             {
               county_parish_holding_id: 'cph-id-1',
               county_parish_holding_number: '12/345/6789'
@@ -423,7 +423,7 @@ describe('UserService', () => {
           ],
           delegations: []
         })
-        .mockResolvedValueOnce({ associations: [], delegations: [] })
+        .mockResolvedValueOnce({ assignments: [], delegations: [] })
       const userService = new UserService(mocks.redis, config)
 
       // Act
@@ -444,7 +444,7 @@ describe('UserService', () => {
       })
       mocks.serviceGetUserCphs
         .mockResolvedValueOnce({
-          associations: [
+          assignments: [
             {
               county_parish_holding_id: 'cph-id-1',
               county_parish_holding_number: '12/345/6789'
@@ -453,7 +453,7 @@ describe('UserService', () => {
           delegations: []
         })
         .mockResolvedValueOnce({
-          associations: [],
+          assignments: [],
           delegations: [
             {
               county_parish_holding_id: 'cph-id-1',
