@@ -44,6 +44,64 @@ describe('auth plugin', () => {
     expect(ext).toHaveBeenCalledWith('onCredentials', onCredentials)
   })
 
+  test('redirectTo returns null for non-HTML requests', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('https://test.example.com')
+    const strategy = vi.fn()
+    const server = { auth: { strategy, scheme: vi.fn() }, ext: vi.fn() }
+
+    // Act
+    await auth.plugin.register(server, {})
+
+    // Assert
+    const { redirectTo } = strategy.mock.calls.find(
+      ([name]) => name === 'session'
+    )[2]
+    expect(
+      redirectTo({
+        headers: { accept: 'application/json' },
+        path: '/delegation'
+      })
+    ).toBeNull()
+  })
+
+  test('redirectTo returns login URL with encoded next path for HTML requests', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('https://test.example.com')
+    const strategy = vi.fn()
+    const server = { auth: { strategy, scheme: vi.fn() }, ext: vi.fn() }
+
+    // Act
+    await auth.plugin.register(server, {})
+
+    // Assert
+    const { redirectTo } = strategy.mock.calls.find(
+      ([name]) => name === 'session'
+    )[2]
+    expect(
+      redirectTo({
+        headers: { accept: 'text/html,application/xhtml+xml' },
+        path: '/delegation/confirm'
+      })
+    ).toBe('/login?next=%2Fdelegation%2Fconfirm')
+  })
+
+  test('redirectTo returns null when accept header is absent', async () => {
+    // Arrange
+    mocks.configGet.mockReturnValue('https://test.example.com')
+    const strategy = vi.fn()
+    const server = { auth: { strategy, scheme: vi.fn() }, ext: vi.fn() }
+
+    // Act
+    await auth.plugin.register(server, {})
+
+    // Assert
+    const { redirectTo } = strategy.mock.calls.find(
+      ([name]) => name === 'session'
+    )[2]
+    expect(redirectTo({ headers: {}, path: '/delegation' })).toBeNull()
+  })
+
   test('it wires authenticateBearer into the bearer scheme authenticate function', async () => {
     // Arrange
     mocks.configGet.mockReturnValue('https://test.example.com')

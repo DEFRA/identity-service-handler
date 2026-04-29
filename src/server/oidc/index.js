@@ -1,19 +1,17 @@
 import { create as introCreate } from './controllers/interactionController.js'
 import { create as callbackCreate } from './controllers/callbackController.js'
 import { create as signoutCreate } from './controllers/signoutController.js'
-import * as oidc from 'openid-client'
 
 export async function registerOidcRoutes(
   server,
-  { config, brokerProvider, subjectsService, upstreamStateStore }
+  {
+    config,
+    brokerProvider,
+    subjectsService,
+    upstreamStateStore,
+    b2cConfiguration
+  }
 ) {
-  const b2cConfig = config.get('idService.b2c')
-  const b2cConfiguration = await oidc.discovery(
-    new URL(b2cConfig.discoveryUrl),
-    b2cConfig.clientId,
-    b2cConfig.clientSecret
-  )
-
   server.route({
     method: 'GET',
     path: '/signout',

@@ -79,7 +79,7 @@ async function handleInteraction(
   // store correlation for callback
   await upstreamStateStore.put(
     state,
-    { uid, nonce, pkceCodeVerifier },
+    { uid, nonce, pkceCodeVerifier, nextUrl: `/interaction/${uid}` },
     seconds.tenMinutes
   )
 

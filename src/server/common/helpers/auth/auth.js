@@ -18,7 +18,12 @@ export const auth = {
           isSecure: config.get('session.cookie.secure'),
           isSameSite: 'Lax'
         },
-        redirectTo: false,
+        redirectTo: (request) => {
+          if (!request.headers.accept?.includes('text/html')) {
+            return null
+          }
+          return `/login?next=${encodeURIComponent(request.path)}`
+        },
         validate: validateSession
       })
       server.auth.scheme('bearer', () => ({

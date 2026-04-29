@@ -25,7 +25,7 @@ export function create({
       return h.response('Unknown/expired state').code(statusCodes.badRequest)
     }
 
-    const { uid, nonce, pkceCodeVerifier } = record
+    const { uid, nonce, pkceCodeVerifier, nextUrl } = record
 
     const callbackUrl = new URL(config.get('idService.b2c.redirectUrl'))
     callbackUrl.searchParams.set('code', code)
@@ -69,6 +69,6 @@ export function create({
 
     await upstreamStateStore.del(state)
 
-    return h.redirect(`/interaction/${uid}`)
+    return h.redirect(nextUrl)
   }
 }
