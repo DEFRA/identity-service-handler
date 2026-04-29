@@ -15,7 +15,8 @@ export const auth = {
         cookie: {
           name: 'brokersid',
           password: config.get('session.cookie.password'),
-          isSecure: config.get('session.cookie.secure')
+          isSecure: config.get('session.cookie.secure'),
+          isSameSite: 'Lax'
         },
         redirectTo: false,
         validate: validateSession
