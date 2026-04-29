@@ -97,7 +97,7 @@
     "stylelint": "16.26.1",
     "stylelint-config-gds": "2.0.0",
     "terser-webpack-plugin": "5.4.0",
-    "vitest": "4.1.4",
+    "vitest": "4.1.5",
     "vitest-fetch-mock": "0.4.5",
     "webpack": "5.106.1",
     "webpack-assets-manifest": "6.5.1",
