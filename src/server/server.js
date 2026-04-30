@@ -5,6 +5,7 @@ import Scooter from '@hapi/scooter'
 import Inert from '@hapi/inert'
 import Cookie from '@hapi/cookie'
 import Crumb from '@hapi/crumb'
+import * as oidc from 'openid-client'
 
 import { router } from './router.js'
 import { config } from '../config/config.js'
@@ -24,6 +25,7 @@ import { auth } from './common/helpers/auth/auth.js'
 import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
+import { registerLoginRoutes } from './login/index.js'
 import { UserService } from './services/user/UserService.js'
 import { SubjectsService } from './services/subjects.js'
 import { ApplicationService } from './services/application/ApplicationService.js'
@@ -44,6 +46,12 @@ export async function createServer() {
     redis,
     ...services
   })
+
+  const b2cConfiguration = await oidc.discovery(
+    new URL(config.get('idService.b2c.discoveryUrl')),
+    config.get('idService.b2c.clientId'),
+    config.get('idService.b2c.clientSecret')
+  )
 
   const server = await bootstrapServer()
   await server.register([
@@ -72,7 +80,13 @@ export async function createServer() {
   await registerOidcRoutes(server, {
     config,
     brokerProvider,
+    b2cConfiguration,
     ...services
+  })
+
+  registerLoginRoutes(server, {
+    upstreamStateStore: services.upstreamStateStore,
+    b2cConfiguration
   })
 
   server.ext('onRequest', async (req, h) => {

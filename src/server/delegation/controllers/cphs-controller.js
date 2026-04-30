@@ -12,10 +12,10 @@ export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const { associations } = await userService.getUserCphs(sub)
+    const { assignments } = await userService.getUserCphs(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
     const availableCphs = new Map(
-      associations.map((cph) => [
+      assignments.map((cph) => [
         cph.county_parish_holding_id,
         cph.county_parish_holding_number
       ])
@@ -41,9 +41,9 @@ export const cphsSubmitController = (userService) => ({
       }),
       failAction: async (request, h, err) => {
         const sub = request.auth?.credentials?.sub
-        const { associations } = await userService.getUserCphs(sub)
+        const { assignments } = await userService.getUserCphs(sub)
         const availableCphs = new Map(
-          associations.map((cph) => [
+          assignments.map((cph) => [
             cph.county_parish_holding_id,
             cph.county_parish_holding_number
           ])
@@ -74,9 +74,9 @@ export const cphsSubmitController = (userService) => ({
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
     const selectedCphIds = normaliseCheckboxPayload(request.payload.cphs)
-    const { associations } = await userService.getUserCphs(sub)
+    const { assignments } = await userService.getUserCphs(sub)
     const availableCphs = new Map(
-      associations.map((cph) => [
+      assignments.map((cph) => [
         cph.county_parish_holding_id,
         cph.county_parish_holding_number
       ])

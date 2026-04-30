@@ -15,9 +15,15 @@ export const auth = {
         cookie: {
           name: 'brokersid',
           password: config.get('session.cookie.password'),
-          isSecure: config.get('session.cookie.secure')
+          isSecure: config.get('session.cookie.secure'),
+          isSameSite: 'Lax'
         },
-        redirectTo: false,
+        redirectTo: (request) => {
+          if (!request.headers.accept?.includes('text/html')) {
+            return null
+          }
+          return `/login?next=${encodeURIComponent(request.path)}`
+        },
         validate: validateSession
       })
       server.auth.scheme('bearer', () => ({

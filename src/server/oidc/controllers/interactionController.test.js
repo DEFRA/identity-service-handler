@@ -241,7 +241,8 @@ describe('create()', () => {
       {
         uid: 'interaction-123',
         nonce: 'nonce-123',
-        pkceCodeVerifier: 'pkce-verifier'
+        pkceCodeVerifier: 'pkce-verifier',
+        nextUrl: '/interaction/interaction-123'
       },
       600
     )

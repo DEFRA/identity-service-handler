@@ -190,7 +190,8 @@ describe('create()', () => {
     mocks.upstreamStateStore.get.mockResolvedValue({
       uid: 'interaction-123',
       nonce: 'nonce-123',
-      pkceCodeVerifier: 'verifier-123'
+      pkceCodeVerifier: 'verifier-123',
+      nextUrl: '/interaction/interaction-123'
     })
     mocks.authorizationCodeGrant.mockResolvedValue({
       id_token: 'id-token'

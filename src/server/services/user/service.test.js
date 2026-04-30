@@ -45,7 +45,7 @@ describe('User Service', () => {
       // Arrange
       mocks.helperClientGet.mockResolvedValue({
         payload: {
-          associations: [
+          assignments: [
             {
               county_parish_holding_number: '123',
               association_id: 'a1',
@@ -63,7 +63,7 @@ describe('User Service', () => {
 
       // Assert
       expect(result).toEqual({
-        associations: [
+        assignments: [
           {
             county_parish_holding_number: '123',
             association_id: 'a1',
@@ -130,7 +130,7 @@ describe('User Service', () => {
       expect(result).toEqual(page)
       expect(mocks.helperClientGet).toHaveBeenCalledWith(
         expect.stringContaining(
-          '/users/delegate-user-id/delegations/by-cph-owner/delegating-user-id'
+          '/users/delegate-user-id/delegations/by-cph-assignee/delegating-user-id'
         )
       )
     })

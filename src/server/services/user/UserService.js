@@ -114,7 +114,7 @@ export class UserService {
     return {
       id: delegatedUserId,
       email: delegatedUserDetails.email,
-      cphs: delegatingUserCphs.associations.map((cph) => ({
+      cphs: delegatingUserCphs.assignments.map((cph) => ({
         county_parish_holding_id: cph.county_parish_holding_id,
         county_parish_holding_number: cph.county_parish_holding_number,
         delegation_id:
@@ -149,7 +149,7 @@ export class UserService {
       given_name: userResult.first_name,
       family_name: userResult.last_name,
       display_name: userResult.display_name,
-      primary_cph: cphResult.associations.map((a) => ({
+      primary_cph: cphResult.assignments.map((a) => ({
         cph: a.county_parish_holding_number,
         expires: null
       })),
