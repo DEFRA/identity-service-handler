@@ -178,6 +178,9 @@ describe('create()', () => {
       },
       cookieAuth: {
         set: vi.fn()
+      },
+      yar: {
+        set: vi.fn()
       }
     }
     const h = {
@@ -187,7 +190,8 @@ describe('create()', () => {
     mocks.upstreamStateStore.get.mockResolvedValue({
       uid: 'interaction-123',
       nonce: 'nonce-123',
-      pkceCodeVerifier: 'verifier-123'
+      pkceCodeVerifier: 'verifier-123',
+      nextUrl: '/interaction/interaction-123'
     })
     mocks.authorizationCodeGrant.mockResolvedValue({
       id_token: 'id-token'
@@ -242,8 +246,13 @@ describe('create()', () => {
       sub: 'upstream-sub',
       email: 'user@example.com',
       firstName: 'Test',
-      lastName: 'User'
+      lastName: 'User',
+      upstreamIdTokenHint: 'id-token'
     })
+    expect(request.yar.set).toHaveBeenCalledWith(
+      'upstreamIdTokenHint',
+      'id-token'
+    )
     expect(mocks.upstreamStateStore.putByUid).toHaveBeenCalledWith(
       'interaction-123',
       { brokerSub: 'upstream-sub' },
@@ -267,6 +276,9 @@ describe('create()', () => {
         state: 'query-state'
       },
       cookieAuth: {
+        set: vi.fn()
+      },
+      yar: {
         set: vi.fn()
       }
     }

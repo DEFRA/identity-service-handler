@@ -17,12 +17,18 @@ describe('validateSession()', () => {
   test('it returns isValid true with credentials when session has a sub', () => {
     // Arrange
     const req = {}
-    const session = { sub: 'user-1' }
+    const session = { sub: 'user-1', upstreamIdTokenHint: 'upstream-id-token' }
 
     // Act
     const result = validateSession(req, session)
 
     // Assert
-    expect(result).toEqual({ isValid: true, credentials: { sub: 'user-1' } })
+    expect(result).toEqual({
+      isValid: true,
+      credentials: {
+        sub: 'user-1',
+        upstreamIdTokenHint: 'upstream-id-token'
+      }
+    })
   })
 })

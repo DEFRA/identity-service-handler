@@ -33,7 +33,7 @@ import { buildPaginationSearchParams } from '../../common/helpers/pagination.js'
 
 /**
  * @typedef {object} UserCphAssignments
- * @property {UserAssociatedCph[]} associations
+ * @property {UserAssociatedCph[]} assignments
  * @property {UserDelegatedCph[]} delegations
  */
 
@@ -136,7 +136,7 @@ export async function getUserDelegatedCphsByDelegatingUser(
   delegatingUserId,
   options = {}
 ) {
-  const endpoint = `/users/${userId}/delegations/by-cph-owner/${delegatingUserId}`
+  const endpoint = `/users/${userId}/delegations/by-cph-assignee/${delegatingUserId}`
   const searchParams = buildPaginationSearchParams(options)
   const response = await helperClient.get(
     `${endpoint}?${searchParams.toString()}`

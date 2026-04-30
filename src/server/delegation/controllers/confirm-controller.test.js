@@ -22,7 +22,7 @@ describe('confirmController()', () => {
     // Arrange
     const userService = {
       getUserCphs: vi.fn().mockResolvedValue({
-        associations: [
+        assignments: [
           {
             county_parish_holding_id: 'cph-id-1',
             county_parish_holding_number: '12/345/6789'

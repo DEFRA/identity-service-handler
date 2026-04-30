@@ -12,3 +12,5 @@ tsconfig.tsbuildinfo
 .env
 certs/fakelocal*
 certs/localhost*
+src/client/stylesheets/application.css
+test-site/src/client/stylesheets/application.css

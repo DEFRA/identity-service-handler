@@ -15,7 +15,7 @@ vi.mock('../../../data/users.json', () => ({
       display_name: 'Default User',
       given_name: 'Default',
       family_name: 'User',
-      associations: [{ county_parish_holding_number: '00/000/0000' }],
+      assignments: [{ county_parish_holding_number: '00/000/0000' }],
       delegations: []
     },
     {
@@ -25,7 +25,7 @@ vi.mock('../../../data/users.json', () => ({
       display_name: 'Test User',
       given_name: 'Test',
       family_name: 'User',
-      associations: [{ county_parish_holding_number: '12/500/0001' }],
+      assignments: [{ county_parish_holding_number: '12/500/0001' }],
       delegations: [
         {
           county_parish_holding_number: '99/888/0001',
@@ -100,7 +100,7 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toEqual({
-        associations: [{ county_parish_holding_number: '12/500/0001' }],
+        assignments: [{ county_parish_holding_number: '12/500/0001' }],
         delegations: [
           {
             county_parish_holding_number: '99/888/0001',
@@ -119,7 +119,7 @@ describe('service.fake', () => {
 
       // Assert
       expect(result).toEqual({
-        associations: [{ county_parish_holding_number: '00/000/0000' }],
+        assignments: [{ county_parish_holding_number: '00/000/0000' }],
         delegations: []
       })
     })

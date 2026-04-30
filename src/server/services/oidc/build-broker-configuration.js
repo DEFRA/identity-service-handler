@@ -27,7 +27,7 @@ export function buildBrokerConfiguration({
         async logoutSource(ctx, form) {
           ctx.type = 'html'
           ctx.status = 200
-          ctx.body = generateLogoutPage(form)
+          ctx.body = generateLogoutPage(addLogoutConfirmationField(form))
         },
         async postLogoutSuccessSource(ctx) {
           postLogoutSuccessSource(ctx, sessionCookieSecure)
@@ -115,4 +115,11 @@ function generateLogoutPage(form) {
                 </script>
               </body>
             </html>`
+}
+
+function addLogoutConfirmationField(form) {
+  return form.replace(
+    '</form>',
+    '<input type="hidden" name="logout" value="yes"></form>'
+  )
 }

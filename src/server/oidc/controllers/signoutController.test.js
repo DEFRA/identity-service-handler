@@ -9,153 +9,162 @@ const mocks = {
   configGet: vi.fn()
 }
 
+function createHandler() {
+  const config = { get: mocks.configGet }
+  const b2cConfiguration = {
+    serverMetadata: () => ({
+      end_session_endpoint:
+        'https://your-account.cpdev.cui.defra.gov.uk/idphub/b2c/b2c_1a_cui_cpdev_signupsignin/signout'
+    })
+  }
+
+  return create({ config, b2cConfiguration })
+}
+
+function createRequest(overrides = {}) {
+  return {
+    query: {},
+    headers: {},
+    auth: {},
+    cookieAuth: { clear: vi.fn() },
+    yar: { get: vi.fn(), reset: vi.fn() },
+    ...overrides
+  }
+}
+
 describe('create()', () => {
   beforeEach(() => {
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return true
-    })
     vi.clearAllMocks()
-  })
-
-  test('it clears the session cookie', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
     mocks.redirect.mockReturnValue({ state: mocks.state })
     mocks.configGet.mockImplementation((key) => {
       if (key === 'idService.handler.baseUrl') {
         return 'https://identity-service-handler.defra.gov.uk'
       }
-      if (key === 'session.cookie.secure') return false
+      if (key === 'session.cookie.secure') {
+        return false
+      }
     })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+  })
+
+  test('it redirects to the upstream end_session_endpoint with the broker signout url', async () => {
+    const handler = createHandler()
+    const request = createRequest()
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
+    const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
+    expect(redirectTo.origin).toBe(
+      'https://your-account.cpdev.cui.defra.gov.uk'
+    )
+    expect(redirectTo.pathname).toBe(
+      '/idphub/b2c/b2c_1a_cui_cpdev_signupsignin/signout'
+    )
+    expect(redirectTo.searchParams.get('post_logout_redirect_uri')).toBe(
+      'https://identity-service-handler.defra.gov.uk/oidc/signout'
+    )
+  })
+
+  test('it clears cookie auth and resets the yar session', async () => {
+    const handler = createHandler()
+    const request = createRequest()
+    const h = { redirect: mocks.redirect }
+
+    await handler(request, h)
+
     expect(request.cookieAuth.clear).toHaveBeenCalledTimes(1)
+    expect(request.yar.reset).toHaveBeenCalledTimes(1)
   })
 
-  test('it redirects to the oidc/signout path', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return false
-    })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
-    const h = { redirect: mocks.redirect }
-
-    // Act
-    await handler(request, h)
-
-    // Assert
-    const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
-    expect(redirectTo.pathname).toBe('/oidc/signout')
-  })
-
-  test('it forwards OIDC query params to the signout url', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return false
-    })
-    const handler = create({ config })
-    const request = {
+  test('it uses the authenticated session upstream id token hint when available', async () => {
+    const handler = createHandler()
+    const request = createRequest({
       query: {
-        client_id: 'my-client',
-        id_token_hint: 'my-hint',
-        state: 'my-state'
+        id_token_hint: 'caller-supplied-id-token'
       },
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+      auth: {
+        credentials: {
+          upstreamIdTokenHint: 'session-upstream-id-token'
+        }
+      }
+    })
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
-    expect(redirectTo.searchParams.get('client_id')).toBe('my-client')
-    expect(redirectTo.searchParams.get('id_token_hint')).toBe('my-hint')
-    expect(redirectTo.searchParams.get('state')).toBe('my-state')
+    expect(redirectTo.searchParams.get('id_token_hint')).toBe(
+      'session-upstream-id-token'
+    )
   })
 
-  test('it does not forward OIDC params that are empty or whitespace', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
+  test('it falls back to the yar upstream id token hint when auth credentials do not include one', async () => {
+    const handler = createHandler()
+    const request = createRequest({
+      yar: {
+        get: vi.fn(() => 'yar-upstream-id-token'),
+        reset: vi.fn()
       }
-      if (key === 'session.cookie.secure') return false
     })
-    const handler = create({ config })
-    const request = {
-      query: { client_id: '', id_token_hint: '  ' },
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
-    expect(redirectTo.searchParams.has('client_id')).toBe(false)
+    expect(redirectTo.searchParams.get('id_token_hint')).toBe(
+      'yar-upstream-id-token'
+    )
+  })
+
+  test('it omits id_token_hint when neither session store has one', async () => {
+    const handler = createHandler()
+    const request = createRequest()
+    const h = { redirect: mocks.redirect }
+
+    await handler(request, h)
+
+    const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
     expect(redirectTo.searchParams.has('id_token_hint')).toBe(false)
   })
 
-  test('it uses the supplied post_logout_redirect_uri for the signout cookie', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
+  test('it forwards supported OIDC params to the broker signout url', async () => {
+    const handler = createHandler()
+    const request = createRequest({
+      query: {
+        client_id: 'my-client',
+        state: 'my-state',
+        ui_locales: 'cy',
+        logout_hint: 'user@example.com'
       }
-      if (key === 'session.cookie.secure') return false
     })
-    const handler = create({ config })
-    const request = {
+    const h = { redirect: mocks.redirect }
+
+    await handler(request, h)
+
+    const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
+    const brokerSignoutUrl = new URL(
+      redirectTo.searchParams.get('post_logout_redirect_uri')
+    )
+    expect(brokerSignoutUrl.searchParams.get('client_id')).toBe('my-client')
+    expect(brokerSignoutUrl.searchParams.get('state')).toBe('my-state')
+    expect(brokerSignoutUrl.searchParams.get('ui_locales')).toBe('cy')
+    expect(brokerSignoutUrl.searchParams.get('logout_hint')).toBe(
+      'user@example.com'
+    )
+  })
+
+  test('it uses the supplied post_logout_redirect_uri for the signout cookie', async () => {
+    const handler = createHandler()
+    const request = createRequest({
       query: {
         post_logout_redirect_uri:
           'https://calling-service.defra.gov.uk/after-logout'
-      },
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+      }
+    })
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     expect(mocks.state).toHaveBeenCalledWith(
       SIGNOUT_REDIRECT_COOKIE_NAME,
       encodeURIComponent('https://calling-service.defra.gov.uk/after-logout'),
@@ -164,29 +173,16 @@ describe('create()', () => {
   })
 
   test('it falls back to the referer root when post_logout_redirect_uri is absent', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return false
-    })
-    const handler = create({ config })
-    const request = {
-      query: {},
+    const handler = createHandler()
+    const request = createRequest({
       headers: {
         referer: 'https://calling-service.defra.gov.uk/section/path?foo=bar'
-      },
-      cookieAuth: { clear: vi.fn() }
-    }
+      }
+    })
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     expect(mocks.state).toHaveBeenCalledWith(
       SIGNOUT_REDIRECT_COOKIE_NAME,
       encodeURIComponent('https://calling-service.defra.gov.uk/'),
@@ -195,27 +191,14 @@ describe('create()', () => {
   })
 
   test('it falls back to the origin root when referer is absent', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return false
+    const handler = createHandler()
+    const request = createRequest({
+      headers: { origin: 'https://calling-service.defra.gov.uk' }
     })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: { origin: 'https://calling-service.defra.gov.uk' },
-      cookieAuth: { clear: vi.fn() }
-    }
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     expect(mocks.state).toHaveBeenCalledWith(
       SIGNOUT_REDIRECT_COOKIE_NAME,
       encodeURIComponent('https://calling-service.defra.gov.uk/'),
@@ -224,27 +207,12 @@ describe('create()', () => {
   })
 
   test('it falls back to "/" when referer and origin are both absent', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') return false
-    })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+    const handler = createHandler()
+    const request = createRequest()
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     expect(mocks.state).toHaveBeenCalledWith(
       SIGNOUT_REDIRECT_COOKIE_NAME,
       encodeURIComponent('/'),
@@ -253,27 +221,20 @@ describe('create()', () => {
   })
 
   test('it sets the signout cookie with the correct options', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
-    mocks.redirect.mockReturnValue({ state: mocks.state })
     mocks.configGet.mockImplementation((key) => {
       if (key === 'idService.handler.baseUrl') {
         return 'https://identity-service-handler.defra.gov.uk'
       }
-      if (key === 'session.cookie.secure') return true
+      if (key === 'session.cookie.secure') {
+        return true
+      }
     })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+    const handler = createHandler()
+    const request = createRequest()
     const h = { redirect: mocks.redirect }
 
-    // Act
     await handler(request, h)
 
-    // Assert
     expect(mocks.state).toHaveBeenCalledWith(
       SIGNOUT_REDIRECT_COOKIE_NAME,
       expect.any(String),
@@ -289,30 +250,14 @@ describe('create()', () => {
   })
 
   test('it returns the redirect response', async () => {
-    // Arrange
-    const config = { get: mocks.configGet }
     const redirectResponse = { state: mocks.state }
     mocks.redirect.mockReturnValue(redirectResponse)
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.handler.baseUrl') {
-        return 'https://identity-service-handler.defra.gov.uk'
-      }
-      if (key === 'session.cookie.secure') {
-        return false
-      }
-    })
-    const handler = create({ config })
-    const request = {
-      query: {},
-      headers: {},
-      cookieAuth: { clear: vi.fn() }
-    }
+    const handler = createHandler()
+    const request = createRequest()
     const h = { redirect: mocks.redirect }
 
-    // Act
     const result = await handler(request, h)
 
-    // Assert
     expect(result).toBe(redirectResponse)
   })
 })

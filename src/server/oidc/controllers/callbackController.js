@@ -25,7 +25,7 @@ export function create({
       return h.response('Unknown/expired state').code(statusCodes.badRequest)
     }
 
-    const { uid, nonce, pkceCodeVerifier } = record
+    const { uid, nonce, pkceCodeVerifier, nextUrl } = record
 
     const callbackUrl = new URL(config.get('idService.b2c.redirectUrl'))
     callbackUrl.searchParams.set('code', code)
@@ -52,8 +52,12 @@ export function create({
       jwt.decode(tokens.id_token)
     )
 
-    // Set broker SSO cookie
-    request.cookieAuth.set(subject)
+    // Set broker SSO cookie and retain the upstream ID token for logout.
+    request.cookieAuth.set({
+      ...subject,
+      upstreamIdTokenHint: tokens.id_token
+    })
+    request.yar?.set?.('upstreamIdTokenHint', tokens.id_token)
 
     // Persist resolved login by interaction UID so /interaction/{uid} can finish
     // even if browser cookie persistence is unreliable in local cross-domain hops.
@@ -65,6 +69,6 @@ export function create({
 
     await upstreamStateStore.del(state)
 
-    return h.redirect(`/interaction/${uid}`)
+    return h.redirect(nextUrl)
   }
 }
