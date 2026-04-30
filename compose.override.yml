@@ -22,7 +22,7 @@ services:
     networks:
       - cdp-tenant
 
-  your-frontend:
+  identity-service-handler:
     build:
       context: ./
       target: ${NODE_ENV:-development}
