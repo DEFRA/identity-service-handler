@@ -7,7 +7,7 @@ const parsePage = (queryPage) => {
   return Number.isNaN(page) || page < 1 ? null : page
 }
 
-export const listController = (delegationService) => ({
+export const listController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const requestedPage = parsePage(request.query?.page)
@@ -19,9 +19,9 @@ export const listController = (delegationService) => ({
     const {
       items: delegates,
       total_pages: totalPages,
-      total_items: totalDelegatesCount,
-      page
-    } = await delegationService.getDelegations(sub, requestedPage ?? 1)
+      total_count: totalDelegatesCount,
+      page_number: page
+    } = await userService.getUserDelegates(sub, { page: requestedPage ?? 1 })
 
     if (requestedPage !== undefined && requestedPage > totalPages) {
       return h.redirect(request.path)

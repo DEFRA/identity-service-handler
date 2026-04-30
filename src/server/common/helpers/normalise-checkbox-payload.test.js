@@ -10,7 +10,7 @@ describe('normaliseCheckboxPayload()', () => {
     const result = normaliseCheckboxPayload(value)
 
     // Assert
-    expect(result).toBe(value)
+    expect(result).toEqual(new Set(['sheep', 'cattle']))
   })
 
   test('it wraps a string payload in an array', () => {
@@ -21,7 +21,7 @@ describe('normaliseCheckboxPayload()', () => {
     const result = normaliseCheckboxPayload(value)
 
     // Assert
-    expect(result).toEqual(['sheep'])
+    expect(result).toEqual(new Set(['sheep']))
   })
 
   test('it returns an empty array for unsupported payload values', () => {
@@ -32,6 +32,6 @@ describe('normaliseCheckboxPayload()', () => {
     const result = normaliseCheckboxPayload(value)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toEqual(new Set())
   })
 })

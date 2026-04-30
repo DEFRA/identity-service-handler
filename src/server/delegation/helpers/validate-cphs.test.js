@@ -3,23 +3,26 @@ import Joi from 'joi'
 import { cphsSchema, getCphValidationError } from './validate-cphs.js'
 
 describe('cphsSchema', () => {
-  test('it accepts a valid single CPH string', () => {
+  test('it accepts a valid single CPH GUID', () => {
     const { error } = Joi.object({ cphs: cphsSchema }).validate({
-      cphs: '12/345/6789'
+      cphs: ['550e8400-e29b-41d4-a716-446655440000']
     })
     expect(error).toBeUndefined()
   })
 
-  test('it accepts an array of valid CPH strings', () => {
+  test('it accepts an array of valid CPH GUIDs', () => {
     const { error } = Joi.object({ cphs: cphsSchema }).validate({
-      cphs: ['12/345/6789', '35/345/0005']
+      cphs: [
+        '550e8400-e29b-41d4-a716-446655440000',
+        '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+      ]
     })
     expect(error).toBeUndefined()
   })
 
   test('it rejects a string in the wrong format', () => {
     const { error } = Joi.object({ cphs: cphsSchema }).validate({
-      cphs: 'invalid'
+      cphs: ['invalid']
     })
     expect(error).toBeDefined()
   })

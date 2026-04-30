@@ -1,13 +1,9 @@
 import Joi from 'joi'
 
-export const CPH_REGEX = /^\d{2}\/\d{3}\/\d{4}$/
-
-export const cphsSchema = Joi.alternatives()
-  .try(
-    Joi.string().pattern(CPH_REGEX),
-    Joi.array().items(Joi.string().pattern(CPH_REGEX)).min(1)
-  )
-  .required()
+export const cphsSchema = Joi.alternatives(
+  Joi.array().items(Joi.string().guid()).min(1),
+  Joi.string().guid()
+).required()
 
 /**
  * Returns a user-facing error message from a Joi validation error.
