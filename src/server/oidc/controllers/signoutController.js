@@ -9,15 +9,21 @@ const OIDC_SIGNOUT_PARAM_NAMES = [
   'logout_hint'
 ]
 
-export function create({ config }) {
+export function create({ config, b2cConfiguration }) {
   return async function (request, h) {
-    request.cookieAuth.clear()
-
-    const signoutUrl = buildSignoutUrl(
+    const brokerSignoutUrl = buildBrokerSignoutUrl(
       config.get('idService.handler.baseUrl'),
       request.query
     )
     const postLogoutRedirectUri = resolvePostLogoutRedirectUri(request)
+    const signoutUrl = buildUpstreamSignoutUrl(
+      b2cConfiguration,
+      brokerSignoutUrl.href,
+      request
+    )
+
+    request.cookieAuth.clear()
+    request.yar?.reset?.()
 
     const response = h.redirect(signoutUrl.href)
     response.state(
@@ -57,7 +63,7 @@ function resolvePostLogoutRedirectUri(request) {
   )
 }
 
-function buildSignoutUrl(baseUrl, query) {
+function buildBrokerSignoutUrl(baseUrl, query) {
   const url = new URL('oidc/signout', baseUrl)
   for (const paramName of OIDC_SIGNOUT_PARAM_NAMES) {
     const value = query?.[paramName]
@@ -66,6 +72,52 @@ function buildSignoutUrl(baseUrl, query) {
     }
   }
   return url
+}
+
+function buildUpstreamSignoutUrl(b2cConfiguration, brokerSignoutUrl, request) {
+  const upstreamEndSessionEndpoint = getEndSessionEndpoint(b2cConfiguration)
+
+  if (!upstreamEndSessionEndpoint) {
+    return new URL(brokerSignoutUrl)
+  }
+
+  const url = new URL(upstreamEndSessionEndpoint)
+  url.searchParams.set('post_logout_redirect_uri', brokerSignoutUrl)
+  const idTokenHint = resolveUpstreamIdTokenHint(request)
+  if (typeof idTokenHint === 'string' && idTokenHint.trim()) {
+    url.searchParams.set('id_token_hint', idTokenHint.trim())
+  }
+  return url
+}
+
+function resolveUpstreamIdTokenHint(request) {
+  const sessionIdTokenHint = request?.auth?.credentials?.upstreamIdTokenHint
+  if (typeof sessionIdTokenHint === 'string' && sessionIdTokenHint.trim()) {
+    return sessionIdTokenHint
+  }
+
+  const yarIdTokenHint = request?.yar?.get?.('upstreamIdTokenHint')
+  if (typeof yarIdTokenHint === 'string' && yarIdTokenHint.trim()) {
+    return yarIdTokenHint
+  }
+
+  return undefined
+}
+
+function getEndSessionEndpoint(b2cConfiguration) {
+  const metadata =
+    typeof b2cConfiguration?.serverMetadata === 'function'
+      ? b2cConfiguration.serverMetadata()
+      : b2cConfiguration
+
+  if (
+    typeof metadata?.end_session_endpoint !== 'string' ||
+    !metadata.end_session_endpoint.trim()
+  ) {
+    return undefined
+  }
+
+  return metadata.end_session_endpoint
 }
 
 function signoutCookieOptions(isSecure) {

@@ -23,7 +23,7 @@ export async function registerOidcRoutes(
         strategies: ['session']
       }
     },
-    handler: signoutCreate({ config })
+    handler: signoutCreate({ config, b2cConfiguration })
   })
 
   server.route({
