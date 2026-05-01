@@ -37,21 +37,10 @@ export async function createServer() {
   setupProxy()
 
   logger.info(`Starting server with configuration: ${config}`)
-  const redis = buildRedisClient(config.get('redis'))
+  const redis = buildRedisClient()
   const services = bootstrapServices(redis)
-  const brokerProvider = buildBrokerProvider({
-    cookiePassword: config.get('session.cookie.password'),
-    sessionCookieSecure: config.get('session.cookie.secure'),
-    issuer: config.get('idService.oidc.issuer'),
-    redis,
-    ...services
-  })
-
-  const b2cConfiguration = await oidc.discovery(
-    new URL(config.get('idService.b2c.discoveryUrl')),
-    config.get('idService.b2c.clientId'),
-    config.get('idService.b2c.clientSecret')
-  )
+  const b2cConfiguration = getB2cConfiguration()
+  const brokerProvider = buildBrokerProvider({ redis, ...services })
 
   const server = await bootstrapServer()
   await server.register([
@@ -170,4 +159,12 @@ function bootstrapServer() {
     }
   }
   return hapi.server(serverOptions)
+}
+
+async function getB2cConfiguration() {
+  return oidc.discovery(
+    new URL(config.get('idService.b2c.discoveryUrl')),
+    config.get('idService.b2c.clientId'),
+    config.get('idService.b2c.clientSecret')
+  )
 }

@@ -16,9 +16,11 @@ export function buildBrokerConfiguration({
   cookiePassword,
   sessionCookieSecure,
   redis,
+  jwks,
   userService
 }) {
   return {
+    jwks,
     adapter: (model) => new RedisAdapter(model, redis, 'oidc'),
     features: {
       devInteractions: { enabled: false },

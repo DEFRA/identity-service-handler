@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { Cluster, Redis } from 'ioredis'
+import { config } from '../../../config/config.js'
 import { buildRedisClient } from './redis-client.js'
 
 vi.mock('ioredis', () => ({
@@ -18,17 +19,17 @@ describe('buildRedisClient', () => {
   describe('When Redis Single InstanceCache is requested', () => {
     test('it instantiates Redis with the correct config and registers event handlers', () => {
       // Arrange
-      const config = {
+      vi.spyOn(config, 'get').mockReturnValue({
         host: 'localhost',
         keyPrefix: 'test:',
         useSingleInstanceCache: true,
         useTLS: false,
         username: '',
         password: ''
-      }
+      })
 
       // Act
-      const client = buildRedisClient(config)
+      const client = buildRedisClient()
 
       // Assert
       expect(client).toBeInstanceOf(Redis)
@@ -52,17 +53,17 @@ describe('buildRedisClient', () => {
   describe('When a Redis Cluster is requested', () => {
     test('it instantiates Cluster with the correct config and registers event handlers', () => {
       // Arrange
-      const config = {
+      vi.spyOn(config, 'get').mockReturnValue({
         host: 'localhost',
         keyPrefix: 'test:',
         useSingleInstanceCache: false,
         useTLS: true,
         username: 'user',
         password: 'pass'
-      }
+      })
 
       // Act
-      const client = buildRedisClient(config)
+      const client = buildRedisClient()
 
       // Assert
       expect(client).toBeInstanceOf(Cluster)

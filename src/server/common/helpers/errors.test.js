@@ -1,14 +1,17 @@
 import { vi } from 'vitest'
+import hapi from '@hapi/hapi'
 
 import { catchAll } from './errors.js'
-import { createServer } from '../../server.js'
+import { nunjucksConfig } from '../../../config/nunjucks/nunjucks.js'
 import { statusCodes } from '../constants/status-codes.js'
 
 describe('#errors', () => {
   let server
 
   beforeAll(async () => {
-    server = await createServer()
+    server = hapi.server()
+    await server.register(nunjucksConfig)
+    server.ext('onPreResponse', catchAll)
     await server.initialize()
   })
 

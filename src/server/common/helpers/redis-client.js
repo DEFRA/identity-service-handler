@@ -1,4 +1,5 @@
 import { Cluster, Redis } from 'ioredis'
+import { config } from '../../../config/config.js'
 import { logger } from './logging/logger.js'
 
 const port = 6379
@@ -10,14 +11,15 @@ const db = 0
  * Local development - 1 Redis instance
  * Environments - Elasticache / Redis Cluster with username and password
  */
-export function buildRedisClient({
-  keyPrefix,
-  host,
-  username,
-  password,
-  useTLS,
-  useSingleInstanceCache
-}) {
+export function buildRedisClient() {
+  const {
+    keyPrefix,
+    host,
+    username,
+    password,
+    useTLS,
+    useSingleInstanceCache
+  } = config.get('redis')
   const credentials = username === '' ? {} : { username, password }
   const tls = useTLS ? { tls: {} } : {}
   let redisClient
