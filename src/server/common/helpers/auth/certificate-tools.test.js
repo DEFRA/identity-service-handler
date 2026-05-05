@@ -1,8 +1,161 @@
-import { describe } from 'node:test'
-import { strict as assert } from 'node:assert'
-import { getCertificateJwk } from './certificate-tools.js'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import {
+  getCertificateFingerprint,
+  getCertificateJwk,
+  loadPrivateKeyJwk
+} from './certificate-tools.js'
+import { config } from '../../../../config/config.js'
 
-const validMockCert = `-----BEGIN CERTIFICATE-----
+describe('certificate-tools', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
+  describe('getCertificateJwk', () => {
+    test('should convert a valid certificate to JWK format', () => {
+      // Arrange
+      const cert = getMockCert()
+
+      // Act
+      const result = getCertificateJwk(cert)
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(Array.isArray(result.keys)).toBe(true)
+      expect(result.keys.length).toBeGreaterThan(0)
+      expect(result.keys[0].kty).toBe('RSA')
+      expect(result.keys[0].use).toBe('sig')
+      expect(result.keys[0].n).toBeTruthy()
+      expect(result.keys[0].e).toBeTruthy()
+      expect(result.keys[0].kid).toBeTruthy()
+    })
+
+    test('should include alg field in JWK', () => {
+      // Arrange
+      const cert = getMockCert()
+      // Act
+      const result = getCertificateJwk(cert)
+
+      // Assert
+      expect(result.keys[0].alg).toBeTruthy()
+      expect(typeof result.keys[0].alg).toBe('string')
+    })
+
+    test('should throw error for invalid certificate', () => {
+      // Arrange
+      const cert = 'invalid-certificate-data'
+
+      // Act
+      let error
+      try {
+        getCertificateJwk(cert)
+      } catch (e) {
+        error = e
+      }
+
+      // Assert
+      expect(error).toBeInstanceOf(Error)
+    })
+
+    test('should throw error for empty certificate', () => {
+      // Arrange
+      const cert = ''
+
+      // Act
+      let error
+      try {
+        getCertificateJwk(cert)
+      } catch (e) {
+        error = e
+      }
+
+      // Assert
+      expect(error).toBeInstanceOf(Error)
+    })
+
+    test('should throw error for null certificate', () => {
+      // Arrange
+      const cert = null
+
+      // Act
+      let error
+      try {
+        getCertificateJwk(cert)
+      } catch (e) {
+        error = e
+      }
+
+      // Assert
+      expect(error).toBeInstanceOf(Error)
+    })
+  })
+
+  describe('loadPrivateKeyJwk', () => {
+    test('returns a valid private key JWK', () => {
+      // Arrange
+      vi.spyOn(config, 'get').mockImplementation((key) => {
+        if (key === 'idService.oidc.signingKey') return getMockKeyBase64()
+        if (key === 'idService.oidc.signingCert') return getMockCertBase64()
+      })
+
+      // Act
+      const result = loadPrivateKeyJwk()
+
+      // Assert
+      expect(Array.isArray(result.keys)).toBe(true)
+      expect(result.keys.length).toBe(1)
+      expect(result.keys[0].kty).toBe('RSA')
+      expect(result.keys[0].use).toBe('sig')
+      expect(result.keys[0].alg).toBe('RS256')
+      expect(result.keys[0].kid).toBeTruthy()
+      expect(result.keys[0].d).toBeTruthy()
+    })
+
+    test('kid matches the certificate fingerprint', () => {
+      // Arrange
+      vi.spyOn(config, 'get').mockImplementation((key) => {
+        if (key === 'idService.oidc.signingKey') return getMockKeyBase64()
+        if (key === 'idService.oidc.signingCert') return getMockCertBase64()
+      })
+
+      // Act
+      const result = loadPrivateKeyJwk()
+
+      // Assert
+      expect(result.keys[0].kid).toBe(getCertificateFingerprint(getMockCert()))
+    })
+
+    test('throws when the private key is invalid', () => {
+      // Arrange
+      vi.spyOn(config, 'get').mockImplementation((key) => {
+        if (key === 'idService.oidc.signingKey') return getMockCertBase64()
+        if (key === 'idService.oidc.signingCert') return getMockCertBase64()
+      })
+
+      // Act
+      let error
+      try {
+        loadPrivateKeyJwk()
+      } catch (e) {
+        error = e
+      }
+
+      // Assert
+      expect(error).toBeInstanceOf(Error)
+    })
+  })
+})
+
+function getMockCertBase64() {
+  return Buffer.from(getMockCert()).toString('base64')
+}
+
+function getMockKeyBase64() {
+  return Buffer.from(getMockKey()).toString('base64')
+}
+
+function getMockCert() {
+  return `-----BEGIN CERTIFICATE-----
 MIIDZTCCAk2gAwIBAgIUVhzoC6lU09YzXbpenXe2EuSA3p8wDQYJKoZIhvcNAQEL
 BQAwQjELMAkGA1UEBhMCVUsxDzANBgNVBAgMBkxvbmRvbjEOMAwGA1UECgwFRGVm
 cmExEjAQBgNVBAMMCWxvY2FsaG9zdDAeFw0yNTEyMjMxNDQzNThaFw0yNjAxMjIx
@@ -23,58 +176,35 @@ sLYjZ7nH0PQuVCvsOHX56TSN8v6FZSdxfLF98FiauPZ/wUpxdVCxsGi8X82v33z8
 MJdox5WkaOvTt3YiGo6xo4mpSEt76h5sTNxoe0i63GauZk7XM51ywStCOp7GjK7N
 cy24mrImRaij
 -----END CERTIFICATE-----`
+}
 
-describe('certificate-tools', () => {
-  describe('getCertificateJwk', () => {
-    test('should convert a valid certificate to JWK format', () => {
-      const result = getCertificateJwk(validMockCert)
-
-      assert.ok(result, 'Result should be defined')
-      assert.ok(result.keys, 'Result should have keys property')
-      assert.ok(Array.isArray(result.keys), 'Keys should be an array')
-      assert.ok(result.keys.length > 0, 'Keys array should not be empty')
-      assert.strictEqual(result.keys[0].kty, 'RSA', 'Key type should be RSA')
-      assert.strictEqual(result.keys[0].use, 'sig', 'Key use should be sig')
-      assert.ok(result.keys[0].n, 'Should have modulus')
-      assert.ok(result.keys[0].e, 'Should have exponent')
-      assert.ok(result.keys[0].kid, 'Should have key ID')
-    })
-
-    test('should throw error for invalid certificate', () => {
-      const invalidCert = 'invalid-certificate-data'
-
-      assert.throws(
-        () => getCertificateJwk(invalidCert),
-        Error,
-        'Should throw error for invalid certificate'
-      )
-    })
-
-    test('should throw error for empty certificate', () => {
-      assert.throws(
-        () => getCertificateJwk(''),
-        Error,
-        'Should throw error for empty certificate'
-      )
-    })
-
-    test('should throw error for null certificate', () => {
-      assert.throws(
-        () => getCertificateJwk(null),
-        Error,
-        'Should throw error for null certificate'
-      )
-    })
-
-    test('should include alg field in JWK', () => {
-      const result = getCertificateJwk(validMockCert)
-
-      assert.ok(result.keys[0].alg, 'Should have algorithm field')
-      assert.strictEqual(
-        typeof result.keys[0].alg,
-        'string',
-        'Algorithm should be a string'
-      )
-    })
-  })
-})
+function getMockKey() {
+  return `-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWGYfVSGIbozFS
+mho8JF4S/6WKUgG7cXwutcguE8gnfVdIxKx78w6T7RNLUAmGe7j+rgF9R4pqPqHu
+2Esx8Hs1TJRMNI24eUR9ZDiQFYV0zzzGkFZl6ANsMm98EnLm82QG7RTygK4zN56n
+3tPsxvrxfoH2qgQzrBhK81Xd9RhS2qbg/QyR8gceCBM0GzsKBMwnpeWYFlgIinfz
+xWTh8YYhFiTkSqdPSpk4FR4VYO07P0Zph+eiX4+WZLTv1totzoRQ9JFEh53sSDAs
+q+0AhJsl4rwuFf7mpzRJN6wiFnvFJRHO/HQwQb5rTf0MOsRajRzfyucxNyVqDKNz
+spu82gLbAgMBAAECggEAMlStJHwQKDwcd7UnbrUD8oZrtZEivBxpG5f7V62p03K5
+Rq+JdtgEOM02SHGn05gZPLHOQtPDG8fejIYHY1WLuVNn12RRXqkPa0TYsTKF/ZhM
+Ssear/kzeMeAgtPZdCaKgMBSONH8Yaj1ILSW8GY0jvn09nYwZ69QxKngqT2Zerxj
+AzKLK3HvL50VJSc1XrBOxwQ6lArJ6RNJma0JZ7phKvSjoumwggPf8al3DV8e9XyI
+3/AI3mDnTmXfhKVftE8CGwiNQybiF1cewN6zacPLnqKATdJyX4UCNP9HQZaXydCU
+J3tNZDEvS0h3MDW8HygTVtKIGYRUNBzLeuYpCemRuQKBgQDssNAroz8/+YhPvX9l
+btIx6dLvtcVUY+SAMHYv5RbBrC/8ypWrLFynhb//oVprrmmhf7UJIDRm7qzrAmXh
+2ce3nn1M9App4KrBxODTzRrJybgSfIh2oEyYLMMhA+6bRhy11h0a2K2Jj9ikwaaW
+174XMQxUiJeCbxb/DlP+XzTtUwKBgQDnkOozCthBAZVpDL1wy+Wz2akYDzUw4ApL
+ZMjyBxXj4YPejBauoEKlj1ClRdZc6uZe8Txxx96lTDvKYlbVwT4M6Q5rxl8XJVNF
+WLkbRSf6NmdpznxwbC7dDDzoWru02tk8W8g2eyc+sdagOHwg3iMiYXjgeOkvcHyy
+zJRthq1bWQKBgQDZ3CnQcNOQLDvWweLYV3gsL0BUGijG86dogrLWhPQ8UiRdd47p
+3sxt+gNu5XLX+NMLrwPQoY76S6hoLG3gw9c74SsOQPaw2/XwoyoaagjFQeInSe9F
+2WiHDXSSGA9xZsiYaruhcV3SZ9AOXpza7TvwFtp1mMB0c5JkNCkF01ZhNwKBgQCj
+9WyN9XjHFlr3BYlAy2352PysR2BPGeLQHS1WiQPL1Upskd4hiOGHniDo1LkCE2RI
+ByDYIz+W5JJVKyn2sZvAwmdukgeUON5r9HUkROQYetrgBM8BPugzpU2e61eKp4Y3
+AXmSccKI1pxz12q0TvSrjD5tGc9pwojYhJf3sOsgCQKBgQCO3mtdu04Ylx6N645E
+C2fIumrkx32IJQ9e+X6GAIxPFPuSlsXeQ2UwmmWh/NgPq0bVGY4mY53BjRhAHx5c
+02Bj8ZEe+3m9nQaxvthhOj96wwnbo71IzfvjAYVgborq9yZTCPy+zL+05EcdEuem
+n2p/kzfMTsxcuw6H9YtrBqmeNw==
+-----END PRIVATE KEY-----`
+}

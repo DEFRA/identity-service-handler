@@ -259,6 +259,20 @@ export const config = convict({
         format: 'url',
         default: 'https://identity-service-handler.defra.gov.uk',
         env: 'OIDC_ISSUER'
+      },
+      signingKey: {
+        doc: 'OIDC signing private key PEM content base64 encoded',
+        format: String,
+        default: null,
+        nullable: true,
+        env: 'OIDC_SIGNING_KEY'
+      },
+      signingCert: {
+        doc: 'OIDC signing certificate PEM content base64 encoded',
+        format: String,
+        default: null,
+        nullable: true,
+        env: 'OIDC_SIGNING_CERT'
       }
     },
     b2c: {

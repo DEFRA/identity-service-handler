@@ -6,16 +6,6 @@ import { postLogoutSuccessSource } from './post-logout-success-source.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { RedisAdapter } from './redis-adapter.js'
 
-function createOptions(overrides = {}) {
-  return {
-    cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
-    sessionCookieSecure: false,
-    redis: {},
-    userService: { getUserContext: () => {} },
-    ...overrides
-  }
-}
-
 describe('buildBrokerConfiguration()', () => {
   afterEach(() => {
     vi.resetAllMocks()
@@ -23,7 +13,15 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it advertises the expected response types and scopes', () => {
     // Arrange
-    const options = createOptions()
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
 
     // Act
     const result = buildBrokerConfiguration(options)
@@ -38,11 +36,37 @@ describe('buildBrokerConfiguration()', () => {
     ])
   })
 
+  test('it passes jwks through to the configuration', () => {
+    // Arrange
+    const jwks = {
+      keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+    }
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks,
+      userService: { getUserContext: () => {} }
+    }
+
+    // Act
+    const result = buildBrokerConfiguration(options)
+
+    // Assert
+    expect(result.jwks).toBe(jwks)
+  })
+
   test('it configures cookie keys from the cookie password', () => {
     // Arrange
-    const options = createOptions({
-      cookiePassword: 'my-secret-password-123456'
-    })
+    const options = {
+      cookiePassword: 'my-secret-password-123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
 
     // Act
     const result = buildBrokerConfiguration(options)
@@ -53,7 +77,15 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it configures the correct TTL values', () => {
     // Arrange
-    const options = createOptions()
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
 
     // Act
     const result = buildBrokerConfiguration(options)
@@ -67,7 +99,15 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it configures the correct routes', () => {
     // Arrange
-    const options = createOptions()
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
 
     // Act
     const result = buildBrokerConfiguration(options)
@@ -79,8 +119,21 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it configures the expected claims by scope', () => {
-    const result = buildBrokerConfiguration(createOptions())
+    // Arrange
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
 
+    // Act
+    const result = buildBrokerConfiguration(options)
+
+    // Assert
     expect(result.claims).toEqual({
       openid: ['sub', 'iss'],
       profile: [
@@ -95,10 +148,23 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it creates a redis adapter for oidc models', () => {
+    // Arrange
     const redis = { options: { keyPrefix: '' } }
-    const result = buildBrokerConfiguration(createOptions({ redis }))
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis,
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
+
+    // Act
+    const result = buildBrokerConfiguration(options)
     const adapter = result.adapter('AccessToken')
 
+    // Assert
     expect(adapter).toBeInstanceOf(RedisAdapter)
     expect(adapter.model).toBe('AccessToken')
     expect(adapter.redis).toBe(redis)
@@ -107,7 +173,15 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it returns the interaction url for a given uid', () => {
     // Arrange
-    const options = createOptions()
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
     const interaction = { uid: 'abc-123' }
 
     // Act
@@ -119,12 +193,24 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it renders an auto-submitting logout page', async () => {
-    const result = buildBrokerConfiguration(createOptions())
+    // Arrange
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
     const ctx = {}
     const form = '<form id="op.logoutForm"></form>'
 
+    // Act
+    const result = buildBrokerConfiguration(options)
     await result.features.rpInitiatedLogout.logoutSource(ctx, form)
 
+    // Assert
     expect(ctx.type).toBe('html')
     expect(ctx.status).toBe(200)
     expect(ctx.body).toContain(
@@ -136,25 +222,41 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it delegates post logout success handling with the secure cookie setting', async () => {
-    const result = buildBrokerConfiguration(
-      createOptions({ sessionCookieSecure: true })
-    )
+    // Arrange
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: true,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService: { getUserContext: () => {} }
+    }
     const ctx = {}
 
+    // Act
+    const result = buildBrokerConfiguration(options)
     await result.features.rpInitiatedLogout.postLogoutSuccessSource(ctx)
 
+    // Assert
     expect(postLogoutSuccessSource).toHaveBeenCalledWith(ctx, true)
   })
 
   test('it resolves an account using the user service', async () => {
     // Arrange
     const userService = { getUserContext: () => {} }
-    const mocks = { getUserContext: vi.spyOn(userService, 'getUserContext') }
-    const options = createOptions({
+    const getUserContext = vi.spyOn(userService, 'getUserContext')
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
       userService
-    })
+    }
     const userContext = { sub: 'user-123', email: 'user@example.com' }
-    mocks.getUserContext.mockResolvedValue(userContext)
+    getUserContext.mockResolvedValue(userContext)
 
     // Act
     const result = buildBrokerConfiguration(options)
@@ -164,34 +266,48 @@ describe('buildBrokerConfiguration()', () => {
     // Assert
     expect(account.accountId).toBe('user-123')
     expect(claims).toEqual(userContext)
-    expect(mocks.getUserContext).toHaveBeenCalledWith('user-123')
+    expect(getUserContext).toHaveBeenCalledWith('user-123')
   })
 
   test('it leaves non-userinfo claims unchanged even when issuer is available', async () => {
+    // Arrange
     const userService = { getUserContext: () => {} }
-    const mocks = { getUserContext: vi.spyOn(userService, 'getUserContext') }
-    const options = createOptions({ userService })
-    const userContext = { sub: 'user-123', email: 'user@example.com' }
-    const ctx = {
-      oidc: {
-        provider: { issuer: 'https://issuer.example' }
-      }
+    const getUserContext = vi.spyOn(userService, 'getUserContext')
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService
     }
-    mocks.getUserContext.mockResolvedValue(userContext)
+    const userContext = { sub: 'user-123', email: 'user@example.com' }
+    const ctx = { oidc: { provider: { issuer: 'https://issuer.example' } } }
+    getUserContext.mockResolvedValue(userContext)
 
+    // Act
     const result = buildBrokerConfiguration(options)
     const account = await result.findAccount(ctx, 'user-123')
     const claims = await account.claims('id_token')
 
+    // Assert
     expect(claims).toEqual(userContext)
   })
 
   test('it adds iss to userinfo claims', async () => {
+    // Arrange
     const userService = { getUserContext: () => {} }
-    const mocks = { getUserContext: vi.spyOn(userService, 'getUserContext') }
-    const options = createOptions({
+    const getUserContext = vi.spyOn(userService, 'getUserContext')
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
       userService
-    })
+    }
     const userContext = { sub: 'user-123', email: 'user@example.com' }
     const ctx = {
       oidc: {
@@ -199,12 +315,14 @@ describe('buildBrokerConfiguration()', () => {
         client: { clientId: 'client-123' }
       }
     }
-    mocks.getUserContext.mockResolvedValue(userContext)
+    getUserContext.mockResolvedValue(userContext)
 
+    // Act
     const result = buildBrokerConfiguration(options)
     const account = await result.findAccount(ctx, 'user-123')
     const claims = await account.claims('userinfo')
 
+    // Assert
     expect(claims).toEqual({
       ...userContext,
       iss: 'https://issuer.example'
@@ -212,16 +330,27 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it returns userinfo claims without iss when no issuer is available', async () => {
+    // Arrange
     const userService = { getUserContext: () => {} }
-    const mocks = { getUserContext: vi.spyOn(userService, 'getUserContext') }
-    const options = createOptions({ userService })
+    const getUserContext = vi.spyOn(userService, 'getUserContext')
+    const options = {
+      cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
+      sessionCookieSecure: false,
+      redis: {},
+      jwks: {
+        keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
+      },
+      userService
+    }
     const userContext = { sub: 'user-123', email: 'user@example.com' }
-    mocks.getUserContext.mockResolvedValue(userContext)
+    getUserContext.mockResolvedValue(userContext)
 
+    // Act
     const result = buildBrokerConfiguration(options)
     const account = await result.findAccount({}, 'user-123')
     const claims = await account.claims('userinfo')
 
+    // Assert
     expect(claims).toEqual(userContext)
   })
 })

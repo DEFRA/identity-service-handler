@@ -1,25 +1,18 @@
-import { createServer } from '../../../server.js'
+import { describe, expect, test, vi } from 'vitest'
 import { statusCodes } from '../../../common/constants/status-codes.js'
+import { healthController } from './health-controller.js'
 
-describe('#healthController', () => {
-  let server
+describe('healthController', () => {
+  test('it returns a success response', () => {
+    // Arrange
+    const mockCode = vi.fn()
+    const h = { response: vi.fn().mockReturnValue({ code: mockCode }) }
 
-  beforeAll(async () => {
-    server = await createServer()
-    await server.initialize()
-  })
+    // Act
+    healthController.handler(null, h)
 
-  afterAll(async () => {
-    await server.stop({ timeout: 0 })
-  })
-
-  test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: '/health'
-    })
-
-    expect(result).toEqual({ message: 'success' })
-    expect(statusCode).toBe(statusCodes.ok)
+    // Assert
+    expect(h.response).toHaveBeenCalledWith({ message: 'success' })
+    expect(mockCode).toHaveBeenCalledWith(statusCodes.ok)
   })
 })
