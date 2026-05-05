@@ -2,7 +2,7 @@ ARG PARENT_VERSION=2.8.5-node22.16.0
 ARG PORT=3000
 ARG PORT_DEBUG=9229
 
-FROM defradigital/node-development:${PARENT_VERSION} AS development
+FROM defradigital/node-development:${PARENT_VERSION} AS base_build
 ARG PARENT_VERSION
 LABEL uk.gov.defra.ffc.parent-image=defradigital/node-development:${PARENT_VERSION}
 
@@ -18,13 +18,14 @@ RUN npm install
 COPY --chown=node:node --chmod=755 . .
 RUN npm run build:frontend
 
+FROM base_build AS development
+COPY --chown=node:node --chmod=755 certs* ./certs
+
 CMD [ "npm", "run", "docker:dev" ]
 
-FROM development AS production_build
+FROM base_build AS production_build
 
 ENV NODE_ENV=production
-
-RUN npm run build:frontend
 
 FROM defradigital/node:${PARENT_VERSION} AS production
 ARG PARENT_VERSION
