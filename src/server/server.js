@@ -39,10 +39,12 @@ export async function createServer() {
   logger.info(`Starting server with configuration: ${config}`)
   const redis = buildRedisClient()
   const services = bootstrapServices(redis)
-  const b2cConfiguration = getB2cConfiguration()
   const brokerProvider = buildBrokerProvider({ redis, ...services })
 
-  const server = await bootstrapServer()
+  const [server, b2cConfiguration] = await Promise.all([
+    bootstrapServer(),
+    getB2cConfiguration()
+  ])
   await server.register([
     Cookie,
     Crumb,

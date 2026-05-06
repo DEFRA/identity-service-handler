@@ -141,7 +141,7 @@ export const config = convict({
       name: {
         doc: 'server side session cache name',
         format: String,
-        default: 'session',
+        default: '_testSiteSessionCache',
         env: 'SESSION_CACHE_NAME'
       },
       ttl: {
