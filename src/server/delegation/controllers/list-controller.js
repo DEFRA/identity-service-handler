@@ -1,3 +1,5 @@
+import { statusCodes } from '../../common/constants/status-codes.js'
+
 const parsePage = (queryPage) => {
   if (queryPage === undefined) {
     return undefined
@@ -15,13 +17,22 @@ export const listController = (userService) => ({
     if (requestedPage === null) {
       return h.redirect(request.path)
     }
+    const [
+      { assignments },
+      {
+        items: delegates,
+        total_pages: totalPages,
+        total_count: totalDelegatesCount,
+        page_number: page
+      }
+    ] = await Promise.all([
+      userService.getUserCphs(sub),
+      userService.getUserDelegates(sub, { page: requestedPage ?? 1 })
+    ])
 
-    const {
-      items: delegates,
-      total_pages: totalPages,
-      total_count: totalDelegatesCount,
-      page_number: page
-    } = await userService.getUserDelegates(sub, { page: requestedPage ?? 1 })
+    if (!assignments.length) {
+      return h.response().code(statusCodes.notFound).takeover()
+    }
 
     if (requestedPage !== undefined && requestedPage > totalPages) {
       return h.redirect(request.path)
@@ -35,6 +46,7 @@ export const listController = (userService) => ({
       delegates,
       showingDelegatesCount: delegates.length,
       totalDelegatesCount,
+      singleCph: assignments.length === 1,
       pagination
     })
   }

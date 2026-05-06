@@ -24,9 +24,15 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell app-delegation-list__email">{{ delegate.email }}</td>
             <td class="govuk-table__cell app-delegation-list__action">
-              <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/manage">
-                Manage<span class="govuk-visually-hidden"> {{ delegate.name }}</span>
-              </a>
+              {% if singleCph %}
+                <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/delete">
+                  Remove<span class="govuk-visually-hidden"> {{ delegate.name }}</span>
+                </a>
+              {% else %}
+                <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/manage">
+                  Manage<span class="govuk-visually-hidden"> {{ delegate.name }}</span>
+                </a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
