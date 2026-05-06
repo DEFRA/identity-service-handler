@@ -20,7 +20,25 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - cdp-tenant
+      - identity-services
+
+  redis:
+    image: redis:7.2.3-alpine3.18
+    ports:
+      - '6379:6379'
+    restart: always
+    networks:
+      - identity-services
+
+  mongodb:
+    image: mongo:6.0.13
+    networks:
+      - identity-services
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb-data:/data
+    restart: always
 
   identity-service-handler:
     build:
@@ -38,7 +56,10 @@ services:
       redis:
         condition: service_started
     env_file:
-      - 'compose/aws.env'
+      - path: 'compose/aws.env'
+        required: true
+      - path: 'compose/identity-service-handler.env'
+        required: false
     environment:
       PORT: ${FRONTEND_PORT:-3000}
       NODE_ENV: ${NODE_ENV:-development}
@@ -53,10 +74,18 @@ services:
       B2C_SERVICE_ID: ${B2C_SERVICE_ID:-your-default-service-id}
       DEBUG: ${DEBUG}
       NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}
+      OIDC_SIGNING_CERT: ${OIDC_SIGNING_CERT}
+      OIDC_SIGNING_KEY: ${OIDC_SIGNING_KEY}
       SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
       TLS_ENABLED: ${TLS_ENABLED:-true}
       BROKER_BASE_URL2: ${BROKER_BASE_URL2:-https://identity-service-handler.dev.cdp-int.defra.cloud/}
       BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-https://fakelocal}
     networks:
-      - cdp-tenant
+      - identity-services
+volumes:
+  mongodb-data:
+
+networks:
+  identity-services:
+    driver: bridge
