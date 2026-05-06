@@ -13,7 +13,7 @@ const clientSecret = process.env.OIDC_CLIENT_SECRET ?? 'secret123'
 const pkceVerifierKey = 'brokerPkceVerifier'
 const loginStateKey = 'brokerLoginState'
 const selectedScopesKey = 'selectedScopeState'
-const selectableScopes = ['openid', 'email', 'profile']
+const selectableScopes = ['openid', 'email', 'profile', 'offline_access']
 const defaultLoginScopes = ['openid', 'email']
 
 export function createPkceVerifier() {

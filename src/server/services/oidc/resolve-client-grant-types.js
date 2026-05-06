@@ -7,7 +7,9 @@
  * @returns {string[]}
  */
 export function resolveClientGrantTypes(client = {}) {
-  const grantTypes = new Set(client.grant_types || ['authorization_code'])
+  const grantTypes = new Set(
+    client.grant_types || ['authorization_code', 'refresh_token']
+  )
 
   if (!client.scopes?.includes('offline_access')) {
     grantTypes.delete('refresh_token')
