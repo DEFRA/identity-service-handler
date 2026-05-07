@@ -67,7 +67,7 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       USE_SINGLE_INSTANCE_CACHE: true
       USE_FAKE_EXTERNAL_API: ${HELPER_USE_FAKE_CLIENT:-true}
-      IDENTITY_HELPER_BASE_URL: ${HELPER_BASEURL:-http://localhost:3001}
+      HELPER_BASEURL: ${HELPER_BASEURL:-http://localhost:3001}
       HELPER_API_KEY: ${HELPER_API_KEY:-your-helper-api-key}
       B2C_CLIENT_ID: ${B2C_CLIENT_ID:-your-default-client-id}
       B2C_CLIENT_SECRET: ${B2C_CLIENT_SECRET}
