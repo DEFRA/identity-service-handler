@@ -4,18 +4,43 @@ import { listController } from './list-controller.js'
 
 const mocks = {
   getUserDelegates: vi.fn(),
+  getUserCphs: vi.fn(),
   view: vi.fn(),
-  redirect: vi.fn()
+  redirect: vi.fn(),
+  response: vi.fn()
 }
+
+const multipleCphsResult = { assignments: [{ id: 'cph-1' }, { id: 'cph-2' }] }
+const singleCphResult = { assignments: [{ id: 'cph-1' }] }
+const noCphsResult = { assignments: [] }
 
 describe('listController()', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.getUserCphs.mockResolvedValue(multipleCphsResult)
   })
+
+  const makeUserService = () => ({
+    getUserDelegates: mocks.getUserDelegates,
+    getUserCphs: mocks.getUserCphs
+  })
+
+  const makeH = () => {
+    const takeover = vi.fn().mockReturnValue('takeover-response')
+    const code = vi.fn().mockReturnValue({ takeover })
+    mocks.response.mockReturnValue({ code })
+    return {
+      view: mocks.view,
+      redirect: mocks.redirect,
+      response: mocks.response,
+      _takeover: takeover,
+      _code: code
+    }
+  }
 
   test('it renders first page when no page query is provided', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     const pageResult = {
       page_number: 1,
       items: [
@@ -35,7 +60,7 @@ describe('listController()', () => {
       path: '/delegation'
     }
     mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     const result = await listController(userService).handler(request, h)
@@ -50,6 +75,7 @@ describe('listController()', () => {
         delegates: pageResult.items,
         showingDelegatesCount: 1,
         totalDelegatesCount: 1,
+        singleCph: false,
         pagination: null
       })
     )
@@ -58,7 +84,7 @@ describe('listController()', () => {
 
   test('it renders the requested page and pagination links', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     const pageResult = {
       page_number: 2,
       items: [
@@ -74,7 +100,7 @@ describe('listController()', () => {
       path: '/delegation'
     }
     mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     await listController(userService).handler(request, h)
@@ -102,7 +128,7 @@ describe('listController()', () => {
 
   test('it renders first page with no previous link when there are multiple pages', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     mocks.getUserDelegates.mockResolvedValue({
       page_number: 1,
       items: [{ id: '1', email: 'a@example.gov.uk', display_name: 'A' }],
@@ -115,7 +141,7 @@ describe('listController()', () => {
       path: '/delegation'
     }
     mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     await listController(userService).handler(request, h)
@@ -134,7 +160,7 @@ describe('listController()', () => {
 
   test('it renders last page with no next link when there are multiple pages', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     mocks.getUserDelegates.mockResolvedValue({
       page_number: 2,
       items: [{ id: '6', email: 'f@example.gov.uk', display_name: 'F' }],
@@ -147,7 +173,7 @@ describe('listController()', () => {
       path: '/delegation'
     }
     mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     await listController(userService).handler(request, h)
@@ -166,14 +192,14 @@ describe('listController()', () => {
 
   test('it redirects to the current path when page query is invalid', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: 'abc' },
       path: '/delegation'
     }
     mocks.redirect.mockReturnValue('redirect-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     const result = await listController(userService).handler(request, h)
@@ -186,7 +212,7 @@ describe('listController()', () => {
 
   test('it redirects to the current path when requested page exceeds total pages', async () => {
     // Arrange
-    const userService = { getUserDelegates: mocks.getUserDelegates }
+    const userService = makeUserService()
     mocks.getUserDelegates.mockResolvedValue({
       page_number: 3,
       items: [],
@@ -199,7 +225,7 @@ describe('listController()', () => {
       path: '/delegation'
     }
     mocks.redirect.mockReturnValue('redirect-response')
-    const h = { view: mocks.view, redirect: mocks.redirect }
+    const h = makeH()
 
     // Act
     const result = await listController(userService).handler(request, h)
@@ -210,5 +236,59 @@ describe('listController()', () => {
     })
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
+  })
+
+  test('it returns 404 when user has no CPH assignments', async () => {
+    // Arrange
+    const userService = makeUserService()
+    mocks.getUserCphs.mockResolvedValue(noCphsResult)
+    mocks.getUserDelegates.mockResolvedValue({
+      page_number: 1,
+      items: [],
+      total_pages: 1,
+      total_count: 0
+    })
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      query: {},
+      path: '/delegation'
+    }
+    const h = makeH()
+
+    // Act
+    const result = await listController(userService).handler(request, h)
+
+    // Assert
+    expect(mocks.response).toHaveBeenCalled()
+    expect(h._code).toHaveBeenCalledWith(404)
+    expect(result).toBe('takeover-response')
+  })
+
+  test('it passes singleCph true when user has exactly one CPH', async () => {
+    // Arrange
+    const userService = makeUserService()
+    mocks.getUserCphs.mockResolvedValue(singleCphResult)
+    mocks.getUserDelegates.mockResolvedValue({
+      page_number: 1,
+      items: [{ id: 'user-1', email: 'a@example.gov.uk', display_name: 'A' }],
+      total_pages: 1,
+      total_count: 1
+    })
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      query: {},
+      path: '/delegation'
+    }
+    mocks.view.mockReturnValue('view-response')
+    const h = makeH()
+
+    // Act
+    await listController(userService).handler(request, h)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/index',
+      expect.objectContaining({ singleCph: true })
+    )
   })
 })

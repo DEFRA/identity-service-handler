@@ -18,7 +18,7 @@ export const createController = () => ({
   }
 })
 
-export const createSubmitController = () => ({
+export const createSubmitController = (userService) => ({
   options: {
     validate: {
       payload: Joi.object({
@@ -46,9 +46,17 @@ export const createSubmitController = () => ({
     }
   },
   handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())
+
+    const { assignments } = await userService.getUserCphs(sub)
+
+    if (assignments.length === 1) {
+      draftService.setCphIds([assignments[0].county_parish_holding_id])
+      return h.redirect('/delegation/create/confirm')
+    }
 
     return h.redirect('/delegation/create/cphs')
   }

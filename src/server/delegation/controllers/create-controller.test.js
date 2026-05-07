@@ -50,25 +50,59 @@ describe('createSubmitController()', () => {
     vi.clearAllMocks()
   })
 
-  test('it stores email and redirects on valid payload', async () => {
+  test('it stores email and redirects to cphs when user has multiple CPHs', async () => {
     // Arrange
+    const userService = {
+      getUserCphs: vi.fn().mockResolvedValue({
+        assignments: [
+          { county_parish_holding_id: 'cph-1' },
+          { county_parish_holding_id: 'cph-2' }
+        ]
+      })
+    }
     const setEmail = vi
       .spyOn(DelegationBuilder.prototype, 'setEmail')
       .mockReturnValue(undefined)
     const request = {
-      payload: {
-        email: '  JOE@EXAMPLE.COM  '
-      }
+      auth: { credentials: { sub: 'user-123' } },
+      payload: { email: '  JOE@EXAMPLE.COM  ' }
     }
     mocks.redirect.mockReturnValue('redirect-response')
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await createSubmitController().handler(request, h)
+    const result = await createSubmitController(userService).handler(request, h)
 
     // Assert
     expect(setEmail).toHaveBeenCalledWith('joe@example.com')
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(result).toBe('redirect-response')
+  })
+
+  test('it auto-sets CPH and redirects to confirm when user has a single CPH', async () => {
+    // Arrange
+    const userService = {
+      getUserCphs: vi.fn().mockResolvedValue({
+        assignments: [{ county_parish_holding_id: 'cph-1' }]
+      })
+    }
+    vi.spyOn(DelegationBuilder.prototype, 'setEmail').mockReturnValue(undefined)
+    const setCphIds = vi
+      .spyOn(DelegationBuilder.prototype, 'setCphIds')
+      .mockReturnValue(undefined)
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      payload: { email: 'joe@example.com' }
+    }
+    mocks.redirect.mockReturnValue('redirect-response')
+    const h = { redirect: mocks.redirect }
+
+    // Act
+    const result = await createSubmitController(userService).handler(request, h)
+
+    // Assert
+    expect(setCphIds).toHaveBeenCalledWith(['cph-1'])
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
   })
 
@@ -88,7 +122,7 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    const result = await createSubmitController().options.validate.failAction(
+    const result = await createSubmitController({}).options.validate.failAction(
       request,
       h,
       err
@@ -124,7 +158,11 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    await createSubmitController().options.validate.failAction(request, h, err)
+    await createSubmitController({}).options.validate.failAction(
+      request,
+      h,
+      err
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -147,7 +185,11 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    await createSubmitController().options.validate.failAction(request, h, err)
+    await createSubmitController({}).options.validate.failAction(
+      request,
+      h,
+      err
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -172,7 +214,11 @@ describe('createSubmitController()', () => {
     }
 
     // Act
-    await createSubmitController().options.validate.failAction(request, h, err)
+    await createSubmitController({}).options.validate.failAction(
+      request,
+      h,
+      err
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
