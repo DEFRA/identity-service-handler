@@ -78,7 +78,7 @@ services:
       OIDC_SIGNING_KEY: ${OIDC_SIGNING_KEY}
       SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
-      TLS_ENABLED: ${TLS_ENABLED:-true}
+      TLS_ENABLED: ${TLS_ENABLED:-false}
       BROKER_BASE_URL2: ${BROKER_BASE_URL2:-https://identity-service-handler.dev.cdp-int.defra.cloud/}
       BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-https://fakelocal}
     networks:
