@@ -124,6 +124,38 @@ export async function getUserDelegates(userId, options = {}) {
  */
 
 /**
+ * @typedef {object} CphAssignment
+ * @property {string} id
+ * @property {string} county_parish_holding_id
+ * @property {string} county_parish_holding_number
+ * @property {string} user_id
+ * @property {string} application_id
+ * @property {string} role_id
+ * @property {string} role_name
+ * @property {string} email
+ * @property {string} display_name
+ */
+
+/**
+ * @typedef {object} UserProfile
+ * @property {UserDetails} user_details
+ * @property {CphAssignment[]} direct_assignments
+ * @property {CphDelegation[]} inbound_delegations
+ * @property {CphDelegation[]} outbound_delegations
+ */
+
+/**
+ * Fetches the full profile for a given user identifier.
+ *
+ * @param {string} sub
+ * @returns {Promise<UserProfile>}
+ */
+export async function getUserProfile(sub) {
+  const response = await helperClient.get(`/users/${sub}/profile`)
+  return response.payload
+}
+
+/**
  * Returns all CPH delegations granted to a user by a specific delegating user (CPH owner).
  *
  * @param {string} userId - the delegated user's ID

@@ -63,6 +63,14 @@ export class UserService {
 
   /**
    * @param {string} userId
+   * @returns {Promise<import('./service.js').UserProfile>}
+   */
+  async getUserProfile(userId) {
+    return this._impl.getUserProfile(userId)
+  }
+
+  /**
+   * @param {string} userId
    * @param {{ page?: number, pageSize?: number }} [options]
    * @returns {Promise<import('./service.js').DelegatedUsersPage>}
    */

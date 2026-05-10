@@ -13,6 +13,7 @@ const mocks = {
     service,
     'getUserDelegatedCphsByDelegatingUser'
   ),
+  serviceGetUserProfile: vi.spyOn(service, 'getUserProfile'),
   serviceFakeGetUserDetails: vi.spyOn(serviceFake, 'getUserDetails'),
   serviceFakeGetUserCphs: vi.spyOn(serviceFake, 'getUserCphs'),
   serviceFakeGetUserDelegates: vi.spyOn(serviceFake, 'getUserDelegates'),
@@ -20,6 +21,7 @@ const mocks = {
     serviceFake,
     'getUserDelegatedCphsByDelegatingUser'
   ),
+  serviceFakeGetUserProfile: vi.spyOn(serviceFake, 'getUserProfile'),
   redis: {
     get: vi.fn(),
     set: vi.fn()
@@ -340,6 +342,51 @@ describe('UserService', () => {
         mocks.serviceGetUserDelegatedCphsByDelegatingUser
       ).not.toHaveBeenCalled()
       expect(result).toEqual(page)
+    })
+  })
+
+  describe('getUserProfile()', () => {
+    const profile = {
+      user_details: {
+        id: 'user-1',
+        email: 'user@example.gov.uk',
+        first_name: 'Test',
+        last_name: 'User',
+        display_name: 'Test User'
+      },
+      direct_assignments: [{ county_parish_holding_number: '12/345/6789' }],
+      inbound_delegations: [],
+      outbound_delegations: []
+    }
+
+    test('it delegates to the real service when useFakeClient is false', async () => {
+      // Arrange
+      mocks.configGet.mockReturnValue({ useFakeClient: false })
+      mocks.serviceGetUserProfile.mockResolvedValue(profile)
+      const userService = new UserService(mocks.redis, config)
+
+      // Act
+      const result = await userService.getUserProfile('user-1')
+
+      // Assert
+      expect(mocks.serviceGetUserProfile).toHaveBeenCalledWith('user-1')
+      expect(mocks.serviceFakeGetUserProfile).not.toHaveBeenCalled()
+      expect(result).toEqual(profile)
+    })
+
+    test('it delegates to the fake service when useFakeClient is true', async () => {
+      // Arrange
+      mocks.configGet.mockReturnValue({ useFakeClient: true })
+      mocks.serviceFakeGetUserProfile.mockResolvedValue(profile)
+      const userService = new UserService(mocks.redis, config)
+
+      // Act
+      const result = await userService.getUserProfile('user-1')
+
+      // Assert
+      expect(mocks.serviceFakeGetUserProfile).toHaveBeenCalledWith('user-1')
+      expect(mocks.serviceGetUserProfile).not.toHaveBeenCalled()
+      expect(result).toEqual(profile)
     })
   })
 
