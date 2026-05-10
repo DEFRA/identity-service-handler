@@ -63,23 +63,16 @@ describe('UserService', () => {
       mocks.configGet.mockReturnValue({ useFakeClient: false })
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
-      mocks.serviceGetUserDetails.mockResolvedValue({
-        email: 'user@example.com',
-        display_name: 'Test User',
-        first_name: 'Test',
-        last_name: 'User'
-      })
-      mocks.serviceGetUserCphs.mockResolvedValue({
-        assignments: [
-          {
-            county_parish_holding_number: '123',
-            association_id: 'a1',
-            county_parish_holding_id: 'c1',
-            application_id: 'ap1',
-            role_id: 'r1'
-          }
-        ],
-        delegations: []
+      mocks.serviceGetUserProfile.mockResolvedValue({
+        user_details: {
+          email: 'user@example.com',
+          display_name: 'Test User',
+          first_name: 'Test',
+          last_name: 'User'
+        },
+        direct_assignments: [{ county_parish_holding_number: '123' }],
+        inbound_delegations: [],
+        outbound_delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -87,9 +80,8 @@ describe('UserService', () => {
       const result = await userService.getUserContext(sub)
 
       // Assert
-      expect(mocks.serviceGetUserDetails).toHaveBeenCalledWith('broker-sub')
-      expect(mocks.serviceGetUserCphs).toHaveBeenCalledWith('broker-sub')
-      expect(mocks.serviceFakeGetUserDetails).not.toHaveBeenCalled()
+      expect(mocks.serviceGetUserProfile).toHaveBeenCalledWith('broker-sub')
+      expect(mocks.serviceFakeGetUserProfile).not.toHaveBeenCalled()
       expect(result).toEqual({
         sub: 'broker-sub',
         email: 'user@example.com',
@@ -106,15 +98,16 @@ describe('UserService', () => {
       mocks.configGet.mockReturnValue({ useFakeClient: true })
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
-      mocks.serviceFakeGetUserDetails.mockResolvedValue({
-        email: 'fake@example.com',
-        display_name: 'Fake User',
-        first_name: 'Fake',
-        last_name: 'User'
-      })
-      mocks.serviceFakeGetUserCphs.mockResolvedValue({
-        assignments: [],
-        delegations: []
+      mocks.serviceFakeGetUserProfile.mockResolvedValue({
+        user_details: {
+          email: 'fake@example.com',
+          display_name: 'Fake User',
+          first_name: 'Fake',
+          last_name: 'User'
+        },
+        direct_assignments: [],
+        inbound_delegations: [],
+        outbound_delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -122,9 +115,8 @@ describe('UserService', () => {
       const result = await userService.getUserContext(sub)
 
       // Assert
-      expect(mocks.serviceFakeGetUserDetails).toHaveBeenCalledWith('broker-sub')
-      expect(mocks.serviceFakeGetUserCphs).toHaveBeenCalledWith('broker-sub')
-      expect(mocks.serviceGetUserDetails).not.toHaveBeenCalled()
+      expect(mocks.serviceFakeGetUserProfile).toHaveBeenCalledWith('broker-sub')
+      expect(mocks.serviceGetUserProfile).not.toHaveBeenCalled()
       expect(result).toEqual({
         sub: 'broker-sub',
         email: 'fake@example.com',
@@ -143,30 +135,28 @@ describe('UserService', () => {
       mocks.configGet.mockReturnValue({ useFakeClient: false })
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
-      mocks.serviceGetUserDetails.mockResolvedValue({
-        email: 'user@example.com',
-        display_name: 'Test User',
-        first_name: 'Test',
-        last_name: 'User'
-      })
-      mocks.serviceGetUserCphs.mockResolvedValue({
-        assignments: [],
-        delegations: [
+      mocks.serviceGetUserProfile.mockResolvedValue({
+        user_details: {
+          email: 'user@example.com',
+          display_name: 'Test User',
+          first_name: 'Test',
+          last_name: 'User'
+        },
+        direct_assignments: [],
+        inbound_delegations: [
           {
             county_parish_holding_number: '111',
-            delegated_user_role_name: 'Agent',
             expires_at: new Date(future).toISOString()
           },
           {
             county_parish_holding_number: '222',
-            delegated_user_role_name: 'Agent',
             expires_at: new Date(past).toISOString()
           },
           {
-            county_parish_holding_number: '333',
-            delegated_user_role_name: 'Agent'
+            county_parish_holding_number: '333'
           }
-        ]
+        ],
+        outbound_delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 
@@ -185,23 +175,16 @@ describe('UserService', () => {
       mocks.configGet.mockReturnValue({ useFakeClient: false })
       mocks.redis.get.mockResolvedValue(undefined)
       mocks.redis.set.mockResolvedValue('OK')
-      mocks.serviceGetUserDetails.mockResolvedValue({
-        email: 'user@example.com',
-        display_name: 'Test User',
-        first_name: 'Test',
-        last_name: 'User'
-      })
-      mocks.serviceGetUserCphs.mockResolvedValue({
-        assignments: [
-          {
-            county_parish_holding_number: '123',
-            association_id: 'a1',
-            county_parish_holding_id: 'c1',
-            application_id: 'ap1',
-            role_id: 'r1'
-          }
-        ],
-        delegations: []
+      mocks.serviceGetUserProfile.mockResolvedValue({
+        user_details: {
+          email: 'user@example.com',
+          display_name: 'Test User',
+          first_name: 'Test',
+          last_name: 'User'
+        },
+        direct_assignments: [{ county_parish_holding_number: '123' }],
+        inbound_delegations: [],
+        outbound_delegations: []
       })
       const userService = new UserService(mocks.redis, config)
 

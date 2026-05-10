@@ -146,22 +146,23 @@ export class UserService {
    * @returns {Promise<UserContext>}
    */
   async #fetchContext(sub) {
-    const [userResult, cphResult] = await Promise.all([
-      this._impl.getUserDetails(sub),
-      this.getUserCphs(sub)
-    ])
+    const {
+      user_details: userDetails,
+      direct_assignments: directAssignments,
+      inbound_delegations: inboundDelegations
+    } = await this._impl.getUserProfile(sub)
 
     const context = {
       sub,
-      email: userResult.email,
-      given_name: userResult.first_name,
-      family_name: userResult.last_name,
-      display_name: userResult.display_name,
-      primary_cph: cphResult.assignments.map((a) => ({
+      email: userDetails.email,
+      given_name: userDetails.first_name,
+      family_name: userDetails.last_name,
+      display_name: userDetails.display_name,
+      primary_cph: directAssignments.map((a) => ({
         cph: a.county_parish_holding_number,
         expires: null
       })),
-      delegated_cph: cphResult.delegations.map((d) => ({
+      delegated_cph: inboundDelegations.map((d) => ({
         cph: d.county_parish_holding_number,
         expires: d.expires_at || null
       }))
