@@ -53,10 +53,16 @@ describe('createSubmitController()', () => {
   test('it stores email and redirects to cphs when user has multiple CPHs', async () => {
     // Arrange
     const userService = {
-      getUserCphs: vi.fn().mockResolvedValue({
-        assignments: [
-          { county_parish_holding_id: 'cph-1' },
-          { county_parish_holding_id: 'cph-2' }
+      getUserProfile: vi.fn().mockResolvedValue({
+        direct_assignments: [
+          {
+            county_parish_holding_id: 'cph-1',
+            county_parish_holding_number: '12/345/0001'
+          },
+          {
+            county_parish_holding_id: 'cph-2',
+            county_parish_holding_number: '12/345/0002'
+          }
         ]
       })
     }
@@ -82,8 +88,13 @@ describe('createSubmitController()', () => {
   test('it auto-sets CPH and redirects to confirm when user has a single CPH', async () => {
     // Arrange
     const userService = {
-      getUserCphs: vi.fn().mockResolvedValue({
-        assignments: [{ county_parish_holding_id: 'cph-1' }]
+      getUserProfile: vi.fn().mockResolvedValue({
+        direct_assignments: [
+          {
+            county_parish_holding_id: 'cph-1',
+            county_parish_holding_number: '12/345/0001'
+          }
+        ]
       })
     }
     vi.spyOn(DelegationBuilder.prototype, 'setEmail').mockReturnValue(undefined)
@@ -170,6 +181,24 @@ describe('createSubmitController()', () => {
       expect.objectContaining({
         errors: { email: "Enter the delegate's email address" }
       })
+    )
+  })
+
+  test('it falls back to empty errors when validation error has no details', async () => {
+    // Arrange
+    const request = { payload: { email: '' } }
+    mocks.takeover.mockReturnValue('takeover-response')
+    mocks.code.mockReturnValue({ takeover: mocks.takeover })
+    mocks.view.mockReturnValue({ code: mocks.code })
+    const h = { view: mocks.view }
+
+    // Act
+    await createSubmitController({}).options.validate.failAction(request, h, {})
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/create',
+      expect.objectContaining({ errors: {} })
     )
   })
 

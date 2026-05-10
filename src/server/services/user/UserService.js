@@ -70,75 +70,15 @@ export class UserService {
   }
 
   /**
-   * @param {string} userId
-   * @param {{ page?: number, pageSize?: number }} [options]
-   * @returns {Promise<import('./service.js').DelegatedUsersPage>}
-   */
-  async getUserDelegates(userId, options = {}) {
-    return this._impl.getUserDelegates(userId, options)
-  }
-
-  /**
-   * Returns CPH delegations granted to a given user (the delegate) by a specific
-   * delegating user (the CPH owner). Powers the manage page.
-   *
-   * @param {string} userId - the delegated user's ID
-   * @param {string} delegatingUserId - the currently signed-in CPH owner
-   * @param {{ page?: number, pageSize?: number }} [options]
-   * @returns {Promise<import('./service.js').DelegatedUsersPage>}
-   */
-  async getUserDelegatedCphsByDelegatingUser(
-    userId,
-    delegatingUserId,
-    options = {}
-  ) {
-    return this._impl.getUserDelegatedCphsByDelegatingUser(
-      userId,
-      delegatingUserId,
-      options
-    )
-  }
-
-  async getDelegatedUser(delegatingUserId, delegatedUserId) {
-    const [delegatedUserDetails, delegatingUserCphs, delegatedUserCphs] =
-      await Promise.all([
-        this._impl.getUserDetails(delegatedUserId),
-        this._impl.getUserCphs(delegatingUserId),
-        this._impl.getUserCphs(delegatedUserId)
-      ])
-    const delegatedCphs = new Map(
-      delegatedUserCphs.delegations.reduce((acc, cph) => {
-        if (cph.delegating_user_id === delegatingUserId && !cph.revoked_at) {
-          acc.push([cph.county_parish_holding_id, cph])
-        }
-        return acc
-      }, [])
-    )
-
-    if (!delegatedCphs.size) {
-      return null
-    }
-
-    return {
-      id: delegatedUserId,
-      email: delegatedUserDetails.email,
-      cphs: delegatingUserCphs.assignments.map((cph) => ({
-        county_parish_holding_id: cph.county_parish_holding_id,
-        county_parish_holding_number: cph.county_parish_holding_number,
-        delegation_id:
-          delegatedCphs.get(cph.county_parish_holding_id)?.id || null
-      }))
-    }
-  }
-
-  /**
    * Fetches the users CPH assignments for a given user identifier.
    *
    * @param {string} userId
    * @returns {Promise<import('./service.js').UserCphAssignments>}
    */
   async getUserCphs(userId) {
-    return this._impl.getUserCphs(userId)
+    const { direct_assignments: directAssignments } =
+      await this._impl.getUserProfile(userId)
+    return { assignments: directAssignments }
   }
 
   /**

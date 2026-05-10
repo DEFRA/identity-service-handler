@@ -1,5 +1,5 @@
 /**
- * Returns the list of CPHs the user owns, eligible for delegation.
+ * Returns the list of CPHs the user owns, eligible for delegation.js.
  * @param {import('../../services/user/UserService.js').UserContext} userContext
  * @returns {string[]}
  */

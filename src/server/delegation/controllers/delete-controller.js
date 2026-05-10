@@ -1,13 +1,17 @@
 import * as delegationService from '../../services/delegation.js'
+import { getDelegate } from '../../common/helpers/delegation.js'
+
+const DELEGATION_ROUTE = '/delegation'
 
 export const deleteController = (userService) => ({
   handler: async (request, h) => {
-    const delegatingUserId = request.auth?.credentials?.sub
+    const sub = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const delegatedUser = await userService.getDelegatedUser(
-      delegatingUserId,
-      delegatedUserId
-    )
+    const profile = await userService.getUserProfile(sub)
+    const delegatedUser = getDelegate(profile, delegatedUserId)
+    if (!delegatedUser) {
+      return h.redirect(DELEGATION_ROUTE)
+    }
 
     return h.view('delegation/delete', {
       pageTitle: 'Remove delegate',
@@ -20,22 +24,21 @@ export const deleteController = (userService) => ({
 
 export const deleteSubmitController = (userService) => ({
   handler: async (request, h) => {
-    const delegatingUserId = request.auth?.credentials?.sub
+    const sub = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const delegatedUser = await userService.getDelegatedUser(
-      delegatingUserId,
-      delegatedUserId
+    const profile = await userService.getUserProfile(sub)
+    const delegatedUser = getDelegate(profile, delegatedUserId)
+    if (!delegatedUser) {
+      return h.redirect(DELEGATION_ROUTE)
+    }
+
+    // TODO: handle partial failures
+    await Promise.allSettled(
+      delegatedUser.cphs.map((cph) =>
+        delegationService.revokeDelegation(cph.delegation_id)
+      )
     )
 
-    await Promise.all(
-      delegatedUser.cphs.reduce((acc, cph) => {
-        if (cph.delegation_id) {
-          acc.push(delegationService.revokeDelegation(cph.delegation_id))
-        }
-        return acc
-      }, [])
-    )
-
-    return h.redirect('/delegation')
+    return h.redirect(DELEGATION_ROUTE)
   }
 })

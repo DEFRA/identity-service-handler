@@ -1,4 +1,6 @@
 import { statusCodes } from '../../common/constants/status-codes.js'
+import { paginateList } from '../../common/helpers/pagination.js'
+import { getDelegates } from '../../common/helpers/delegation.js'
 
 const parsePage = (queryPage) => {
   if (queryPage === undefined) {
@@ -9,30 +11,34 @@ const parsePage = (queryPage) => {
   return Number.isNaN(page) || page < 1 ? null : page
 }
 
+const PAGE_SIZE = 5
+
 export const listController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const requestedPage = parsePage(request.query?.page)
+    const profile = await userService.getUserProfile(sub)
+    const sortedDelegates = getDelegates(profile).sort((a, b) =>
+      a.email.localeCompare(b.email)
+    )
 
     if (requestedPage === null) {
       return h.redirect(request.path)
     }
-    const [
-      { assignments },
-      {
-        items: delegates,
-        total_pages: totalPages,
-        total_count: totalDelegatesCount,
-        page_number: page
-      }
-    ] = await Promise.all([
-      userService.getUserCphs(sub),
-      userService.getUserDelegates(sub, { page: requestedPage ?? 1 })
-    ])
 
-    if (!assignments.length) {
+    if (!profile.direct_assignments.length) {
       return h.response().code(statusCodes.notFound).takeover()
     }
+
+    const {
+      items: delegates,
+      total_pages: totalPages,
+      total_count: totalDelegatesCount,
+      page_number: page
+    } = paginateList(sortedDelegates, {
+      page: requestedPage,
+      pageSize: PAGE_SIZE
+    })
 
     if (requestedPage !== undefined && requestedPage > totalPages) {
       return h.redirect(request.path)
@@ -46,7 +52,7 @@ export const listController = (userService) => ({
       delegates,
       showingDelegatesCount: delegates.length,
       totalDelegatesCount,
-      singleCph: assignments.length === 1,
+      singleCph: profile.direct_assignments.length === 1,
       pagination
     })
   }

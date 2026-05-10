@@ -4,9 +4,11 @@ import {
   manageUpdateController
 } from './manage-controller.js'
 import * as delegationService from '../../services/delegation.js'
+import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
-  getDelegatedUser: vi.fn(),
+  getUserProfile: vi.fn(),
+  getDelegate: vi.spyOn(delegation, 'getDelegate'),
   createInvite: vi.spyOn(delegationService, 'createInvite'),
   revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
   view: vi.fn(),
@@ -16,7 +18,21 @@ const mocks = {
 }
 
 const userService = {
-  getDelegatedUser: mocks.getDelegatedUser
+  getUserProfile: mocks.getUserProfile
+}
+
+const profile = {
+  direct_assignments: [
+    {
+      county_parish_holding_id: 'cph-id-1',
+      county_parish_holding_number: '12/345/6789'
+    },
+    {
+      county_parish_holding_id: 'cph-id-2',
+      county_parish_holding_number: '35/345/0005'
+    }
+  ],
+  outbound_delegations: []
 }
 
 const delegatedUser = {
@@ -27,11 +43,6 @@ const delegatedUser = {
       county_parish_holding_id: 'cph-id-1',
       county_parish_holding_number: '12/345/6789',
       delegation_id: 'del-1'
-    },
-    {
-      county_parish_holding_id: 'cph-id-2',
-      county_parish_holding_number: '35/345/0005',
-      delegation_id: null
     }
   ]
 }
@@ -43,7 +54,8 @@ describe('manageController()', () => {
 
   test('it renders the manage page with checkboxes pre-selected from active delegations', async () => {
     // Arrange
-    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -55,8 +67,9 @@ describe('manageController()', () => {
     const result = await manageController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getDelegatedUser).toHaveBeenCalledWith(
-      'user-123',
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(mocks.getDelegate).toHaveBeenCalledWith(
+      profile,
       'delegated-user-456'
     )
     expect(mocks.view).toHaveBeenCalledWith('delegation/manage', {
@@ -82,7 +95,8 @@ describe('manageController()', () => {
 
   test('it redirects to /delegation when the delegated user is not found', async () => {
     // Arrange
-    mocks.getDelegatedUser.mockResolvedValue(null)
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -106,7 +120,8 @@ describe('manageUpdateController()', () => {
 
   test('it creates invites for newly checked CPHs and revokes unchecked ones, then redirects', async () => {
     // Arrange
-    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.createInvite.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -124,7 +139,6 @@ describe('manageUpdateController()', () => {
     expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-2',
       delegatingUserId: 'user-123',
-      delegatedUserId: 'delegated-user-456',
       delegatedUserEmail: 'joe@example.gov.uk'
     })
     expect(mocks.revokeDelegation).not.toHaveBeenCalled()
@@ -134,7 +148,8 @@ describe('manageUpdateController()', () => {
 
   test('it revokes delegations for unchecked CPHs', async () => {
     // Arrange
-    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.revokeDelegation.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -153,9 +168,53 @@ describe('manageUpdateController()', () => {
     expect(mocks.createInvite).not.toHaveBeenCalled()
   })
 
+  test('it redirects from failAction when the delegated user is not found', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(undefined)
+    mocks.takeover.mockReturnValue('takeover-response')
+    const redirect = vi.fn().mockReturnValue({ takeover: mocks.takeover })
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'unknown-id' },
+      payload: {}
+    }
+    const h = { redirect }
+
+    // Act
+    const result = await manageUpdateController(
+      userService
+    ).options.validate.failAction(request, h, { details: [] })
+
+    // Assert
+    expect(redirect).toHaveBeenCalledWith('/delegation')
+    expect(result).toBe('takeover-response')
+  })
+
+  test('it redirects from POST handler when the delegated user is not found', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(undefined)
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'unknown-id' },
+      payload: {}
+    }
+    const h = { redirect: mocks.redirect }
+
+    // Act
+    const result = await manageUpdateController(userService).handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(result).toBe('redirect-response')
+  })
+
   test('it re-renders the manage page from failAction on validation error', async () => {
     // Arrange
-    mocks.getDelegatedUser.mockResolvedValue(delegatedUser)
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -172,10 +231,7 @@ describe('manageUpdateController()', () => {
     ).options.validate.failAction(request, h, { details: [] })
 
     // Assert
-    expect(mocks.getDelegatedUser).toHaveBeenCalledWith(
-      'user-123',
-      'delegated-user-456'
-    )
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/manage',
       expect.objectContaining({

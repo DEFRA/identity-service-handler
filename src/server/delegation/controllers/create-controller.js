@@ -2,6 +2,7 @@ import Joi from 'joi'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
+import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
 export const createController = () => ({
   handler: async (request, h) => {
@@ -48,13 +49,13 @@ export const createSubmitController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
+    const profile = await userService.getUserProfile(sub)
+    const delegatableCphs = getDelegatableCphs(profile)
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())
 
-    const { assignments } = await userService.getUserCphs(sub)
-
-    if (assignments.length === 1) {
-      draftService.setCphIds([assignments[0].county_parish_holding_id])
+    if (delegatableCphs.size === 1) {
+      draftService.setCphIds(Array.from(delegatableCphs.keys()))
       return h.redirect('/delegation/create/confirm')
     }
 

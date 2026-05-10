@@ -11,8 +11,13 @@ const ASSOCIATION_2 = {
   county_parish_holding_number: '35/345/0005'
 }
 
+const makeProfile = (...assignments) => ({
+  direct_assignments: assignments,
+  outbound_delegations: []
+})
+
 const mocks = {
-  getUserCphs: vi.fn(),
+  getUserProfile: vi.fn(),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
@@ -28,12 +33,12 @@ describe('cphsController()', () => {
   test('it renders the cphs page with stored selections', async () => {
     // Arrange
     const userService = {
-      getUserCphs: mocks.getUserCphs
+      getUserProfile: mocks.getUserProfile
     }
     const request = {}
-    mocks.getUserCphs.mockResolvedValue({
-      assignments: [ASSOCIATION_1, ASSOCIATION_2]
-    })
+    mocks.getUserProfile.mockResolvedValue(
+      makeProfile(ASSOCIATION_1, ASSOCIATION_2)
+    )
     vi.spyOn(DelegationBuilder.prototype, 'getCphIds').mockReturnValue([
       'cph-id-1'
     ])
@@ -44,7 +49,7 @@ describe('cphsController()', () => {
     const result = await cphsController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserCphs).toHaveBeenCalledWith(undefined)
+    expect(mocks.getUserProfile).toHaveBeenCalledWith(undefined)
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
@@ -83,14 +88,12 @@ describe('cphsSubmitController()', () => {
   test('it stores cphs and redirects to confirm', async () => {
     // Arrange
     const userService = {
-      getUserCphs: mocks.getUserCphs
+      getUserProfile: mocks.getUserProfile
     }
     const setCphIds = vi
       .spyOn(DelegationBuilder.prototype, 'setCphIds')
       .mockReturnValue(undefined)
-    mocks.getUserCphs.mockResolvedValue({
-      assignments: [ASSOCIATION_1]
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       payload: {
@@ -104,7 +107,7 @@ describe('cphsSubmitController()', () => {
     const result = await cphsSubmitController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserCphs).toHaveBeenCalledWith('user-123')
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(setCphIds).toHaveBeenCalledWith(['cph-id-1'])
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
@@ -113,14 +116,12 @@ describe('cphsSubmitController()', () => {
   test('it re-renders cphs page from failAction when nothing is selected', async () => {
     // Arrange
     const userService = {
-      getUserCphs: mocks.getUserCphs
+      getUserProfile: mocks.getUserProfile
     }
     const request = {
       payload: {}
     }
-    mocks.getUserCphs.mockResolvedValue({
-      assignments: [ASSOCIATION_1]
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -159,16 +160,14 @@ describe('cphsSubmitController()', () => {
   test('it re-renders cphs page from failAction when cph format is invalid', async () => {
     // Arrange
     const userService = {
-      getUserCphs: mocks.getUserCphs
+      getUserProfile: mocks.getUserProfile
     }
     const request = {
       payload: {
         cphs: ['bad-value']
       }
     }
-    mocks.getUserCphs.mockResolvedValue({
-      assignments: [ASSOCIATION_1]
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -209,14 +208,12 @@ describe('cphsSubmitController()', () => {
   test('it re-renders cphs page when submitted cphs are outside the user context', async () => {
     // Arrange
     const userService = {
-      getUserCphs: mocks.getUserCphs
+      getUserProfile: mocks.getUserProfile
     }
     vi.spyOn(DelegationBuilder.prototype, 'setCphIds').mockReturnValue(
       undefined
     )
-    mocks.getUserCphs.mockResolvedValue({
-      assignments: [ASSOCIATION_1]
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.code.mockReturnValue('code-response')
     mocks.view.mockReturnValue({ code: mocks.code })
     const request = {

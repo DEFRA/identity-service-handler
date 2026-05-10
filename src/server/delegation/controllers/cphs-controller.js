@@ -5,6 +5,7 @@ import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.j
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
+import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
 const TEMPLATE = 'delegation/cphs'
 
@@ -12,14 +13,9 @@ export const cphsController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const { assignments } = await userService.getUserCphs(sub)
+    const profile = await userService.getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
-    const availableCphs = new Map(
-      assignments.map((cph) => [
-        cph.county_parish_holding_id,
-        cph.county_parish_holding_number
-      ])
-    )
+    const availableCphs = getDelegatableCphs(profile)
 
     return h.view(
       TEMPLATE,
@@ -41,13 +37,8 @@ export const cphsSubmitController = (userService) => ({
       }),
       failAction: async (request, h, err) => {
         const sub = request.auth?.credentials?.sub
-        const { assignments } = await userService.getUserCphs(sub)
-        const availableCphs = new Map(
-          assignments.map((cph) => [
-            cph.county_parish_holding_id,
-            cph.county_parish_holding_number
-          ])
-        )
+        const profile = await userService.getUserProfile(sub)
+        const availableCphs = getDelegatableCphs(profile)
 
         return h
           .view(
@@ -74,13 +65,8 @@ export const cphsSubmitController = (userService) => ({
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
     const selectedCphIds = normaliseCheckboxPayload(request.payload.cphs)
-    const { assignments } = await userService.getUserCphs(sub)
-    const availableCphs = new Map(
-      assignments.map((cph) => [
-        cph.county_parish_holding_id,
-        cph.county_parish_holding_number
-      ])
-    )
+    const profile = await userService.getUserProfile(sub)
+    const availableCphs = getDelegatableCphs(profile)
 
     if (
       !selectedCphIds.size ||
