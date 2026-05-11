@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import userService from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
@@ -9,7 +10,7 @@ import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
 const TEMPLATE = 'delegation/cphs'
 
-export const cphsController = (userService) => ({
+export const cphsController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
@@ -27,9 +28,9 @@ export const cphsController = (userService) => ({
       })
     )
   }
-})
+}
 
-export const cphsSubmitController = (userService) => ({
+export const cphsSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
@@ -92,7 +93,7 @@ export const cphsSubmitController = (userService) => ({
 
     return h.redirect('/delegation/create/confirm')
   }
-})
+}
 
 function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}

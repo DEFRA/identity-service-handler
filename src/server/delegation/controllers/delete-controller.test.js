@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+vi.mock('../../services/user/index.js', () => ({
+  default: { getUserProfile: vi.fn() }
+}))
+
+import userService from '../../services/user/index.js'
 import {
   deleteController,
   deleteSubmitController
@@ -7,15 +13,10 @@ import * as delegationService from '../../services/delegation.js'
 import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
-  getUserProfile: vi.fn(),
   getDelegate: vi.spyOn(delegation, 'getDelegate'),
   revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
   view: vi.fn(),
   redirect: vi.fn()
-}
-
-const userService = {
-  getUserProfile: mocks.getUserProfile
 }
 
 const profile = {
@@ -47,7 +48,7 @@ describe('deleteController()', () => {
 
   test('it renders the delete confirmation view with delegated user details', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.view.mockReturnValue('view-response')
     const request = {
@@ -57,10 +58,10 @@ describe('deleteController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await deleteController(userService).handler(request, h)
+    const result = await deleteController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.getDelegate).toHaveBeenCalledWith(
       profile,
       'delegated-user-456'
@@ -76,7 +77,7 @@ describe('deleteController()', () => {
 
   test('it redirects to /delegation when the delegated user is not found', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -86,7 +87,7 @@ describe('deleteController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await deleteController(userService).handler(request, h)
+    const result = await deleteController.handler(request, h)
 
     // Assert
     expect(mocks.view).not.toHaveBeenCalled()
@@ -102,7 +103,7 @@ describe('deleteSubmitController()', () => {
 
   test('it revokes all delegations for the user and redirects to list', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.revokeDelegation.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
@@ -113,10 +114,10 @@ describe('deleteSubmitController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await deleteSubmitController(userService).handler(request, h)
+    const result = await deleteSubmitController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-2')
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
@@ -125,7 +126,7 @@ describe('deleteSubmitController()', () => {
 
   test('it redirects to /delegation when the delegated user is not found', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -135,7 +136,7 @@ describe('deleteSubmitController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await deleteSubmitController(userService).handler(request, h)
+    const result = await deleteSubmitController.handler(request, h)
 
     // Assert
     expect(mocks.revokeDelegation).not.toHaveBeenCalled()

@@ -1,3 +1,4 @@
+import userService from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { paginateList } from '../../common/helpers/pagination.js'
 import { getDelegates } from '../../common/helpers/delegation.js'
@@ -13,7 +14,7 @@ const parsePage = (queryPage) => {
 
 const PAGE_SIZE = 5
 
-export const listController = (userService) => ({
+export const listController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const requestedPage = parsePage(request.query?.page)
@@ -56,7 +57,7 @@ export const listController = (userService) => ({
       pagination
     })
   }
-})
+}
 
 function buildPagination(page, totalPages, basePath) {
   if (totalPages <= 1) {

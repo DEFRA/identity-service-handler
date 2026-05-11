@@ -31,10 +31,9 @@ describe('buildBrokerProvider()', () => {
       if (key === 'session.cookie.password') return 'pw'
       if (key === 'session.cookie.secure') return false
     })
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    buildBrokerProvider(options)
+    buildBrokerProvider({ redis: {} })
 
     // Assert
     expect(mocks.on).toHaveBeenCalledWith(
@@ -50,10 +49,9 @@ describe('buildBrokerProvider()', () => {
       if (key === 'session.cookie.password') return 'pw'
       if (key === 'session.cookie.secure') return false
     })
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    buildBrokerProvider(options)
+    buildBrokerProvider({ redis: {} })
 
     // Assert
     expect(mocks.on).toHaveBeenCalledWith(
@@ -69,10 +67,9 @@ describe('buildBrokerProvider()', () => {
       if (key === 'session.cookie.password') return 'pw'
       if (key === 'session.cookie.secure') return false
     })
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    buildBrokerProvider(options)
+    buildBrokerProvider({ redis: {} })
 
     // Assert
     expect(mocks.on).toHaveBeenCalledWith(
@@ -88,17 +85,16 @@ describe('buildBrokerProvider()', () => {
       if (key === 'session.cookie.password') return 'pw'
       if (key === 'session.cookie.secure') return false
     })
-    const clientsService = { getClient: vi.fn() }
-    const options = { redis: {}, clientsService, userService: {} }
+    const redis = {}
 
     // Act
-    const result = buildBrokerProvider(options)
+    const result = buildBrokerProvider({ redis })
     result.Client.find('client-123')
 
     // Assert
     expect(vi.mocked(findClient)).toHaveBeenCalledWith(
       'client-123',
-      clientsService,
+      redis,
       result.Client
     )
   })
@@ -110,10 +106,9 @@ describe('buildBrokerProvider()', () => {
       if (key === 'session.cookie.password') return 'pw'
       if (key === 'session.cookie.secure') return false
     })
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    const result = buildBrokerProvider(options)
+    const result = buildBrokerProvider({ redis: {} })
 
     // Assert
     expect(result).toBeInstanceOf(Provider)
@@ -130,10 +125,9 @@ describe('buildBrokerProvider()', () => {
       keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
     }
     mocks.loadPrivateKeyJwk.mockReturnValue(jwks)
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    buildBrokerProvider(options)
+    buildBrokerProvider({ redis: {} })
 
     // Assert
     expect(mocks.buildBrokerConfiguration).toHaveBeenCalledWith(

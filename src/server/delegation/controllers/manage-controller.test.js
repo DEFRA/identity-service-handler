@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+vi.mock('../../services/user/index.js', () => ({
+  default: { getUserProfile: vi.fn() }
+}))
+
+import userService from '../../services/user/index.js'
 import {
   manageController,
   manageUpdateController
@@ -7,7 +13,6 @@ import * as delegationService from '../../services/delegation.js'
 import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
-  getUserProfile: vi.fn(),
   getDelegate: vi.spyOn(delegation, 'getDelegate'),
   createInvite: vi.spyOn(delegationService, 'createInvite'),
   revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
@@ -15,10 +20,6 @@ const mocks = {
   redirect: vi.fn(),
   code: vi.fn(),
   takeover: vi.fn()
-}
-
-const userService = {
-  getUserProfile: mocks.getUserProfile
 }
 
 const profile = {
@@ -54,7 +55,7 @@ describe('manageController()', () => {
 
   test('it renders the manage page with checkboxes pre-selected from active delegations', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.view.mockReturnValue('view-response')
     const request = {
@@ -64,10 +65,10 @@ describe('manageController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await manageController(userService).handler(request, h)
+    const result = await manageController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.getDelegate).toHaveBeenCalledWith(
       profile,
       'delegated-user-456'
@@ -95,7 +96,7 @@ describe('manageController()', () => {
 
   test('it redirects to /delegation when the delegated user is not found', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -105,7 +106,7 @@ describe('manageController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await manageController(userService).handler(request, h)
+    const result = await manageController.handler(request, h)
 
     // Assert
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
@@ -120,7 +121,7 @@ describe('manageUpdateController()', () => {
 
   test('it creates invites for newly checked CPHs and revokes unchecked ones, then redirects', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.createInvite.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
@@ -133,7 +134,7 @@ describe('manageUpdateController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await manageUpdateController(userService).handler(request, h)
+    const result = await manageUpdateController.handler(request, h)
 
     // Assert
     expect(mocks.createInvite).toHaveBeenCalledWith({
@@ -148,7 +149,7 @@ describe('manageUpdateController()', () => {
 
   test('it revokes delegations for unchecked CPHs', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.revokeDelegation.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
@@ -161,7 +162,7 @@ describe('manageUpdateController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    await manageUpdateController(userService).handler(request, h)
+    await manageUpdateController.handler(request, h)
 
     // Assert
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
@@ -170,7 +171,7 @@ describe('manageUpdateController()', () => {
 
   test('it redirects from failAction when the delegated user is not found', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(undefined)
     mocks.takeover.mockReturnValue('takeover-response')
     const redirect = vi.fn().mockReturnValue({ takeover: mocks.takeover })
@@ -182,9 +183,11 @@ describe('manageUpdateController()', () => {
     const h = { redirect }
 
     // Act
-    const result = await manageUpdateController(
-      userService
-    ).options.validate.failAction(request, h, { details: [] })
+    const result = await manageUpdateController.options.validate.failAction(
+      request,
+      h,
+      { details: [] }
+    )
 
     // Assert
     expect(redirect).toHaveBeenCalledWith('/delegation')
@@ -193,7 +196,7 @@ describe('manageUpdateController()', () => {
 
   test('it redirects from POST handler when the delegated user is not found', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -204,7 +207,7 @@ describe('manageUpdateController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await manageUpdateController(userService).handler(request, h)
+    const result = await manageUpdateController.handler(request, h)
 
     // Assert
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
@@ -213,7 +216,7 @@ describe('manageUpdateController()', () => {
 
   test('it re-renders the manage page from failAction on validation error', async () => {
     // Arrange
-    mocks.getUserProfile.mockResolvedValue(profile)
+    userService.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
@@ -226,12 +229,14 @@ describe('manageUpdateController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await manageUpdateController(
-      userService
-    ).options.validate.failAction(request, h, { details: [] })
+    const result = await manageUpdateController.options.validate.failAction(
+      request,
+      h,
+      { details: [] }
+    )
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/manage',
       expect.objectContaining({

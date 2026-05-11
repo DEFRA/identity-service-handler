@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
+vi.mock('../../services/user/index.js', () => ({
+  default: { getUserProfile: vi.fn() }
+}))
+
+import userService from '../../services/user/index.js'
 import { listController } from './list-controller.js'
 import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
-  getUserProfile: vi.fn(),
   getDelegates: vi.spyOn(delegation, 'getDelegates'),
   view: vi.fn(),
   redirect: vi.fn(),
@@ -22,11 +26,7 @@ const makeProfile = (assignmentCount = 2) => ({
 describe('listController()', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getUserProfile.mockResolvedValue(makeProfile(2))
-  })
-
-  const makeUserService = () => ({
-    getUserProfile: mocks.getUserProfile
+    userService.getUserProfile.mockResolvedValue(makeProfile(2))
   })
 
   const makeH = () => {
@@ -44,7 +44,6 @@ describe('listController()', () => {
 
   test('it renders first page when no page query is provided', async () => {
     // Arrange
-    const userService = makeUserService()
     const delegates = [{ id: 'user-1', email: 'joe@example.gov.uk' }]
     mocks.getDelegates.mockReturnValue(delegates)
     mocks.view.mockReturnValue('view-response')
@@ -56,10 +55,10 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    const result = await listController(userService).handler(request, h)
+    const result = await listController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
@@ -77,7 +76,6 @@ describe('listController()', () => {
 
   test('it renders the requested page and pagination links', async () => {
     // Arrange
-    const userService = makeUserService()
     const allDelegates = Array.from({ length: 11 }, (_, i) => ({
       id: `user-${i + 1}`,
       email: `user${String(i + 1).padStart(2, '0')}@example.gov.uk`
@@ -92,7 +90,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    await listController(userService).handler(request, h)
+    await listController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -115,7 +113,6 @@ describe('listController()', () => {
 
   test('it renders first page with no previous link when there are multiple pages', async () => {
     // Arrange
-    const userService = makeUserService()
     mocks.getDelegates.mockReturnValue(
       Array.from({ length: 6 }, (_, i) => ({
         id: `user-${i + 1}`,
@@ -131,7 +128,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    await listController(userService).handler(request, h)
+    await listController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -147,7 +144,6 @@ describe('listController()', () => {
 
   test('it renders last page with no next link when there are multiple pages', async () => {
     // Arrange
-    const userService = makeUserService()
     mocks.getDelegates.mockReturnValue(
       Array.from({ length: 6 }, (_, i) => ({
         id: `user-${i + 1}`,
@@ -163,7 +159,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    await listController(userService).handler(request, h)
+    await listController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -179,7 +175,6 @@ describe('listController()', () => {
 
   test('it redirects to the current path when page query is invalid', async () => {
     // Arrange
-    const userService = makeUserService()
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: 'abc' },
@@ -189,7 +184,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    const result = await listController(userService).handler(request, h)
+    const result = await listController.handler(request, h)
 
     // Assert
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
@@ -198,7 +193,6 @@ describe('listController()', () => {
 
   test('it redirects to the current path when requested page exceeds total pages', async () => {
     // Arrange
-    const userService = makeUserService()
     mocks.getDelegates.mockReturnValue(
       Array.from({ length: 15 }, (_, i) => ({
         id: `user-${i + 1}`,
@@ -214,7 +208,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    const result = await listController(userService).handler(request, h)
+    const result = await listController.handler(request, h)
 
     // Assert
     expect(mocks.getDelegates).toHaveBeenCalled()
@@ -224,8 +218,7 @@ describe('listController()', () => {
 
   test('it returns 404 when user has no CPH assignments', async () => {
     // Arrange
-    const userService = makeUserService()
-    mocks.getUserProfile.mockResolvedValue(makeProfile(0))
+    userService.getUserProfile.mockResolvedValue(makeProfile(0))
     mocks.getDelegates.mockReturnValue([])
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -235,7 +228,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    const result = await listController(userService).handler(request, h)
+    const result = await listController.handler(request, h)
 
     // Assert
     expect(mocks.response).toHaveBeenCalled()
@@ -245,8 +238,7 @@ describe('listController()', () => {
 
   test('it passes singleCph true when user has exactly one CPH', async () => {
     // Arrange
-    const userService = makeUserService()
-    mocks.getUserProfile.mockResolvedValue(makeProfile(1))
+    userService.getUserProfile.mockResolvedValue(makeProfile(1))
     mocks.getDelegates.mockReturnValue([
       { id: 'user-1', email: 'a@example.gov.uk' }
     ])
@@ -259,7 +251,7 @@ describe('listController()', () => {
     const h = makeH()
 
     // Act
-    await listController(userService).handler(request, h)
+    await listController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(

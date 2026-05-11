@@ -1,7 +1,8 @@
+import userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import * as delegationService from '../../services/delegation.js'
 
-export const confirmController = (userService) => ({
+export const confirmController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
@@ -21,9 +22,9 @@ export const confirmController = (userService) => ({
       cphs
     })
   }
-})
+}
 
-export const confirmSubmitController = () => ({
+export const confirmSubmitController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
@@ -48,4 +49,4 @@ export const confirmSubmitController = () => ({
       email
     })
   }
-})
+}

@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+vi.mock('../../services/user/index.js', () => ({
+  default: { getUserProfile: vi.fn() }
+}))
+
+import userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { cphsController, cphsSubmitController } from './cphs-controller.js'
 
@@ -17,7 +23,6 @@ const makeProfile = (...assignments) => ({
 })
 
 const mocks = {
-  getUserProfile: vi.fn(),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
@@ -32,11 +37,8 @@ describe('cphsController()', () => {
 
   test('it renders the cphs page with stored selections', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: mocks.getUserProfile
-    }
     const request = {}
-    mocks.getUserProfile.mockResolvedValue(
+    userService.getUserProfile.mockResolvedValue(
       makeProfile(ASSOCIATION_1, ASSOCIATION_2)
     )
     vi.spyOn(DelegationBuilder.prototype, 'getCphIds').mockReturnValue([
@@ -46,10 +48,10 @@ describe('cphsController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await cphsController(userService).handler(request, h)
+    const result = await cphsController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith(undefined)
+    expect(userService.getUserProfile).toHaveBeenCalledWith(undefined)
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
@@ -87,13 +89,10 @@ describe('cphsSubmitController()', () => {
 
   test('it stores cphs and redirects to confirm', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: mocks.getUserProfile
-    }
     const setCphIds = vi
       .spyOn(DelegationBuilder.prototype, 'setCphIds')
       .mockReturnValue(undefined)
-    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       payload: {
@@ -104,10 +103,10 @@ describe('cphsSubmitController()', () => {
     const h = { redirect: mocks.redirect }
 
     // Act
-    const result = await cphsSubmitController(userService).handler(request, h)
+    const result = await cphsSubmitController.handler(request, h)
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(setCphIds).toHaveBeenCalledWith(['cph-id-1'])
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
@@ -115,22 +114,21 @@ describe('cphsSubmitController()', () => {
 
   test('it re-renders cphs page from failAction when nothing is selected', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: mocks.getUserProfile
-    }
     const request = {
       payload: {}
     }
-    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
     const h = { view: mocks.view }
 
     // Act
-    const result = await cphsSubmitController(
-      userService
-    ).options.validate.failAction(request, h, { details: [] })
+    const result = await cphsSubmitController.options.validate.failAction(
+      request,
+      h,
+      { details: [] }
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -159,26 +157,25 @@ describe('cphsSubmitController()', () => {
 
   test('it re-renders cphs page from failAction when cph format is invalid', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: mocks.getUserProfile
-    }
     const request = {
       payload: {
         cphs: ['bad-value']
       }
     }
-    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
     const h = { view: mocks.view }
 
     // Act
-    const result = await cphsSubmitController(
-      userService
-    ).options.validate.failAction(request, h, {
-      details: [{ type: 'array.includes' }]
-    })
+    const result = await cphsSubmitController.options.validate.failAction(
+      request,
+      h,
+      {
+        details: [{ type: 'array.includes' }]
+      }
+    )
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
@@ -207,13 +204,10 @@ describe('cphsSubmitController()', () => {
 
   test('it re-renders cphs page when submitted cphs are outside the user context', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: mocks.getUserProfile
-    }
     vi.spyOn(DelegationBuilder.prototype, 'setCphIds').mockReturnValue(
       undefined
     )
-    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.code.mockReturnValue('code-response')
     mocks.view.mockReturnValue({ code: mocks.code })
     const request = {
@@ -225,7 +219,7 @@ describe('cphsSubmitController()', () => {
     const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
-    const result = await cphsSubmitController(userService).handler(request, h)
+    const result = await cphsSubmitController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(

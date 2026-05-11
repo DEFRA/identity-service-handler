@@ -26,10 +26,7 @@ import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { buildRedisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
-import { UserService } from './services/user/UserService.js'
 import { SubjectsService } from './services/subjects.js'
-import { ApplicationService } from './services/application/ApplicationService.js'
-import { ApplicationCache } from './services/application/ApplicationCache.js'
 import { UpstreamStateStore } from './upstream/state-store.js'
 import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 
@@ -100,18 +97,11 @@ export async function createServer() {
 }
 
 function bootstrapServices(redis) {
-  const applicationService = new ApplicationService(config)
-  const clientsService = new ApplicationCache(redis, applicationService, {
-    ttlSeconds: 300
-  })
   const subjectsService = new SubjectsService(redis)
-  const userService = new UserService(redis, config)
   const upstreamStateStore = new UpstreamStateStore(redis)
   return {
-    applicationService,
-    clientsService,
+    redis,
     subjectsService,
-    userService,
     upstreamStateStore
   }
 }

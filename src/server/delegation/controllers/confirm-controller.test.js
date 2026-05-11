@@ -1,4 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+vi.mock('../../services/user/index.js', () => ({
+  default: { getUserProfile: vi.fn() }
+}))
+
+import userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   confirmController,
@@ -20,20 +26,18 @@ describe('confirmController()', () => {
 
   test('it renders the confirm page with email and resolved cph numbers from draft', async () => {
     // Arrange
-    const userService = {
-      getUserProfile: vi.fn().mockResolvedValue({
-        direct_assignments: [
-          {
-            county_parish_holding_id: 'cph-id-1',
-            county_parish_holding_number: '12/345/6789'
-          },
-          {
-            county_parish_holding_id: 'cph-id-2',
-            county_parish_holding_number: '35/345/0005'
-          }
-        ]
-      })
-    }
+    userService.getUserProfile.mockResolvedValue({
+      direct_assignments: [
+        {
+          county_parish_holding_id: 'cph-id-1',
+          county_parish_holding_number: '12/345/6789'
+        },
+        {
+          county_parish_holding_id: 'cph-id-2',
+          county_parish_holding_number: '35/345/0005'
+        }
+      ]
+    })
     vi.spyOn(DelegationBuilder.prototype, 'getEmail').mockReturnValue(
       'joe@example.gov.uk'
     )
@@ -45,7 +49,7 @@ describe('confirmController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await confirmController(userService).handler(request, h)
+    const result = await confirmController.handler(request, h)
 
     // Assert
     expect(mocks.view).toHaveBeenCalledWith('delegation/confirm', {
@@ -81,7 +85,7 @@ describe('confirmSubmitController()', () => {
     const h = { view: mocks.view }
 
     // Act
-    const result = await confirmSubmitController().handler(request, h)
+    const result = await confirmSubmitController.handler(request, h)
 
     // Assert
     expect(getEmail).toHaveBeenCalledTimes(1)
