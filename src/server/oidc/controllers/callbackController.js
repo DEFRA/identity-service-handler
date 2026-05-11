@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
 import * as subjectsService from '../../services/subjects.js'
+import * as stateStore from '../../upstream/state-store.js'
 
-export function create({ config, b2cConfiguration, upstreamStateStore }) {
+export function create({ config, b2cConfiguration }) {
   return async function (request, h) {
     const { code, state } =
       (request.method === 'post' ? request.payload : request.query) ?? {}
@@ -16,7 +17,7 @@ export function create({ config, b2cConfiguration, upstreamStateStore }) {
       return h.response('Missing state').code(statusCodes.badRequest)
     }
 
-    const record = await upstreamStateStore.get(state)
+    const record = await stateStore.get(state)
     if (!record) {
       return h.response('Unknown/expired state').code(statusCodes.badRequest)
     }
@@ -57,13 +58,13 @@ export function create({ config, b2cConfiguration, upstreamStateStore }) {
 
     // Persist resolved login by interaction UID so /interaction/{uid} can finish
     // even if browser cookie persistence is unreliable in local cross-domain hops.
-    await upstreamStateStore.putByUid(
+    await stateStore.putByUid(
       uid,
       { brokerSub: subject.sub },
       seconds.twoMinutes
     )
 
-    await upstreamStateStore.del(state)
+    await stateStore.del(state)
 
     return h.redirect(nextUrl)
   }

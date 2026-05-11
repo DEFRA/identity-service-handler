@@ -9,17 +9,18 @@ vi.mock('jsonwebtoken')
 vi.mock('../../services/subjects.js', () => ({
   getOrCreateBrokerSub: vi.fn()
 }))
+vi.mock('../../upstream/state-store.js', () => ({
+  get: vi.fn(),
+  putByUid: vi.fn(),
+  del: vi.fn()
+}))
 
 import * as subjectsService from '../../services/subjects.js'
+import * as stateStore from '../../upstream/state-store.js'
 
 const mocks = {
   authorizationCodeGrant: vi.mocked(oidc.authorizationCodeGrant),
   decode: vi.mocked(jwt.decode),
-  upstreamStateStore: {
-    get: vi.fn(),
-    putByUid: vi.fn(),
-    del: vi.fn()
-  },
   response: vi.fn((value) => ({
     code: vi.fn(() => value)
   })),
@@ -44,8 +45,7 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
@@ -69,8 +69,7 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
@@ -96,8 +95,7 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
@@ -123,8 +121,7 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
@@ -148,19 +145,18 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    mocks.upstreamStateStore.get.mockResolvedValue(undefined)
+    stateStore.get.mockResolvedValue(undefined)
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
     const result = await handler(request, h)
 
     // Assert
-    expect(mocks.upstreamStateStore.get).toHaveBeenCalledWith('test-state')
+    expect(stateStore.get).toHaveBeenCalledWith('test-state')
     expect(mocks.response).toHaveBeenCalledWith('Unknown/expired state')
     expect(result).toBe('Unknown/expired state')
   })
@@ -184,7 +180,7 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    mocks.upstreamStateStore.get.mockResolvedValue({
+    stateStore.get.mockResolvedValue({
       uid: 'interaction-123',
       nonce: 'nonce-123',
       pkceCodeVerifier: 'verifier-123',
@@ -209,8 +205,7 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: { issuer: 'https://issuer.example' },
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
@@ -249,12 +244,12 @@ describe('create()', () => {
       'upstreamIdTokenHint',
       'id-token'
     )
-    expect(mocks.upstreamStateStore.putByUid).toHaveBeenCalledWith(
+    expect(stateStore.putByUid).toHaveBeenCalledWith(
       'interaction-123',
       { brokerSub: 'upstream-sub' },
       120
     )
-    expect(mocks.upstreamStateStore.del).toHaveBeenCalledWith('test-state')
+    expect(stateStore.del).toHaveBeenCalledWith('test-state')
     expect(mocks.redirect).toHaveBeenCalledWith('/interaction/interaction-123')
     expect(result).toBe('/interaction/interaction-123')
   })
@@ -282,7 +277,7 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    mocks.upstreamStateStore.get.mockResolvedValue({
+    stateStore.get.mockResolvedValue({
       uid: 'interaction-post',
       nonce: 'nonce-post',
       pkceCodeVerifier: 'verifier-post'
@@ -304,15 +299,14 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: { issuer: 'https://issuer.example' },
-      brokerProvider: {},
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: {}
     })
 
     // Act
     await handler(request, h)
 
     // Assert
-    expect(mocks.upstreamStateStore.get).toHaveBeenCalledWith('post-state')
+    expect(stateStore.get).toHaveBeenCalledWith('post-state')
     const callbackUrl = mocks.authorizationCodeGrant.mock.calls[0][1]
     expect(callbackUrl.searchParams.get('code')).toBe('post-auth-code')
     expect(callbackUrl.searchParams.get('state')).toBe('post-state')

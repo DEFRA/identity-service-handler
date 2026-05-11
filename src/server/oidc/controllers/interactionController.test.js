@@ -9,10 +9,16 @@ import {
 import { config } from '../../../config/config.js'
 import * as buildGrantModule from './helpers/build-grant-from-interaction.js'
 
-import { create } from './interactionController.js'
-
 vi.mock('openid-client')
 vi.mock('./helpers/build-grant-from-interaction.js')
+vi.mock('../../upstream/state-store.js', () => ({
+  getByUid: vi.fn(),
+  delByUid: vi.fn(),
+  put: vi.fn()
+}))
+
+import { create } from './interactionController.js'
+import * as stateStore from '../../upstream/state-store.js'
 
 const mocks = {
   randomPKCECodeVerifier: vi.mocked(randomPKCECodeVerifier),
@@ -26,11 +32,6 @@ const mocks = {
   brokerProvider: {
     interactionDetails: vi.fn(),
     interactionFinished: vi.fn()
-  },
-  upstreamStateStore: {
-    getByUid: vi.fn(),
-    delByUid: vi.fn(),
-    put: vi.fn()
   },
   grantSave: vi.fn(),
   h: {
@@ -57,26 +58,21 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    mocks.upstreamStateStore.getByUid.mockResolvedValue({
+    stateStore.getByUid.mockResolvedValue({
       brokerSub: 'broker-sub'
     })
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: mocks.brokerProvider
     })
 
     // Act
     const result = await handler(request, h)
 
     // Assert
-    expect(mocks.upstreamStateStore.getByUid).toHaveBeenCalledWith(
-      'interaction-123'
-    )
-    expect(mocks.upstreamStateStore.delByUid).toHaveBeenCalledWith(
-      'interaction-123'
-    )
+    expect(stateStore.getByUid).toHaveBeenCalledWith('interaction-123')
+    expect(stateStore.delByUid).toHaveBeenCalledWith('interaction-123')
     expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
       request.raw.req,
       request.raw.res,
@@ -98,14 +94,13 @@ describe('create()', () => {
     }
     const grant = { save: mocks.grantSave }
     mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    stateStore.getByUid.mockResolvedValue(undefined)
     mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue('grant-123')
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: mocks.brokerProvider
     })
 
     // Act
@@ -137,14 +132,13 @@ describe('create()', () => {
     }
     const grant = { save: mocks.grantSave }
     mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    stateStore.getByUid.mockResolvedValue(undefined)
     mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue(undefined)
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: mocks.brokerProvider
     })
 
     // Act
@@ -180,12 +174,11 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    stateStore.getByUid.mockResolvedValue(undefined)
     const handler = create({
       config,
       b2cConfiguration: {},
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: mocks.brokerProvider
     })
 
     // Act
@@ -217,7 +210,7 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    mocks.upstreamStateStore.getByUid.mockResolvedValue(undefined)
+    stateStore.getByUid.mockResolvedValue(undefined)
     mocks.randomPKCECodeVerifier.mockReturnValue('pkce-verifier')
     mocks.calculatePKCECodeChallenge.mockResolvedValue('pkce-challenge')
     mocks.randomState.mockReturnValue('state-123')
@@ -228,15 +221,14 @@ describe('create()', () => {
     const handler = create({
       config,
       b2cConfiguration: { issuer: 'https://issuer.example' },
-      brokerProvider: mocks.brokerProvider,
-      upstreamStateStore: mocks.upstreamStateStore
+      brokerProvider: mocks.brokerProvider
     })
 
     // Act
     const result = await handler(request, h)
 
     // Assert
-    expect(mocks.upstreamStateStore.put).toHaveBeenCalledWith(
+    expect(stateStore.put).toHaveBeenCalledWith(
       'state-123',
       {
         uid: 'interaction-123',

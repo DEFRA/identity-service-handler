@@ -26,7 +26,6 @@ import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
 import { redisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
-import { UpstreamStateStore } from './upstream/state-store.js'
 import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 
 export async function createServer() {
@@ -34,15 +33,13 @@ export async function createServer() {
 
   logger.info(`Starting server with configuration: ${config}`)
 
-  await redisClient.connect()
-
-  const services = bootstrapServices()
-  const brokerProvider = buildBrokerProvider()
-
-  const [server, b2cConfiguration] = await Promise.all([
-    bootstrapServer(),
-    getB2cConfiguration()
+  const [b2cConfiguration] = await Promise.all([
+    getB2cConfiguration(),
+    redisClient.connect()
   ])
+
+  const brokerProvider = buildBrokerProvider()
+  const server = bootstrapServer()
   await server.register([
     Cookie,
     Crumb,
@@ -62,21 +59,13 @@ export async function createServer() {
     },
     {
       plugin: router.plugin,
-      options: services
+      options: {}
     }
   ])
 
-  await registerOidcRoutes(server, {
-    config,
-    brokerProvider,
-    b2cConfiguration,
-    ...services
-  })
+  await registerOidcRoutes(server, { config, brokerProvider, b2cConfiguration })
 
-  registerLoginRoutes(server, {
-    upstreamStateStore: services.upstreamStateStore,
-    b2cConfiguration
-  })
+  registerLoginRoutes(server, { b2cConfiguration })
 
   server.ext('onRequest', async (req, h) => {
     // Let hapi handle anything that is not an oidc route
@@ -95,11 +84,6 @@ export async function createServer() {
   server.ext('onPreResponse', catchAll)
 
   return server
-}
-
-function bootstrapServices() {
-  const upstreamStateStore = new UpstreamStateStore(redisClient)
-  return { upstreamStateStore }
 }
 
 function bootstrapServer() {

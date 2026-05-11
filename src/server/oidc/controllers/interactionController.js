@@ -7,34 +7,25 @@ import {
 } from 'openid-client'
 import { buildGrantFromInteraction } from './helpers/build-grant-from-interaction.js'
 import { seconds } from '../../common/helpers/duration.js'
+import * as stateStore from '../../upstream/state-store.js'
 
-export function create({
-  config,
-  b2cConfiguration,
-  brokerProvider,
-  upstreamStateStore
-}) {
+export function create({ config, b2cConfiguration, brokerProvider }) {
   return (request, h) =>
-    handleInteraction(request, h, {
-      config,
-      b2cConfiguration,
-      brokerProvider,
-      upstreamStateStore
-    })
+    handleInteraction(request, h, { config, b2cConfiguration, brokerProvider })
 }
 
 async function handleInteraction(
   request,
   h,
-  { config, b2cConfiguration, brokerProvider, upstreamStateStore }
+  { config, b2cConfiguration, brokerProvider }
 ) {
   const { uid } = request.params
   const { req, res } = request.raw
   const b2cConfig = config.get('idService.b2c')
   const interaction = await brokerProvider.interactionDetails(req, res)
-  const pendingLogin = await upstreamStateStore.getByUid(uid)
+  const pendingLogin = await stateStore.getByUid(uid)
   if (pendingLogin?.brokerSub) {
-    await upstreamStateStore.delByUid(uid)
+    await stateStore.delByUid(uid)
     const result = { login: { accountId: pendingLogin.brokerSub } }
     await brokerProvider.interactionFinished(req, res, result, {
       mergeWithLastSubmission: false
@@ -77,7 +68,7 @@ async function handleInteraction(
   const nonce = randomNonce()
 
   // store correlation for callback
-  await upstreamStateStore.put(
+  await stateStore.put(
     state,
     { uid, nonce, pkceCodeVerifier, nextUrl: `/interaction/${uid}` },
     seconds.tenMinutes

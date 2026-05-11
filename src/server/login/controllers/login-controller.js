@@ -9,8 +9,9 @@ import { seconds } from '../../common/helpers/duration.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { config } from '../../../config/config.js'
 import { randomUUID } from 'node:crypto'
+import * as stateStore from '../../upstream/state-store.js'
 
-export function create({ b2cConfiguration, upstreamStateStore }) {
+export function create({ b2cConfiguration }) {
   return async function (request, h) {
     const nextUrl = request.query.next
 
@@ -23,7 +24,7 @@ export function create({ b2cConfiguration, upstreamStateStore }) {
     const uid = randomUUID()
     const state = randomState()
     const nonce = randomNonce()
-    await upstreamStateStore.put(
+    await stateStore.put(
       state,
       { uid, nonce, pkceCodeVerifier, nextUrl },
       seconds.tenMinutes

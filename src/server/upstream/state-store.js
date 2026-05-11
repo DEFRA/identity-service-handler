@@ -1,52 +1,41 @@
 import { seconds } from '../common/helpers/duration.js'
+import { redisClient } from '../common/helpers/redis-client.js'
 
-export class UpstreamStateStore {
-  constructor(redis) {
-    this.redis = redis
-    this.prefix = 'upstream'
-  }
+const statePrefix = 'upstream:state'
+const uidPrefix = 'upstream:uid'
 
-  key(state) {
-    return `${this.prefix}:state:${state}`
-  }
+export async function put(state, record, ttlSeconds = seconds.tenMinutes) {
+  await redisClient.set(
+    `${statePrefix}:${state}`,
+    JSON.stringify(record),
+    'EX',
+    ttlSeconds
+  )
+}
 
-  uidKey(uid) {
-    return `${this.prefix}:uid:${uid}`
-  }
+export async function get(state) {
+  const raw = await redisClient.get(`${statePrefix}:${state}`)
+  return raw ? JSON.parse(raw) : null
+}
 
-  async put(state, record, ttlSeconds = seconds.tenMinutes) {
-    await this.redis.set(
-      this.key(state),
-      JSON.stringify(record),
-      'EX',
-      ttlSeconds
-    )
-  }
+export async function del(state) {
+  await redisClient.del(`${statePrefix}:${state}`)
+}
 
-  async get(state) {
-    const raw = await this.redis.get(this.key(state))
-    return raw ? JSON.parse(raw) : null
-  }
+export async function putByUid(uid, record, ttlSeconds = seconds.tenMinutes) {
+  await redisClient.set(
+    `${uidPrefix}:${uid}`,
+    JSON.stringify(record),
+    'EX',
+    ttlSeconds
+  )
+}
 
-  async del(state) {
-    await this.redis.del(this.key(state))
-  }
+export async function getByUid(uid) {
+  const raw = await redisClient.get(`${uidPrefix}:${uid}`)
+  return raw ? JSON.parse(raw) : null
+}
 
-  async putByUid(uid, record, ttlSeconds = seconds.tenMinutes) {
-    await this.redis.set(
-      this.uidKey(uid),
-      JSON.stringify(record),
-      'EX',
-      ttlSeconds
-    )
-  }
-
-  async getByUid(uid) {
-    const raw = await this.redis.get(this.uidKey(uid))
-    return raw ? JSON.parse(raw) : null
-  }
-
-  async delByUid(uid) {
-    await this.redis.del(this.uidKey(uid))
-  }
+export async function delByUid(uid) {
+  await redisClient.del(`${uidPrefix}:${uid}`)
 }
