@@ -1,9 +1,5 @@
 import helperClient from '../../clients/helperClient.js'
-import { buildPaginationSearchParams } from '../../common/helpers/pagination.js'
 
-/**
- * @typedef {import('../../../config/config.js').AppConfig} AppConfig
- */
 /**
  * @typedef {object} UserDetails
  * @property {string} id
@@ -14,83 +10,17 @@ import { buildPaginationSearchParams } from '../../common/helpers/pagination.js'
  */
 
 /**
- * @typedef {object} UserAssociatedCph
- * @property {string} association_id
+ * @typedef {object} CphAssignment
+ * @property {string} id
  * @property {string} county_parish_holding_id
  * @property {string} county_parish_holding_number
+ * @property {string} user_id
  * @property {string} application_id
  * @property {string} role_id
- */
-
-/**
- * @typedef {object} UserDelegatedCph
- * @property {string} delegation_id
- * @property {string} county_parish_holding_id
- * @property {string} county_parish_holding_number
- * @property {string} delegated_user_role_name
- * @property {string} [expires_at]
- */
-
-/**
- * @typedef {object} UserCphAssignments
- * @property {UserAssociatedCph[]} assignments
- * @property {UserDelegatedCph[]} delegations
- */
-
-/**
- * Fetches the users CPH assignments for a given user identifier.
- *
- * @param {string} sub
- * @returns {Promise<UserCphAssignments>}
- */
-export async function getUserCphs(sub) {
-  const response = await helperClient.get(`/users/${sub}/cphs`)
-
-  return response.payload
-}
-
-/**
- * Fetches the details for a given user identifier.
- *
- * @param {string} sub
- * @returns {Promise<UserDetails>}
- */
-export async function getUserDetails(sub) {
-  const response = await helperClient.get(`/users/${sub}`)
-
-  return response.payload
-}
-
-/**
- * @typedef {object} DelegatedUser
- * @property {string} id
+ * @property {string} role_name
  * @property {string} email
- * @property {string} first_name
- * @property {string} last_name
  * @property {string} display_name
  */
-
-/**
- * @typedef {object} DelegatedUsersPage
- * @property {DelegatedUser[]} items
- * @property {number} total_count
- * @property {number} total_pages
- * @property {number} page_number
- * @property {number} page_size
- */
-
-/**
- * @param {string} userId
- * @param {{ page?: number, pageSize?: number }} [options]
- * @returns {Promise<DelegatedUsersPage>}
- */
-export async function getUserDelegates(userId, options = {}) {
-  const params = buildPaginationSearchParams(options)
-  const response = await helperClient.get(
-    `/users/${userId}/delegates?${params.toString()}`
-  )
-  return response.payload
-}
 
 /**
  * @typedef {object} CphDelegation
@@ -115,32 +45,25 @@ export async function getUserDelegates(userId, options = {}) {
  */
 
 /**
- * @typedef {object} CphDelegationsPage
- * @property {CphDelegation[]} items
- * @property {number} total_count
- * @property {number} total_pages
- * @property {number} page_number
- * @property {number} page_size
+ * @typedef {object} UserProfile
+ * @property {UserDetails} user_details
+ * @property {CphAssignment[]} direct_assignments
+ * @property {CphDelegation[]} inbound_delegations
+ * @property {CphDelegation[]} outbound_delegations
  */
 
 /**
- * Returns all CPH delegations granted to a user by a specific delegating user (CPH owner).
- *
- * @param {string} userId - the delegated user's ID
- * @param {string} delegatingUserId - the CPH owner's ID
- * @param {{ page?: number, pageSize?: number }} [options]
- * @returns {Promise<CphDelegationsPage>}
+ * @typedef {object} UserCphAssignments
+ * @property {CphAssignment[]} assignments
  */
-export async function getUserDelegatedCphsByDelegatingUser(
-  userId,
-  delegatingUserId,
-  options = {}
-) {
-  const endpoint = `/users/${userId}/delegations/by-cph-assignee/${delegatingUserId}`
-  const searchParams = buildPaginationSearchParams(options)
-  const response = await helperClient.get(
-    `${endpoint}?${searchParams.toString()}`
-  )
 
+/**
+ * Fetches the full profile for a given user identifier.
+ *
+ * @param {string} sub
+ * @returns {Promise<UserProfile>}
+ */
+export async function getUserProfile(sub) {
+  const response = await helperClient.get(`/users/${sub}/profile`)
   return response.payload
 }

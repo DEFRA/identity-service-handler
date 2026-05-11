@@ -60,7 +60,7 @@ describe('auth plugin', () => {
     expect(
       redirectTo({
         headers: { accept: 'application/json' },
-        path: '/delegation'
+        path: '/delegation.js'
       })
     ).toBeNull()
   })
@@ -99,7 +99,7 @@ describe('auth plugin', () => {
     const { redirectTo } = strategy.mock.calls.find(
       ([name]) => name === 'session'
     )[2]
-    expect(redirectTo({ headers: {}, path: '/delegation' })).toBeNull()
+    expect(redirectTo({ headers: {}, path: '/delegation.js' })).toBeNull()
   })
 
   test('it wires authenticateBearer into the bearer scheme authenticate function', async () => {

@@ -1,28 +1,32 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { listController } from './list-controller.js'
+import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
-  getUserDelegates: vi.fn(),
-  getUserCphs: vi.fn(),
+  getUserProfile: vi.fn(),
+  getDelegates: vi.spyOn(delegation, 'getDelegates'),
   view: vi.fn(),
   redirect: vi.fn(),
   response: vi.fn()
 }
 
-const multipleCphsResult = { assignments: [{ id: 'cph-1' }, { id: 'cph-2' }] }
-const singleCphResult = { assignments: [{ id: 'cph-1' }] }
-const noCphsResult = { assignments: [] }
+const makeProfile = (assignmentCount = 2) => ({
+  direct_assignments: Array.from({ length: assignmentCount }, (_, i) => ({
+    county_parish_holding_id: `cph-${i}`,
+    county_parish_holding_number: `12/345/000${i}`
+  })),
+  outbound_delegations: []
+})
 
 describe('listController()', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getUserCphs.mockResolvedValue(multipleCphsResult)
+    mocks.getUserProfile.mockResolvedValue(makeProfile(2))
   })
 
   const makeUserService = () => ({
-    getUserDelegates: mocks.getUserDelegates,
-    getUserCphs: mocks.getUserCphs
+    getUserProfile: mocks.getUserProfile
   })
 
   const makeH = () => {
@@ -41,38 +45,27 @@ describe('listController()', () => {
   test('it renders first page when no page query is provided', async () => {
     // Arrange
     const userService = makeUserService()
-    const pageResult = {
-      page_number: 1,
-      items: [
-        {
-          id: 'user-1',
-          email: 'joe@example.gov.uk',
-          display_name: 'Joe Bloggs'
-        }
-      ],
-      total_pages: 1,
-      total_count: 1
-    }
-    mocks.getUserDelegates.mockResolvedValue(pageResult)
+    const delegates = [{ id: 'user-1', email: 'joe@example.gov.uk' }]
+    mocks.getDelegates.mockReturnValue(delegates)
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
       path: '/delegation'
     }
-    mocks.view.mockReturnValue('view-response')
     const h = makeH()
 
     // Act
     const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', { page: 1 })
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
         pageTitle: 'Manage people who can act for you',
         heading: 'Manage people who can act for you',
-        delegates: pageResult.items,
+        delegates,
         showingDelegatesCount: 1,
         totalDelegatesCount: 1,
         singleCph: false,
@@ -85,33 +78,27 @@ describe('listController()', () => {
   test('it renders the requested page and pagination links', async () => {
     // Arrange
     const userService = makeUserService()
-    const pageResult = {
-      page_number: 2,
-      items: [
-        { id: 'user-6', email: 'a@example.gov.uk', display_name: 'A Another' }
-      ],
-      total_pages: 3,
-      total_count: 11
-    }
-    mocks.getUserDelegates.mockResolvedValue(pageResult)
+    const allDelegates = Array.from({ length: 11 }, (_, i) => ({
+      id: `user-${i + 1}`,
+      email: `user${String(i + 1).padStart(2, '0')}@example.gov.uk`
+    }))
+    mocks.getDelegates.mockReturnValue(allDelegates)
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
       path: '/delegation'
     }
-    mocks.view.mockReturnValue('view-response')
     const h = makeH()
 
     // Act
     await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', { page: 2 })
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
-        delegates: pageResult.items,
-        showingDelegatesCount: 1,
+        showingDelegatesCount: 5,
         totalDelegatesCount: 11,
         pagination: expect.objectContaining({
           items: [
@@ -129,18 +116,18 @@ describe('listController()', () => {
   test('it renders first page with no previous link when there are multiple pages', async () => {
     // Arrange
     const userService = makeUserService()
-    mocks.getUserDelegates.mockResolvedValue({
-      page_number: 1,
-      items: [{ id: '1', email: 'a@example.gov.uk', display_name: 'A' }],
-      total_pages: 2,
-      total_count: 6
-    })
+    mocks.getDelegates.mockReturnValue(
+      Array.from({ length: 6 }, (_, i) => ({
+        id: `user-${i + 1}`,
+        email: `user${i + 1}@example.gov.uk`
+      }))
+    )
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '1' },
       path: '/delegation'
     }
-    mocks.view.mockReturnValue('view-response')
     const h = makeH()
 
     // Act
@@ -161,18 +148,18 @@ describe('listController()', () => {
   test('it renders last page with no next link when there are multiple pages', async () => {
     // Arrange
     const userService = makeUserService()
-    mocks.getUserDelegates.mockResolvedValue({
-      page_number: 2,
-      items: [{ id: '6', email: 'f@example.gov.uk', display_name: 'F' }],
-      total_pages: 2,
-      total_count: 6
-    })
+    mocks.getDelegates.mockReturnValue(
+      Array.from({ length: 6 }, (_, i) => ({
+        id: `user-${i + 1}`,
+        email: `user${i + 1}@example.gov.uk`
+      }))
+    )
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
       path: '/delegation'
     }
-    mocks.view.mockReturnValue('view-response')
     const h = makeH()
 
     // Act
@@ -205,7 +192,6 @@ describe('listController()', () => {
     const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserDelegates).not.toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
   })
@@ -213,27 +199,25 @@ describe('listController()', () => {
   test('it redirects to the current path when requested page exceeds total pages', async () => {
     // Arrange
     const userService = makeUserService()
-    mocks.getUserDelegates.mockResolvedValue({
-      page_number: 3,
-      items: [],
-      total_pages: 3,
-      total_count: 15
-    })
+    mocks.getDelegates.mockReturnValue(
+      Array.from({ length: 15 }, (_, i) => ({
+        id: `user-${i + 1}`,
+        email: `user${i + 1}@example.gov.uk`
+      }))
+    )
+    mocks.redirect.mockReturnValue('redirect-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '999' },
       path: '/delegation'
     }
-    mocks.redirect.mockReturnValue('redirect-response')
     const h = makeH()
 
     // Act
     const result = await listController(userService).handler(request, h)
 
     // Assert
-    expect(mocks.getUserDelegates).toHaveBeenCalledWith('user-123', {
-      page: 999
-    })
+    expect(mocks.getDelegates).toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')
   })
@@ -241,13 +225,8 @@ describe('listController()', () => {
   test('it returns 404 when user has no CPH assignments', async () => {
     // Arrange
     const userService = makeUserService()
-    mocks.getUserCphs.mockResolvedValue(noCphsResult)
-    mocks.getUserDelegates.mockResolvedValue({
-      page_number: 1,
-      items: [],
-      total_pages: 1,
-      total_count: 0
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(0))
+    mocks.getDelegates.mockReturnValue([])
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
@@ -267,19 +246,16 @@ describe('listController()', () => {
   test('it passes singleCph true when user has exactly one CPH', async () => {
     // Arrange
     const userService = makeUserService()
-    mocks.getUserCphs.mockResolvedValue(singleCphResult)
-    mocks.getUserDelegates.mockResolvedValue({
-      page_number: 1,
-      items: [{ id: 'user-1', email: 'a@example.gov.uk', display_name: 'A' }],
-      total_pages: 1,
-      total_count: 1
-    })
+    mocks.getUserProfile.mockResolvedValue(makeProfile(1))
+    mocks.getDelegates.mockReturnValue([
+      { id: 'user-1', email: 'a@example.gov.uk' }
+    ])
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
       path: '/delegation'
     }
-    mocks.view.mockReturnValue('view-response')
     const h = makeH()
 
     // Act

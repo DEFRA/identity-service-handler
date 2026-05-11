@@ -4,7 +4,12 @@ import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbo
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
 import { cphsSchema, getCphValidationError } from '../helpers/validate-cphs.js'
 import * as delegationService from '../../services/delegation.js'
+import {
+  getDelegatableCphs,
+  getDelegate
+} from '../../common/helpers/delegation.js'
 
+const DELEGATION_ROUTE = '/delegation'
 const TEMPLATE = 'delegation/manage'
 const PAGE_TITLE = 'Manage delegate'
 
@@ -12,38 +17,50 @@ export const manageController = (userService) => ({
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const delegatedUser = await userService.getDelegatedUser(
-      delegatingUserId,
-      delegatedUserId
-    )
+    const profile = await userService.getUserProfile(delegatingUserId)
+    const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
-      return h.redirect('/delegation')
+      return h.redirect(DELEGATION_ROUTE)
     }
-
-    const availableCphs = new Map(
-      delegatedUser.cphs.map((cph) => [
-        cph.county_parish_holding_id,
-        cph.county_parish_holding_number
-      ])
-    )
-    const delegatedCphs = new Set(
-      delegatedUser.cphs.reduce((acc, curr) => {
-        if (curr.delegation_id) {
-          acc.push(curr.county_parish_holding_id)
-        }
-        return acc
-      }, [])
-    )
-
     return h.view(TEMPLATE, {
       pageTitle: PAGE_TITLE,
       heading: PAGE_TITLE,
       delegated_user_id: delegatedUser.id,
       delegated_user_email: delegatedUser.email,
-      checkboxItems: buildCphCheckboxItems(availableCphs, delegatedCphs)
+      checkboxItems: buildCphCheckboxItems(
+        getDelegatableCphs(profile),
+        new Set(delegatedUser.cphs.map((cph) => cph.county_parish_holding_id))
+      )
     })
   }
 })
+
+async function manageUpdateFailAction(userService, request, h, err) {
+  const delegatingUserId = request.auth?.credentials?.sub
+  const { delegated_user_id: delegatedUserId } = request.params
+  const profile = await userService.getUserProfile(delegatingUserId)
+  const delegatedUser = getDelegate(profile, delegatedUserId)
+  if (!delegatedUser) {
+    return h.redirect(DELEGATION_ROUTE).takeover()
+  }
+
+  return h
+    .view(TEMPLATE, {
+      pageTitle: `Error: ${PAGE_TITLE}`,
+      heading: PAGE_TITLE,
+      delegated_user_id: delegatedUser.id,
+      delegated_user_email: delegatedUser.email,
+      checkboxItems: buildCphCheckboxItems(
+        getDelegatableCphs(profile),
+        normaliseCheckboxPayload(request.payload?.cphs)
+      ),
+      errors: {
+        cphs: getCphValidationError(err)
+      }
+    })
+    .code(statusCodes.badRequest)
+    .takeover()
+}
 
 export const manageUpdateController = (userService) => ({
   options: {
@@ -53,69 +70,58 @@ export const manageUpdateController = (userService) => ({
         cphs: cphsSchema
       }),
       options: { allowUnknown: true },
-      failAction: async (request, h, err) => {
-        const delegatingUserId = request.auth?.credentials?.sub
-        const { delegated_user_id: delegatedUserId } = request.params
-        const delegatedUser = await userService.getDelegatedUser(
-          delegatingUserId,
-          delegatedUserId
-        )
-        const availableCphs = new Map(
-          delegatedUser.cphs.map((cph) => [
-            cph.county_parish_holding_id,
-            cph.county_parish_holding_number
-          ])
-        )
-
-        return h
-          .view(TEMPLATE, {
-            pageTitle: `Error: ${PAGE_TITLE}`,
-            heading: PAGE_TITLE,
-            delegated_user_id: delegatedUser.id,
-            delegated_user_email: delegatedUser.email,
-            checkboxItems: buildCphCheckboxItems(
-              availableCphs,
-              normaliseCheckboxPayload(request.payload?.cphs)
-            ),
-            errors: {
-              cphs: getCphValidationError(err)
-            }
-          })
-          .code(statusCodes.badRequest)
-          .takeover()
-      }
+      failAction: (request, h, err) =>
+        manageUpdateFailAction(userService, request, h, err)
     }
   },
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const delegatedUser = await userService.getDelegatedUser(
-      delegatingUserId,
-      delegatedUserId
+    const profile = await userService.getUserProfile(delegatingUserId)
+    const delegatedUser = getDelegate(profile, delegatedUserId)
+    if (!delegatedUser) {
+      return h.redirect(DELEGATION_ROUTE)
+    }
+    const existingDelegatedCphs = new Map(
+      delegatedUser.cphs.map((cph) => [
+        cph.county_parish_holding_id,
+        cph.delegation_id
+      ])
     )
     const intendedDelegatedCphs = normaliseCheckboxPayload(request.payload.cphs)
+    const toCreate = []
+    const toRevoke = []
 
-    for (const cph of delegatedUser.cphs) {
+    for (const cphId of getDelegatableCphs(profile).keys()) {
       if (
-        intendedDelegatedCphs.has(cph.county_parish_holding_id) &&
-        !cph.delegation_id
+        intendedDelegatedCphs.has(cphId) &&
+        !existingDelegatedCphs.has(cphId)
       ) {
-        await delegationService.createInvite({
-          countyParishHoldingId: cph.county_parish_holding_id,
-          delegatingUserId,
-          delegatedUserId,
-          delegatedUserEmail: delegatedUser.email
-        })
+        toCreate.push(cphId)
       } else if (
-        !intendedDelegatedCphs.has(cph.county_parish_holding_id) &&
-        cph.delegation_id
+        !intendedDelegatedCphs.has(cphId) &&
+        existingDelegatedCphs.has(cphId)
       ) {
-        await delegationService.revokeDelegation(cph.delegation_id)
+        toRevoke.push(existingDelegatedCphs.get(cphId))
       } else {
         // no-op: CPH is already in the intended state
       }
     }
 
-    return h.redirect('/delegation')
+    // TODO: handle partial failures
+    await Promise.allSettled([
+      ...toCreate.map((countyParishHoldingId) =>
+        delegationService.createInvite({
+          countyParishHoldingId,
+          delegatingUserId,
+          delegatedUserEmail: delegatedUser.email
+        })
+      ),
+      ...toRevoke.map((delegationId) =>
+        delegationService.revokeDelegation(delegationId)
+      )
+    ])
+
+    return h.redirect(DELEGATION_ROUTE)
   }
 })

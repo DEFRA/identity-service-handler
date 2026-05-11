@@ -5,9 +5,9 @@ export const confirmController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const { assignments } = await userService.getUserCphs(sub)
+    const profile = await userService.getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
-    const cphs = assignments.reduce((acc, cph) => {
+    const cphs = profile.direct_assignments.reduce((acc, cph) => {
       if (selectedCphIds.has(cph.county_parish_holding_id)) {
         acc.push(cph.county_parish_holding_number)
       }
@@ -29,13 +29,16 @@ export const confirmSubmitController = () => ({
     const draftService = new DelegationBuilder(request)
     const email = draftService.getEmail()
 
-    for (const id of draftService.getCphIds()) {
-      await delegationService.createInvite({
-        countyParishHoldingId: id,
-        delegatingUserId: sub,
-        delegatedUserEmail: email
-      })
-    }
+    // TODO: handle partial failures
+    await Promise.allSettled(
+      draftService.getCphIds().map((id) =>
+        delegationService.createInvite({
+          countyParishHoldingId: id,
+          delegatingUserId: sub,
+          delegatedUserEmail: email
+        })
+      )
+    )
 
     draftService.clearDraft()
 

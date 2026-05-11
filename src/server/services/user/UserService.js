@@ -63,64 +63,10 @@ export class UserService {
 
   /**
    * @param {string} userId
-   * @param {{ page?: number, pageSize?: number }} [options]
-   * @returns {Promise<import('./service.js').DelegatedUsersPage>}
+   * @returns {Promise<import('./service.js').UserProfile>}
    */
-  async getUserDelegates(userId, options = {}) {
-    return this._impl.getUserDelegates(userId, options)
-  }
-
-  /**
-   * Returns CPH delegations granted to a given user (the delegate) by a specific
-   * delegating user (the CPH owner). Powers the manage page.
-   *
-   * @param {string} userId - the delegated user's ID
-   * @param {string} delegatingUserId - the currently signed-in CPH owner
-   * @param {{ page?: number, pageSize?: number }} [options]
-   * @returns {Promise<import('./service.js').DelegatedUsersPage>}
-   */
-  async getUserDelegatedCphsByDelegatingUser(
-    userId,
-    delegatingUserId,
-    options = {}
-  ) {
-    return this._impl.getUserDelegatedCphsByDelegatingUser(
-      userId,
-      delegatingUserId,
-      options
-    )
-  }
-
-  async getDelegatedUser(delegatingUserId, delegatedUserId) {
-    const [delegatedUserDetails, delegatingUserCphs, delegatedUserCphs] =
-      await Promise.all([
-        this._impl.getUserDetails(delegatedUserId),
-        this._impl.getUserCphs(delegatingUserId),
-        this._impl.getUserCphs(delegatedUserId)
-      ])
-    const delegatedCphs = new Map(
-      delegatedUserCphs.delegations.reduce((acc, cph) => {
-        if (cph.delegating_user_id === delegatingUserId && !cph.revoked_at) {
-          acc.push([cph.county_parish_holding_id, cph])
-        }
-        return acc
-      }, [])
-    )
-
-    if (!delegatedCphs.size) {
-      return null
-    }
-
-    return {
-      id: delegatedUserId,
-      email: delegatedUserDetails.email,
-      cphs: delegatingUserCphs.assignments.map((cph) => ({
-        county_parish_holding_id: cph.county_parish_holding_id,
-        county_parish_holding_number: cph.county_parish_holding_number,
-        delegation_id:
-          delegatedCphs.get(cph.county_parish_holding_id)?.id || null
-      }))
-    }
+  async getUserProfile(userId) {
+    return this._impl.getUserProfile(userId)
   }
 
   /**
@@ -130,7 +76,9 @@ export class UserService {
    * @returns {Promise<import('./service.js').UserCphAssignments>}
    */
   async getUserCphs(userId) {
-    return this._impl.getUserCphs(userId)
+    const { direct_assignments: directAssignments } =
+      await this._impl.getUserProfile(userId)
+    return { assignments: directAssignments }
   }
 
   /**
@@ -138,22 +86,23 @@ export class UserService {
    * @returns {Promise<UserContext>}
    */
   async #fetchContext(sub) {
-    const [userResult, cphResult] = await Promise.all([
-      this._impl.getUserDetails(sub),
-      this.getUserCphs(sub)
-    ])
+    const {
+      user_details: userDetails,
+      direct_assignments: directAssignments,
+      inbound_delegations: inboundDelegations
+    } = await this._impl.getUserProfile(sub)
 
     const context = {
       sub,
-      email: userResult.email,
-      given_name: userResult.first_name,
-      family_name: userResult.last_name,
-      display_name: userResult.display_name,
-      primary_cph: cphResult.assignments.map((a) => ({
+      email: userDetails.email,
+      given_name: userDetails.first_name,
+      family_name: userDetails.last_name,
+      display_name: userDetails.display_name,
+      primary_cph: directAssignments.map((a) => ({
         cph: a.county_parish_holding_number,
         expires: null
       })),
-      delegated_cph: cphResult.delegations.map((d) => ({
+      delegated_cph: inboundDelegations.map((d) => ({
         cph: d.county_parish_holding_number,
         expires: d.expires_at || null
       }))

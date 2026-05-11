@@ -1,7 +1,7 @@
 const DRAFT_KEY = 'delegationDraft'
 
 /**
- * Session-backed draft storage for the multi-step delegation flow.
+ * Session-backed draft storage for the multi-step delegation.js flow.
  */
 export class DelegationBuilder {
   /**

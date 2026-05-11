@@ -21,11 +21,15 @@ describe('confirmController()', () => {
   test('it renders the confirm page with email and resolved cph numbers from draft', async () => {
     // Arrange
     const userService = {
-      getUserCphs: vi.fn().mockResolvedValue({
-        assignments: [
+      getUserProfile: vi.fn().mockResolvedValue({
+        direct_assignments: [
           {
             county_parish_holding_id: 'cph-id-1',
             county_parish_holding_number: '12/345/6789'
+          },
+          {
+            county_parish_holding_id: 'cph-id-2',
+            county_parish_holding_number: '35/345/0005'
           }
         ]
       })
@@ -37,7 +41,7 @@ describe('confirmController()', () => {
       'cph-id-1'
     ])
     mocks.view.mockReturnValue('view-response')
-    const request = {}
+    const request = { auth: { credentials: { sub: 'user-123' } } }
     const h = { view: mocks.view }
 
     // Act
@@ -67,7 +71,7 @@ describe('confirmSubmitController()', () => {
       .mockReturnValue('joe@example.gov.uk')
     const getCphIds = vi
       .spyOn(DelegationBuilder.prototype, 'getCphIds')
-      .mockReturnValue(['12/345/6789', '35/345/0005'])
+      .mockReturnValue(['cph-id-1', 'cph-id-2'])
     const clearDraft = vi
       .spyOn(DelegationBuilder.prototype, 'clearDraft')
       .mockReturnValue(undefined)
@@ -84,12 +88,12 @@ describe('confirmSubmitController()', () => {
     expect(getCphIds).toHaveBeenCalledTimes(1)
     expect(delegationService.createInvite).toHaveBeenCalledTimes(2)
     expect(delegationService.createInvite).toHaveBeenCalledWith({
-      countyParishHoldingId: '12/345/6789',
+      countyParishHoldingId: 'cph-id-1',
       delegatingUserId: 'user-123',
       delegatedUserEmail: 'joe@example.gov.uk'
     })
     expect(delegationService.createInvite).toHaveBeenCalledWith({
-      countyParishHoldingId: '35/345/0005',
+      countyParishHoldingId: 'cph-id-2',
       delegatingUserId: 'user-123',
       delegatedUserEmail: 'joe@example.gov.uk'
     })
