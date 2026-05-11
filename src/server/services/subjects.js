@@ -1,8 +1,4 @@
 /**
- * @typedef {import('ioredis').Redis | import('ioredis').Cluster} RedisClient
- */
-
-/**
  * @typedef {object} SubjectMapping
  * @property {string} sub
  * @property {string} email
@@ -10,55 +6,47 @@
  * @property {string} lastName
  */
 
-export class SubjectsService {
-  #prefix = 'subject-map'
-  /**
-   * @param {RedisClient} redis
-   */
-  constructor(redis) {
-    this.redis = redis
-  }
-  /**
-   * @param {string} sub
-   * @returns {string}
-   */
-  #key(sub) {
-    return `${this.#prefix}:${sub}`
-  }
+import { redisClient } from '../common/helpers/redis-client.js'
 
-  /**
-   * @param {string} sub
-   * @returns {Promise<SubjectMapping | null>}
-   */
-  async get(sub) {
-    const key = this.#key(sub)
-    const raw = await this.redis.get(key)
-    if (raw) {
-      return JSON.parse(raw)
-    }
-    return null
-  }
+const prefix = 'subject-map'
 
-  /**
-   * @param {SubjectMapping} subjectMapping
-   * @returns {Promise<SubjectMapping>}
-   */
-  async create(subjectMapping) {
-    const key = this.#key(subjectMapping.sub)
-    await this.redis.set(key, JSON.stringify(subjectMapping))
-    return subjectMapping
+/**
+ * @param {string} sub
+ * @returns {Promise<SubjectMapping | null>}
+ */
+export async function get(sub) {
+  const key = `${prefix}:${sub}`
+  const raw = await redisClient.get(key)
+  if (raw) {
+    return JSON.parse(raw)
   }
+  return null
+}
 
-  /**
-   * @param {SubjectMapping} subjectMapping
-   * @returns {Promise<SubjectMapping>}
-   */
-  async getOrCreateBrokerSub({ sub, email, firstName, lastName }) {
-    const existing = await this.get(sub)
-    if (existing) {
-      return existing
-    } else {
-      return this.create({ sub, email, firstName, lastName })
-    }
+/**
+ * @param {SubjectMapping} subjectMapping
+ * @returns {Promise<SubjectMapping>}
+ */
+export async function create(subjectMapping) {
+  const key = `${prefix}:${subjectMapping.sub}`
+  await redisClient.set(key, JSON.stringify(subjectMapping))
+  return subjectMapping
+}
+
+/**
+ * @param {SubjectMapping} subjectMapping
+ * @returns {Promise<SubjectMapping>}
+ */
+export async function getOrCreateBrokerSub({
+  sub,
+  email,
+  firstName,
+  lastName
+}) {
+  const existing = await get(sub)
+  if (existing) {
+    return existing
+  } else {
+    return create({ sub, email, firstName, lastName })
   }
 }

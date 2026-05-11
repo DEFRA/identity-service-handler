@@ -2,13 +2,9 @@ import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
+import * as subjectsService from '../../services/subjects.js'
 
-export function create({
-  config,
-  b2cConfiguration,
-  subjectsService,
-  upstreamStateStore
-}) {
+export function create({ config, b2cConfiguration, upstreamStateStore }) {
   return async function (request, h) {
     const { code, state } =
       (request.method === 'post' ? request.payload : request.query) ?? {}

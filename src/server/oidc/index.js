@@ -4,13 +4,7 @@ import { create as signoutCreate } from './controllers/signoutController.js'
 
 export async function registerOidcRoutes(
   server,
-  {
-    config,
-    brokerProvider,
-    subjectsService,
-    upstreamStateStore,
-    b2cConfiguration
-  }
+  { config, brokerProvider, upstreamStateStore, b2cConfiguration }
 ) {
   server.route({
     method: 'GET',
@@ -53,7 +47,6 @@ export async function registerOidcRoutes(
     handler: callbackCreate({
       config,
       b2cConfiguration,
-      subjectsService,
       upstreamStateStore
     })
   })

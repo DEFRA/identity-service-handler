@@ -4,12 +4,17 @@ import jwt from 'jsonwebtoken'
 import { config } from '../../../config/config.js'
 import { create } from './callbackController.js'
 
+vi.mock('openid-client')
+vi.mock('jsonwebtoken')
+vi.mock('../../services/subjects.js', () => ({
+  getOrCreateBrokerSub: vi.fn()
+}))
+
+import * as subjectsService from '../../services/subjects.js'
+
 const mocks = {
   authorizationCodeGrant: vi.mocked(oidc.authorizationCodeGrant),
   decode: vi.mocked(jwt.decode),
-  subjectsService: {
-    getOrCreateBrokerSub: vi.fn()
-  },
   upstreamStateStore: {
     get: vi.fn(),
     putByUid: vi.fn(),
@@ -20,9 +25,6 @@ const mocks = {
   })),
   redirect: vi.fn((value) => value)
 }
-
-vi.mock('openid-client')
-vi.mock('jsonwebtoken')
 
 describe('create()', () => {
   beforeEach(() => {
@@ -43,7 +45,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: {},
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -69,7 +70,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: {},
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -97,7 +97,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: {},
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -125,7 +124,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: {},
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -155,7 +153,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: {},
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -203,7 +200,7 @@ describe('create()', () => {
       firstName: 'Test',
       lastName: 'User'
     })
-    mocks.subjectsService.getOrCreateBrokerSub.mockResolvedValue({
+    vi.mocked(subjectsService.getOrCreateBrokerSub).mockResolvedValue({
       sub: 'upstream-sub',
       email: 'user@example.com',
       firstName: 'Test',
@@ -213,7 +210,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: { issuer: 'https://issuer.example' },
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
@@ -235,7 +231,7 @@ describe('create()', () => {
       `${config.get('idService.b2c.redirectUrl')}?code=auth-code&state=test-state&scope=openid+offline_access+${config.get('idService.b2c.clientId')}`
     )
     expect(mocks.decode).toHaveBeenCalledWith('id-token')
-    expect(mocks.subjectsService.getOrCreateBrokerSub).toHaveBeenCalledWith({
+    expect(subjectsService.getOrCreateBrokerSub).toHaveBeenCalledWith({
       iss: 'https://issuer.example',
       sub: 'upstream-sub',
       email: 'user@example.com',
@@ -301,7 +297,7 @@ describe('create()', () => {
       firstName: 'Post',
       lastName: 'User'
     })
-    mocks.subjectsService.getOrCreateBrokerSub.mockResolvedValue({
+    vi.mocked(subjectsService.getOrCreateBrokerSub).mockResolvedValue({
       sub: 'broker-post-sub',
       email: 'post-user@example.com'
     })
@@ -309,7 +305,6 @@ describe('create()', () => {
       config,
       b2cConfiguration: { issuer: 'https://issuer.example' },
       brokerProvider: {},
-      subjectsService: mocks.subjectsService,
       upstreamStateStore: mocks.upstreamStateStore
     })
 
