@@ -8,7 +8,12 @@ vi.mock('../user/index.js', () => ({
   default: { getUserProfile: vi.fn() }
 }))
 
+vi.mock('../../common/helpers/redis-client.js', () => ({
+  redisClient: { options: { keyPrefix: '' } }
+}))
+
 import userService from '../user/index.js'
+import { redisClient } from '../../common/helpers/redis-client.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { RedisAdapter } from './redis-adapter.js'
@@ -16,7 +21,6 @@ import { RedisAdapter } from './redis-adapter.js'
 const makeOptions = () => ({
   cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
   sessionCookieSecure: false,
-  redis: {},
   jwks: {
     keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
   }
@@ -108,12 +112,11 @@ describe('buildBrokerConfiguration()', () => {
   })
 
   test('it creates a redis adapter for oidc models', () => {
-    const redis = { options: { keyPrefix: '' } }
-    const result = buildBrokerConfiguration({ ...makeOptions(), redis })
+    const result = buildBrokerConfiguration(makeOptions())
     const adapter = result.adapter('AccessToken')
     expect(adapter).toBeInstanceOf(RedisAdapter)
     expect(adapter.model).toBe('AccessToken')
-    expect(adapter.redis).toBe(redis)
+    expect(adapter.redis).toBe(redisClient)
     expect(adapter.prefix).toBe('oidc')
   })
 

@@ -23,7 +23,7 @@ import { requestContext } from './common/helpers/request-context.js'
 import { logger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
 import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
-import { buildRedisClient } from './common/helpers/redis-client.js'
+import { redisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
 import { SubjectsService } from './services/subjects.js'
@@ -34,9 +34,11 @@ export async function createServer() {
   setupProxy()
 
   logger.info(`Starting server with configuration: ${config}`)
-  const redis = buildRedisClient()
-  const services = bootstrapServices(redis)
-  const brokerProvider = buildBrokerProvider({ redis, ...services })
+
+  await redisClient.connect()
+
+  const services = bootstrapServices()
+  const brokerProvider = buildBrokerProvider()
 
   const [server, b2cConfiguration] = await Promise.all([
     bootstrapServer(),
@@ -96,14 +98,10 @@ export async function createServer() {
   return server
 }
 
-function bootstrapServices(redis) {
-  const subjectsService = new SubjectsService(redis)
-  const upstreamStateStore = new UpstreamStateStore(redis)
-  return {
-    redis,
-    subjectsService,
-    upstreamStateStore
-  }
+function bootstrapServices() {
+  const subjectsService = new SubjectsService(redisClient)
+  const upstreamStateStore = new UpstreamStateStore(redisClient)
+  return { subjectsService, upstreamStateStore }
 }
 
 function bootstrapServer() {

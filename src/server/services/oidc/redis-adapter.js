@@ -1,3 +1,4 @@
+import { redisClient } from '../../common/helpers/redis-client.js'
 import { unixEpoch } from '../../common/helpers/duration.js'
 
 const CURSOR_SIZE = 100
@@ -7,9 +8,9 @@ const CURSOR_SIZE = 100
  * Good MVP base; production: add metrics, structured errors, prefixes per env, etc.
  */
 export class RedisAdapter {
-  constructor(model, redis, prefix = 'oidc') {
+  constructor(model, prefix = 'oidc') {
     this.model = model
-    this.redis = redis
+    this.redis = redisClient
     this.prefix = prefix
   }
 

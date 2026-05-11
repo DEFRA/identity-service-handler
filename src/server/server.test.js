@@ -1,10 +1,15 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { statusCodes } from './common/constants/status-codes.js'
+import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
+import { createServer } from './server.js'
+import { redisClient } from './common/helpers/redis-client.js'
 
 vi.mock('./services/oidc/build-broker-provider.js')
 
-import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
-import { createServer } from './server.js'
+const mocks = {
+  buildBrokerProvider: vi.mocked(buildBrokerProvider),
+  redisClientConnect: vi.spyOn(redisClient, 'connect')
+}
 
 describe('createServer', () => {
   let server
@@ -17,9 +22,10 @@ describe('createServer', () => {
 
   test('it creates and configures a healthy hapi server', async () => {
     // Arrange
-    vi.mocked(buildBrokerProvider).mockReturnValue({
+    mocks.buildBrokerProvider.mockReturnValue({
       callback: vi.fn().mockReturnValue(vi.fn())
     })
+    mocks.redisClientConnect.mockResolvedValue(null)
 
     // Act
     server = await createServer()
@@ -31,5 +37,6 @@ describe('createServer', () => {
 
     // Assert
     expect(statusCode).toBe(statusCodes.ok)
+    expect(mocks.redisClientConnect).toHaveBeenCalled()
   })
 })

@@ -1,13 +1,13 @@
 import { contextController } from './controllers/context-controller.js'
 
 export const routes = (options = {}) => {
-  const { contextPath = '/context', redis } = options
+  const { contextPath = '/context' } = options
 
   return [
     {
       method: 'GET',
       path: contextPath,
-      ...contextController(redis),
+      ...contextController,
       options: {
         ...contextController.options,
         auth: {
