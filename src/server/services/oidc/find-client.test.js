@@ -1,21 +1,18 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
 
-vi.mock('../../common/helpers/redis-client.js', () => ({
-  redisClient: { get: vi.fn(), set: vi.fn() }
-}))
-
-vi.mock('../application/index.js', () => ({
-  default: { get: vi.fn() }
-}))
-
 import { redisClient } from '../../common/helpers/redis-client.js'
-import applicationService from '../application/index.js'
+import * as applicationModule from '../application/index.js'
 import * as buildClientParamsModule from './build-client-params.js'
 import { findClient } from './find-client.js'
 
 vi.mock('./build-client-params.js')
 
 const mocks = {
+  redisClient: {
+    get: vi.spyOn(redisClient, 'get'),
+    set: vi.spyOn(redisClient, 'set')
+  },
+  getApplication: vi.spyOn(applicationModule, 'get'),
   buildClientParams: vi.mocked(buildClientParamsModule.buildClientParams),
   OidcClient: vi.fn()
 }
@@ -30,7 +27,7 @@ describe('findClient()', () => {
 
   test('it returns the cached client when cache hits', async () => {
     // Arrange
-    redisClient.get.mockResolvedValue(JSON.stringify(clientRecord))
+    mocks.redisClient.get.mockResolvedValue(JSON.stringify(clientRecord))
     mocks.buildClientParams.mockReturnValue(clientParams)
     mocks.OidcClient.mockImplementation(function (params) {
       Object.assign(this, params)
@@ -40,17 +37,19 @@ describe('findClient()', () => {
     const result = await findClient('client-1', mocks.OidcClient)
 
     // Assert
-    expect(redisClient.get).toHaveBeenCalledWith('application-cache:client-1')
-    expect(applicationService.get).not.toHaveBeenCalled()
+    expect(mocks.redisClient.get).toHaveBeenCalledWith(
+      'application-cache:client-1'
+    )
+    expect(mocks.getApplication).not.toHaveBeenCalled()
     expect(mocks.buildClientParams).toHaveBeenCalledWith(clientRecord)
     expect(result).toMatchObject(clientParams)
   })
 
   test('it fetches, caches, and returns the client on a cache miss', async () => {
     // Arrange
-    redisClient.get.mockResolvedValue(null)
-    redisClient.set.mockResolvedValue('OK')
-    applicationService.get.mockResolvedValue(clientRecord)
+    mocks.redisClient.get.mockResolvedValue(null)
+    mocks.redisClient.set.mockResolvedValue('OK')
+    mocks.getApplication.mockResolvedValue(clientRecord)
     mocks.buildClientParams.mockReturnValue(clientParams)
     mocks.OidcClient.mockImplementation(function (params) {
       Object.assign(this, params)
@@ -60,8 +59,8 @@ describe('findClient()', () => {
     const result = await findClient('client-1', mocks.OidcClient)
 
     // Assert
-    expect(applicationService.get).toHaveBeenCalledWith('client-1')
-    expect(redisClient.set).toHaveBeenCalledWith(
+    expect(mocks.getApplication).toHaveBeenCalledWith('client-1')
+    expect(mocks.redisClient.set).toHaveBeenCalledWith(
       'application-cache:client-1',
       JSON.stringify(clientRecord),
       'EX',
@@ -73,8 +72,8 @@ describe('findClient()', () => {
 
   test('it returns undefined when the client is not found', async () => {
     // Arrange
-    redisClient.get.mockResolvedValue(null)
-    applicationService.get.mockResolvedValue(null)
+    mocks.redisClient.get.mockResolvedValue(null)
+    mocks.getApplication.mockResolvedValue(null)
 
     // Act
     const result = await findClient('unknown-client', mocks.OidcClient)
@@ -82,6 +81,6 @@ describe('findClient()', () => {
     // Assert
     expect(result).toBeUndefined()
     expect(mocks.OidcClient).not.toHaveBeenCalled()
-    expect(redisClient.set).not.toHaveBeenCalled()
+    expect(mocks.redisClient.set).not.toHaveBeenCalled()
   })
 })

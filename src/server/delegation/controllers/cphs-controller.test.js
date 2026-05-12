@@ -1,12 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../../services/user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-import userService from '../../services/user/index.js'
+import * as userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { cphsController, cphsSubmitController } from './cphs-controller.js'
+
+vi.mock('../../services/user/index.js')
 
 const ASSOCIATION_1 = {
   county_parish_holding_id: 'cph-id-1',
@@ -23,6 +20,9 @@ const makeProfile = (...assignments) => ({
 })
 
 const mocks = {
+  getUserProfile: vi.mocked(userService.getUserProfile),
+  getCphIds: vi.spyOn(DelegationBuilder.prototype, 'getCphIds'),
+  setCphIds: vi.spyOn(DelegationBuilder.prototype, 'setCphIds'),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
@@ -31,19 +31,16 @@ const mocks = {
 
 describe('cphsController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it renders the cphs page with stored selections', async () => {
     // Arrange
     const request = {}
-    userService.getUserProfile.mockResolvedValue(
+    mocks.getUserProfile.mockResolvedValue(
       makeProfile(ASSOCIATION_1, ASSOCIATION_2)
     )
-    vi.spyOn(DelegationBuilder.prototype, 'getCphIds').mockReturnValue([
-      'cph-id-1'
-    ])
+    mocks.getCphIds.mockReturnValue(['cph-id-1'])
     mocks.view.mockReturnValue('view-response')
     const h = { view: mocks.view }
 
@@ -51,7 +48,7 @@ describe('cphsController()', () => {
     const result = await cphsController.handler(request, h)
 
     // Assert
-    expect(userService.getUserProfile).toHaveBeenCalledWith(undefined)
+    expect(mocks.getUserProfile).toHaveBeenCalledWith(undefined)
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/cphs',
       expect.objectContaining({
@@ -83,16 +80,13 @@ describe('cphsController()', () => {
 
 describe('cphsSubmitController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it stores cphs and redirects to confirm', async () => {
     // Arrange
-    const setCphIds = vi
-      .spyOn(DelegationBuilder.prototype, 'setCphIds')
-      .mockReturnValue(undefined)
-    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    mocks.setCphIds.mockReturnValue(undefined)
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       payload: {
@@ -106,8 +100,8 @@ describe('cphsSubmitController()', () => {
     const result = await cphsSubmitController.handler(request, h)
 
     // Assert
-    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
-    expect(setCphIds).toHaveBeenCalledWith(['cph-id-1'])
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(mocks.setCphIds).toHaveBeenCalledWith(['cph-id-1'])
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
   })
@@ -117,7 +111,7 @@ describe('cphsSubmitController()', () => {
     const request = {
       payload: {}
     }
-    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -162,7 +156,7 @@ describe('cphsSubmitController()', () => {
         cphs: ['bad-value']
       }
     }
-    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.takeover.mockReturnValue('takeover-response')
     mocks.code.mockReturnValue({ takeover: mocks.takeover })
     mocks.view.mockReturnValue({ code: mocks.code })
@@ -204,10 +198,8 @@ describe('cphsSubmitController()', () => {
 
   test('it re-renders cphs page when submitted cphs are outside the user context', async () => {
     // Arrange
-    vi.spyOn(DelegationBuilder.prototype, 'setCphIds').mockReturnValue(
-      undefined
-    )
-    userService.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
+    mocks.setCphIds.mockReturnValue(undefined)
+    mocks.getUserProfile.mockResolvedValue(makeProfile(ASSOCIATION_1))
     mocks.code.mockReturnValue('code-response')
     mocks.view.mockReturnValue({ code: mocks.code })
     const request = {

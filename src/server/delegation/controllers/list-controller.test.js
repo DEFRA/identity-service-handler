@@ -1,14 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../../services/user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-import userService from '../../services/user/index.js'
+import * as userService from '../../services/user/index.js'
 import { listController } from './list-controller.js'
 import * as delegation from '../../common/helpers/delegation.js'
 
 const mocks = {
+  getUserProfile: vi.spyOn(userService, 'getUserProfile'),
   getDelegates: vi.spyOn(delegation, 'getDelegates'),
   view: vi.fn(),
   redirect: vi.fn(),
@@ -25,8 +21,8 @@ const makeProfile = (assignmentCount = 2) => ({
 
 describe('listController()', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    userService.getUserProfile.mockResolvedValue(makeProfile(2))
+    vi.resetAllMocks()
+    mocks.getUserProfile.mockResolvedValue(makeProfile(2))
   })
 
   const makeH = () => {
@@ -58,7 +54,7 @@ describe('listController()', () => {
     const result = await listController.handler(request, h)
 
     // Assert
-    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
       expect.objectContaining({
@@ -218,7 +214,7 @@ describe('listController()', () => {
 
   test('it returns 404 when user has no CPH assignments', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile(0))
+    mocks.getUserProfile.mockResolvedValue(makeProfile(0))
     mocks.getDelegates.mockReturnValue([])
     const request = {
       auth: { credentials: { sub: 'user-123' } },
@@ -238,7 +234,7 @@ describe('listController()', () => {
 
   test('it passes singleCph true when user has exactly one CPH', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile(1))
+    mocks.getUserProfile.mockResolvedValue(makeProfile(1))
     mocks.getDelegates.mockReturnValue([
       { id: 'user-1', email: 'a@example.gov.uk' }
     ])

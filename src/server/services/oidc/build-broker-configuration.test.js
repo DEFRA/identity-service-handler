@@ -1,22 +1,19 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('./post-logout-success-source.js', () => ({
-  postLogoutSuccessSource: vi.fn()
-}))
-
-vi.mock('../user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-vi.mock('../../common/helpers/redis-client.js', () => ({
-  redisClient: { options: { keyPrefix: '' } }
-}))
-
-import userService from '../user/index.js'
 import { redisClient } from '../../common/helpers/redis-client.js'
-import { postLogoutSuccessSource } from './post-logout-success-source.js'
+import * as userService from '../user/index.js'
+import * as postLogoutModule from './post-logout-success-source.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { RedisAdapter } from './redis-adapter.js'
+
+vi.mock('../user/index.js')
+vi.mock('./post-logout-success-source.js')
+
+redisClient.options = { keyPrefix: '' }
+
+const mocks = {
+  getUserProfile: vi.mocked(userService.getUserProfile),
+  postLogoutSuccessSource: vi.mocked(postLogoutModule.postLogoutSuccessSource)
+}
 
 const makeOptions = () => ({
   cookiePassword: 'abcdefghijklmnopqrstuvwxyz123456',
@@ -158,12 +155,12 @@ describe('buildBrokerConfiguration()', () => {
     await result.features.rpInitiatedLogout.postLogoutSuccessSource(ctx)
 
     // Assert
-    expect(postLogoutSuccessSource).toHaveBeenCalledWith(ctx, true)
+    expect(mocks.postLogoutSuccessSource).toHaveBeenCalledWith(ctx, true)
   })
 
   test('it resolves an account using the user service', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile())
+    mocks.getUserProfile.mockResolvedValue(makeProfile())
     const result = buildBrokerConfiguration(makeOptions())
 
     // Act
@@ -173,12 +170,12 @@ describe('buildBrokerConfiguration()', () => {
     // Assert
     expect(account.accountId).toBe('user-123')
     expect(claims).toEqual(expectedContext)
-    expect(userService.getUserProfile).toHaveBeenCalledWith('user-123')
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
   })
 
   test('it leaves non-userinfo claims unchanged even when issuer is available', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile())
+    mocks.getUserProfile.mockResolvedValue(makeProfile())
     const ctx = { oidc: { provider: { issuer: 'https://issuer.example' } } }
     const result = buildBrokerConfiguration(makeOptions())
 
@@ -192,7 +189,7 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it adds iss to userinfo claims', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile())
+    mocks.getUserProfile.mockResolvedValue(makeProfile())
     const ctx = {
       oidc: {
         provider: { issuer: 'https://issuer.example' },
@@ -214,7 +211,7 @@ describe('buildBrokerConfiguration()', () => {
 
   test('it returns userinfo claims without iss when no issuer is available', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue(makeProfile())
+    mocks.getUserProfile.mockResolvedValue(makeProfile())
     const result = buildBrokerConfiguration(makeOptions())
 
     // Act

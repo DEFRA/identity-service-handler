@@ -3,20 +3,11 @@ import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
 import { config } from '../../../config/config.js'
 import { create } from './callbackController.js'
+import * as subjectsService from '../../services/subjects.js'
+import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
 vi.mock('jsonwebtoken')
-vi.mock('../../services/subjects.js', () => ({
-  getOrCreateBrokerSub: vi.fn()
-}))
-vi.mock('../../upstream/state-store.js', () => ({
-  get: vi.fn(),
-  putByUid: vi.fn(),
-  del: vi.fn()
-}))
-
-import * as subjectsService from '../../services/subjects.js'
-import * as stateStore from '../../upstream/state-store.js'
 
 const mocks = {
   authorizationCodeGrant: vi.mocked(oidc.authorizationCodeGrant),
@@ -24,12 +15,18 @@ const mocks = {
   response: vi.fn((value) => ({
     code: vi.fn(() => value)
   })),
-  redirect: vi.fn((value) => value)
+  redirect: vi.fn((value) => value),
+  getOrCreateBrokerSub: vi.spyOn(subjectsService, 'getOrCreateBrokerSub'),
+  stateStoreGet: vi.spyOn(stateStore, 'get'),
+  stateStorePutByUid: vi.spyOn(stateStore, 'putByUid'),
+  stateStoreDel: vi.spyOn(stateStore, 'del')
 }
 
 describe('create()', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
+    mocks.stateStorePutByUid.mockResolvedValue(undefined)
+    mocks.stateStoreDel.mockResolvedValue(undefined)
   })
 
   test('it returns 400 when query is null on a get request', async () => {
@@ -145,7 +142,7 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    stateStore.get.mockResolvedValue(undefined)
+    mocks.stateStoreGet.mockResolvedValue(undefined)
     const handler = create({
       config,
       b2cConfiguration: {},
@@ -156,7 +153,7 @@ describe('create()', () => {
     const result = await handler(request, h)
 
     // Assert
-    expect(stateStore.get).toHaveBeenCalledWith('test-state')
+    expect(mocks.stateStoreGet).toHaveBeenCalledWith('test-state')
     expect(mocks.response).toHaveBeenCalledWith('Unknown/expired state')
     expect(result).toBe('Unknown/expired state')
   })
@@ -180,7 +177,7 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    stateStore.get.mockResolvedValue({
+    mocks.stateStoreGet.mockResolvedValue({
       uid: 'interaction-123',
       nonce: 'nonce-123',
       pkceCodeVerifier: 'verifier-123',
@@ -196,7 +193,7 @@ describe('create()', () => {
       firstName: 'Test',
       lastName: 'User'
     })
-    vi.mocked(subjectsService.getOrCreateBrokerSub).mockResolvedValue({
+    mocks.getOrCreateBrokerSub.mockResolvedValue({
       sub: 'upstream-sub',
       email: 'user@example.com',
       firstName: 'Test',
@@ -226,7 +223,7 @@ describe('create()', () => {
       `${config.get('idService.b2c.redirectUrl')}?code=auth-code&state=test-state&scope=openid+offline_access+${config.get('idService.b2c.clientId')}`
     )
     expect(mocks.decode).toHaveBeenCalledWith('id-token')
-    expect(subjectsService.getOrCreateBrokerSub).toHaveBeenCalledWith({
+    expect(mocks.getOrCreateBrokerSub).toHaveBeenCalledWith({
       iss: 'https://issuer.example',
       sub: 'upstream-sub',
       email: 'user@example.com',
@@ -244,12 +241,12 @@ describe('create()', () => {
       'upstreamIdTokenHint',
       'id-token'
     )
-    expect(stateStore.putByUid).toHaveBeenCalledWith(
+    expect(mocks.stateStorePutByUid).toHaveBeenCalledWith(
       'interaction-123',
       { brokerSub: 'upstream-sub' },
       120
     )
-    expect(stateStore.del).toHaveBeenCalledWith('test-state')
+    expect(mocks.stateStoreDel).toHaveBeenCalledWith('test-state')
     expect(mocks.redirect).toHaveBeenCalledWith('/interaction/interaction-123')
     expect(result).toBe('/interaction/interaction-123')
   })
@@ -277,7 +274,7 @@ describe('create()', () => {
       response: mocks.response,
       redirect: mocks.redirect
     }
-    stateStore.get.mockResolvedValue({
+    mocks.stateStoreGet.mockResolvedValue({
       uid: 'interaction-post',
       nonce: 'nonce-post',
       pkceCodeVerifier: 'verifier-post'
@@ -292,7 +289,7 @@ describe('create()', () => {
       firstName: 'Post',
       lastName: 'User'
     })
-    vi.mocked(subjectsService.getOrCreateBrokerSub).mockResolvedValue({
+    mocks.getOrCreateBrokerSub.mockResolvedValue({
       sub: 'broker-post-sub',
       email: 'post-user@example.com'
     })
@@ -306,7 +303,7 @@ describe('create()', () => {
     await handler(request, h)
 
     // Assert
-    expect(stateStore.get).toHaveBeenCalledWith('post-state')
+    expect(mocks.stateStoreGet).toHaveBeenCalledWith('post-state')
     const callbackUrl = mocks.authorizationCodeGrant.mock.calls[0][1]
     expect(callbackUrl.searchParams.get('code')).toBe('post-auth-code')
     expect(callbackUrl.searchParams.get('state')).toBe('post-state')

@@ -2,15 +2,12 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as oidc from 'openid-client'
 import { config } from '../../../config/config.js'
 import * as crypto from 'node:crypto'
+import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
-vi.mock('node:crypto', () => ({ randomUUID: vi.fn() }))
-vi.mock('../../upstream/state-store.js', () => ({
-  put: vi.fn()
-}))
+vi.mock('node:crypto')
 
 import { create } from './login-controller.js'
-import * as stateStore from '../../upstream/state-store.js'
 
 const mocks = {
   randomPKCECodeVerifier: vi.mocked(oidc.randomPKCECodeVerifier),
@@ -18,7 +15,8 @@ const mocks = {
   randomState: vi.mocked(oidc.randomState),
   randomNonce: vi.mocked(oidc.randomNonce),
   buildAuthorizationUrl: vi.mocked(oidc.buildAuthorizationUrl),
-  randomUUID: vi.mocked(crypto.randomUUID)
+  randomUUID: vi.mocked(crypto.randomUUID),
+  put: vi.spyOn(stateStore, 'put')
 }
 
 const b2cConfiguration = {}
@@ -36,7 +34,8 @@ function makeH() {
 
 describe('create()', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
+    mocks.put.mockResolvedValue(undefined)
     mocks.randomPKCECodeVerifier.mockReturnValue('test-verifier')
     mocks.calculatePKCECodeChallenge.mockResolvedValue('test-challenge')
     mocks.randomState.mockReturnValue('test-state')
@@ -89,7 +88,7 @@ describe('create()', () => {
     const result = await handler(makeRequest('/dashboard'), h)
 
     // Assert
-    expect(stateStore.put).toHaveBeenCalledWith(
+    expect(mocks.put).toHaveBeenCalledWith(
       'test-state',
       {
         uid: '00000000-0000-0000-0000-000000000001',

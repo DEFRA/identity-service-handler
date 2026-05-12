@@ -1,4 +1,4 @@
-import userService from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user/index.js'
 import * as delegationService from '../../services/delegation.js'
 import { getDelegate } from '../../common/helpers/delegation.js'
 
@@ -8,7 +8,7 @@ export const deleteController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
@@ -27,7 +27,7 @@ export const deleteSubmitController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)

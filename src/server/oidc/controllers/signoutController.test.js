@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
 import { SIGNOUT_REDIRECT_COOKIE_NAME } from '../constants.js'
 import { create } from './signoutController.js'
 

@@ -1,4 +1,4 @@
-import userService from '../user/index.js'
+import { getUserProfile } from '../user/index.js'
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 import { seconds } from '../../common/helpers/duration.js'
@@ -77,7 +77,7 @@ function findUserAccount(ctx, sub) {
   return {
     accountId: sub,
     async claims(use) {
-      const profile = await userService.getUserProfile(sub)
+      const profile = await getUserProfile(sub)
       const userContext = getUserContext(profile)
 
       if (use !== 'userinfo') {

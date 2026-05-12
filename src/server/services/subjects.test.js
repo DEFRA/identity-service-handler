@@ -1,14 +1,13 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../common/helpers/redis-client.js', () => ({
-  redisClient: {
-    get: vi.fn(),
-    set: vi.fn()
-  }
-}))
-
 import { redisClient } from '../common/helpers/redis-client.js'
 import * as subjectsService from './subjects.js'
+
+const mocks = {
+  redisClient: {
+    get: vi.spyOn(redisClient, 'get'),
+    set: vi.spyOn(redisClient, 'set')
+  }
+}
 
 describe('SubjectsService', () => {
   afterEach(() => {
@@ -24,14 +23,16 @@ describe('SubjectsService', () => {
         firstName: 'Test',
         lastName: 'User'
       }
-      redisClient.get.mockResolvedValue(JSON.stringify(mapping))
+      mocks.redisClient.get.mockResolvedValue(JSON.stringify(mapping))
 
       // Act
       const result = await subjectsService.get('upstream-sub')
 
       // Assert
       expect(result).toEqual(mapping)
-      expect(redisClient.get).toHaveBeenCalledWith('subject-map:upstream-sub')
+      expect(mocks.redisClient.get).toHaveBeenCalledWith(
+        'subject-map:upstream-sub'
+      )
     })
   })
 
@@ -44,14 +45,14 @@ describe('SubjectsService', () => {
         firstName: 'Test',
         lastName: 'User'
       }
-      redisClient.set.mockResolvedValue('OK')
+      mocks.redisClient.set.mockResolvedValue('OK')
 
       // Act
       const result = await subjectsService.create(mapping)
 
       // Assert
       expect(result).toEqual(mapping)
-      expect(redisClient.set).toHaveBeenCalledWith(
+      expect(mocks.redisClient.set).toHaveBeenCalledWith(
         'subject-map:upstream-sub',
         JSON.stringify(mapping)
       )
@@ -67,14 +68,14 @@ describe('SubjectsService', () => {
         firstName: 'Test',
         lastName: 'User'
       }
-      redisClient.get.mockResolvedValue(JSON.stringify(existing))
+      mocks.redisClient.get.mockResolvedValue(JSON.stringify(existing))
 
       // Act
       const result = await subjectsService.getOrCreateBrokerSub(existing)
 
       // Assert
       expect(result).toEqual(existing)
-      expect(redisClient.set).not.toHaveBeenCalled()
+      expect(mocks.redisClient.set).not.toHaveBeenCalled()
     })
 
     test('it creates a new mapping when one is not stored', async () => {
@@ -85,16 +86,18 @@ describe('SubjectsService', () => {
         firstName: 'Test',
         lastName: 'User'
       }
-      redisClient.get.mockResolvedValue(undefined)
-      redisClient.set.mockResolvedValue('OK')
+      mocks.redisClient.get.mockResolvedValue(undefined)
+      mocks.redisClient.set.mockResolvedValue('OK')
 
       // Act
       const result = await subjectsService.getOrCreateBrokerSub(mapping)
 
       // Assert
       expect(result).toEqual(mapping)
-      expect(redisClient.get).toHaveBeenCalledWith('subject-map:upstream-sub')
-      expect(redisClient.set).toHaveBeenCalledWith(
+      expect(mocks.redisClient.get).toHaveBeenCalledWith(
+        'subject-map:upstream-sub'
+      )
+      expect(mocks.redisClient.set).toHaveBeenCalledWith(
         'subject-map:upstream-sub',
         JSON.stringify(mapping)
       )

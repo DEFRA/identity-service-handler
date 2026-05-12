@@ -1,5 +1,5 @@
 import { redisClient } from '../../common/helpers/redis-client.js'
-import applicationService from '../application/index.js'
+import { get as getApplication } from '../application/index.js'
 import { buildClientParams } from './build-client-params.js'
 import { seconds } from '../../common/helpers/duration.js'
 
@@ -13,7 +13,7 @@ export async function findClient(clientId, OidcClient) {
     return new OidcClient(buildClientParams(JSON.parse(cached)))
   }
 
-  const application = await applicationService.get(clientId)
+  const application = await getApplication(clientId)
   if (!application) {
     return undefined
   }

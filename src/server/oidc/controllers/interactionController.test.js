@@ -8,17 +8,12 @@ import {
 } from 'openid-client'
 import { config } from '../../../config/config.js'
 import * as buildGrantModule from './helpers/build-grant-from-interaction.js'
+import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
 vi.mock('./helpers/build-grant-from-interaction.js')
-vi.mock('../../upstream/state-store.js', () => ({
-  getByUid: vi.fn(),
-  delByUid: vi.fn(),
-  put: vi.fn()
-}))
 
 import { create } from './interactionController.js'
-import * as stateStore from '../../upstream/state-store.js'
 
 const mocks = {
   randomPKCECodeVerifier: vi.mocked(randomPKCECodeVerifier),
@@ -29,6 +24,11 @@ const mocks = {
   buildGrantFromInteraction: vi.mocked(
     buildGrantModule.buildGrantFromInteraction
   ),
+  stateStore: {
+    getByUid: vi.spyOn(stateStore, 'getByUid'),
+    delByUid: vi.spyOn(stateStore, 'delByUid'),
+    put: vi.spyOn(stateStore, 'put')
+  },
   brokerProvider: {
     interactionDetails: vi.fn(),
     interactionFinished: vi.fn()
@@ -42,7 +42,9 @@ const mocks = {
 
 describe('create()', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
+    mocks.stateStore.delByUid.mockResolvedValue(undefined)
+    mocks.stateStore.put.mockResolvedValue(undefined)
   })
 
   test('it finishes the interaction from pending login state', async () => {
@@ -58,7 +60,7 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    stateStore.getByUid.mockResolvedValue({
+    mocks.stateStore.getByUid.mockResolvedValue({
       brokerSub: 'broker-sub'
     })
     const handler = create({
@@ -71,8 +73,8 @@ describe('create()', () => {
     const result = await handler(request, h)
 
     // Assert
-    expect(stateStore.getByUid).toHaveBeenCalledWith('interaction-123')
-    expect(stateStore.delByUid).toHaveBeenCalledWith('interaction-123')
+    expect(mocks.stateStore.getByUid).toHaveBeenCalledWith('interaction-123')
+    expect(mocks.stateStore.delByUid).toHaveBeenCalledWith('interaction-123')
     expect(mocks.brokerProvider.interactionFinished).toHaveBeenCalledWith(
       request.raw.req,
       request.raw.res,
@@ -94,7 +96,7 @@ describe('create()', () => {
     }
     const grant = { save: mocks.grantSave }
     mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
-    stateStore.getByUid.mockResolvedValue(undefined)
+    mocks.stateStore.getByUid.mockResolvedValue(undefined)
     mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue('grant-123')
     const handler = create({
@@ -132,7 +134,7 @@ describe('create()', () => {
     }
     const grant = { save: mocks.grantSave }
     mocks.brokerProvider.interactionDetails.mockResolvedValue(interaction)
-    stateStore.getByUid.mockResolvedValue(undefined)
+    mocks.stateStore.getByUid.mockResolvedValue(undefined)
     mocks.buildGrantFromInteraction.mockResolvedValue(grant)
     mocks.grantSave.mockResolvedValue(undefined)
     const handler = create({
@@ -174,7 +176,7 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    stateStore.getByUid.mockResolvedValue(undefined)
+    mocks.stateStore.getByUid.mockResolvedValue(undefined)
     const handler = create({
       config,
       b2cConfiguration: {},
@@ -210,7 +212,7 @@ describe('create()', () => {
     mocks.brokerProvider.interactionDetails.mockResolvedValue({
       prompt: { name: 'login' }
     })
-    stateStore.getByUid.mockResolvedValue(undefined)
+    mocks.stateStore.getByUid.mockResolvedValue(undefined)
     mocks.randomPKCECodeVerifier.mockReturnValue('pkce-verifier')
     mocks.calculatePKCECodeChallenge.mockResolvedValue('pkce-challenge')
     mocks.randomState.mockReturnValue('state-123')
@@ -228,7 +230,7 @@ describe('create()', () => {
     const result = await handler(request, h)
 
     // Assert
-    expect(stateStore.put).toHaveBeenCalledWith(
+    expect(mocks.stateStore.put).toHaveBeenCalledWith(
       'state-123',
       {
         uid: 'interaction-123',

@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../../services/user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-import userService from '../../services/user/index.js'
+import * as userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   createController,
   createSubmitController
 } from './create-controller.js'
 
+vi.mock('../../services/user/index.js')
+
 const mocks = {
+  getUserProfile: vi.mocked(userService.getUserProfile),
+  getEmail: vi.spyOn(DelegationBuilder.prototype, 'getEmail'),
+  setEmail: vi.spyOn(DelegationBuilder.prototype, 'setEmail'),
+  setCphIds: vi.spyOn(DelegationBuilder.prototype, 'setCphIds'),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
@@ -20,14 +21,13 @@ const mocks = {
 
 describe('createController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it renders the create page with default view model', async () => {
     // Arrange
     const request = {}
-    vi.spyOn(DelegationBuilder.prototype, 'getEmail').mockReturnValue(undefined)
+    mocks.getEmail.mockReturnValue(undefined)
     mocks.view.mockReturnValue('view-response')
     const h = { view: mocks.view }
 
@@ -52,13 +52,12 @@ describe('createController()', () => {
 
 describe('createSubmitController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it stores email and redirects to cphs when user has multiple CPHs', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue({
+    mocks.getUserProfile.mockResolvedValue({
       direct_assignments: [
         {
           county_parish_holding_id: 'cph-1',
@@ -70,9 +69,7 @@ describe('createSubmitController()', () => {
         }
       ]
     })
-    const setEmail = vi
-      .spyOn(DelegationBuilder.prototype, 'setEmail')
-      .mockReturnValue(undefined)
+    mocks.setEmail.mockReturnValue(undefined)
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       payload: { email: '  JOE@EXAMPLE.COM  ' }
@@ -84,14 +81,14 @@ describe('createSubmitController()', () => {
     const result = await createSubmitController.handler(request, h)
 
     // Assert
-    expect(setEmail).toHaveBeenCalledWith('joe@example.com')
+    expect(mocks.setEmail).toHaveBeenCalledWith('joe@example.com')
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
     expect(result).toBe('redirect-response')
   })
 
   test('it auto-sets CPH and redirects to confirm when user has a single CPH', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue({
+    mocks.getUserProfile.mockResolvedValue({
       direct_assignments: [
         {
           county_parish_holding_id: 'cph-1',
@@ -99,10 +96,8 @@ describe('createSubmitController()', () => {
         }
       ]
     })
-    vi.spyOn(DelegationBuilder.prototype, 'setEmail').mockReturnValue(undefined)
-    const setCphIds = vi
-      .spyOn(DelegationBuilder.prototype, 'setCphIds')
-      .mockReturnValue(undefined)
+    mocks.setEmail.mockReturnValue(undefined)
+    mocks.setCphIds.mockReturnValue(undefined)
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       payload: { email: 'joe@example.com' }
@@ -114,7 +109,7 @@ describe('createSubmitController()', () => {
     const result = await createSubmitController.handler(request, h)
 
     // Assert
-    expect(setCphIds).toHaveBeenCalledWith(['cph-1'])
+    expect(mocks.setCphIds).toHaveBeenCalledWith(['cph-1'])
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
   })

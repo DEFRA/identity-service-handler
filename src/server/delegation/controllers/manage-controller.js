@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import userService from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
@@ -18,7 +18,7 @@ export const manageController = {
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(delegatingUserId)
+    const profile = await getUserProfile(delegatingUserId)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
@@ -39,7 +39,7 @@ export const manageController = {
 async function manageUpdateFailAction(request, h, err) {
   const delegatingUserId = request.auth?.credentials?.sub
   const { delegated_user_id: delegatedUserId } = request.params
-  const profile = await userService.getUserProfile(delegatingUserId)
+  const profile = await getUserProfile(delegatingUserId)
   const delegatedUser = getDelegate(profile, delegatedUserId)
   if (!delegatedUser) {
     return h.redirect(DELEGATION_ROUTE).takeover()
@@ -77,7 +77,7 @@ export const manageUpdateController = {
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(delegatingUserId)
+    const profile = await getUserProfile(delegatingUserId)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)

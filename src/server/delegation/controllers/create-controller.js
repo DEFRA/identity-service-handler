@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import userService from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
@@ -50,7 +50,7 @@ export const createSubmitController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const delegatableCphs = getDelegatableCphs(profile)
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())

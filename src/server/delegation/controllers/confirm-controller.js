@@ -1,4 +1,4 @@
-import userService from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import * as delegationService from '../../services/delegation.js'
 
@@ -6,7 +6,7 @@ export const confirmController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
     const cphs = profile.direct_assignments.reduce((acc, cph) => {
       if (selectedCphIds.has(cph.county_parish_holding_id)) {

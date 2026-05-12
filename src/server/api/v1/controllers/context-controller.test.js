@@ -1,16 +1,17 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../../../services/user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-vi.mock('../../../common/helpers/redis-client.js', () => ({
-  redisClient: { get: vi.fn(), set: vi.fn() }
-}))
-
-import userService from '../../../services/user/index.js'
-import { redisClient } from '../../../common/helpers/redis-client.js'
 import { contextController } from './context-controller.js'
+import { redisClient } from '../../../common/helpers/redis-client.js'
+import { getUserProfile } from '../../../services/user/index.js'
+
+vi.mock('../../../services/user/index.js')
+
+const mocks = {
+  redisClient: {
+    get: vi.spyOn(redisClient, 'get'),
+    set: vi.spyOn(redisClient, 'set')
+  },
+  getUserProfile: vi.mocked(getUserProfile)
+}
 
 const makeH = () => {
   const code = vi.fn().mockReturnValue('final-response')
@@ -37,21 +38,23 @@ const makeProfile = (id = 'broker-sub-123') => ({
 
 describe('contextController', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it returns cached context when present', async () => {
     // Arrange
     const cached = { sub: 'broker-sub-123', email: 'user@example.com' }
-    redisClient.get.mockResolvedValue(JSON.stringify(cached))
+    mocks.redisClient.get.mockResolvedValue(JSON.stringify(cached))
     const h = makeH()
 
     // Act
     const result = await contextController.handler(makeRequest(), h)
 
     // Assert
-    expect(redisClient.get).toHaveBeenCalledWith('user_context:broker-sub-123')
-    expect(userService.getUserProfile).not.toHaveBeenCalled()
+    expect(mocks.redisClient.get).toHaveBeenCalledWith(
+      'user_context:broker-sub-123'
+    )
+    expect(mocks.getUserProfile).not.toHaveBeenCalled()
     expect(h.response).toHaveBeenCalledWith(cached)
     expect(h.code).toHaveBeenCalledWith(200)
     expect(result).toBe('final-response')
@@ -60,16 +63,16 @@ describe('contextController', () => {
   test('it fetches, caches, and returns context on a cache miss', async () => {
     // Arrange
     const profile = makeProfile()
-    redisClient.get.mockResolvedValue(null)
-    redisClient.set.mockResolvedValue('OK')
-    userService.getUserProfile.mockResolvedValue(profile)
+    mocks.redisClient.get.mockResolvedValue(null)
+    mocks.redisClient.set.mockResolvedValue('OK')
+    mocks.getUserProfile.mockResolvedValue(profile)
     const h = makeH()
 
     // Act
     const result = await contextController.handler(makeRequest(), h)
 
     // Assert
-    expect(userService.getUserProfile).toHaveBeenCalledWith('broker-sub-123')
+    expect(mocks.getUserProfile).toHaveBeenCalledWith('broker-sub-123')
     const expectedContext = {
       sub: 'broker-sub-123',
       email: 'user@example.com',
@@ -79,7 +82,7 @@ describe('contextController', () => {
       primary_cph: [],
       delegated_cph: []
     }
-    expect(redisClient.set).toHaveBeenCalledWith(
+    expect(mocks.redisClient.set).toHaveBeenCalledWith(
       'user_context:broker-sub-123',
       JSON.stringify(expectedContext),
       'EX',
@@ -92,16 +95,16 @@ describe('contextController', () => {
 
   test('it passes undefined sub when auth credentials are missing', async () => {
     // Arrange
-    redisClient.get.mockResolvedValue(null)
-    redisClient.set.mockResolvedValue('OK')
-    userService.getUserProfile.mockResolvedValue(makeProfile(undefined))
+    mocks.redisClient.get.mockResolvedValue(null)
+    mocks.redisClient.set.mockResolvedValue('OK')
+    mocks.getUserProfile.mockResolvedValue(makeProfile(undefined))
     const h = makeH()
 
     // Act
     await contextController.handler({}, h)
 
     // Assert
-    expect(redisClient.get).toHaveBeenCalledWith('user_context:undefined')
-    expect(userService.getUserProfile).toHaveBeenCalledWith(undefined)
+    expect(mocks.redisClient.get).toHaveBeenCalledWith('user_context:undefined')
+    expect(mocks.getUserProfile).toHaveBeenCalledWith(undefined)
   })
 })

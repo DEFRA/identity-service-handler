@@ -1,4 +1,4 @@
-import userService from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { paginateList } from '../../common/helpers/pagination.js'
 import { getDelegates } from '../../common/helpers/delegation.js'
@@ -18,7 +18,7 @@ export const listController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const requestedPage = parsePage(request.query?.page)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const sortedDelegates = getDelegates(profile).sort((a, b) =>
       a.email.localeCompare(b.email)
     )

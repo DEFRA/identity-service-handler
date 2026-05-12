@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-vi.mock('../../services/user/index.js', () => ({
-  default: { getUserProfile: vi.fn() }
-}))
-
-import userService from '../../services/user/index.js'
+import * as userService from '../../services/user/index.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   confirmController,
@@ -12,21 +7,26 @@ import {
 } from './confirm-controller.js'
 import * as delegationService from '../../services/delegation.js'
 
+vi.mock('../../services/user/index.js')
 vi.mock('../../services/delegation.js')
 
 const mocks = {
+  getUserProfile: vi.mocked(userService.getUserProfile),
+  getEmail: vi.spyOn(DelegationBuilder.prototype, 'getEmail'),
+  getCphIds: vi.spyOn(DelegationBuilder.prototype, 'getCphIds'),
+  clearDraft: vi.spyOn(DelegationBuilder.prototype, 'clearDraft'),
+  createInvite: vi.mocked(delegationService.createInvite),
   view: vi.fn()
 }
 
 describe('confirmController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it renders the confirm page with email and resolved cph numbers from draft', async () => {
     // Arrange
-    userService.getUserProfile.mockResolvedValue({
+    mocks.getUserProfile.mockResolvedValue({
       direct_assignments: [
         {
           county_parish_holding_id: 'cph-id-1',
@@ -38,12 +38,8 @@ describe('confirmController()', () => {
         }
       ]
     })
-    vi.spyOn(DelegationBuilder.prototype, 'getEmail').mockReturnValue(
-      'joe@example.gov.uk'
-    )
-    vi.spyOn(DelegationBuilder.prototype, 'getCphIds').mockReturnValue([
-      'cph-id-1'
-    ])
+    mocks.getEmail.mockReturnValue('joe@example.gov.uk')
+    mocks.getCphIds.mockReturnValue(['cph-id-1'])
     mocks.view.mockReturnValue('view-response')
     const request = { auth: { credentials: { sub: 'user-123' } } }
     const h = { view: mocks.view }
@@ -64,22 +60,15 @@ describe('confirmController()', () => {
 
 describe('confirmSubmitController()', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it creates one invite per CPH, clears draft and renders the confirmation page', async () => {
     // Arrange
-    const getEmail = vi
-      .spyOn(DelegationBuilder.prototype, 'getEmail')
-      .mockReturnValue('joe@example.gov.uk')
-    const getCphIds = vi
-      .spyOn(DelegationBuilder.prototype, 'getCphIds')
-      .mockReturnValue(['cph-id-1', 'cph-id-2'])
-    const clearDraft = vi
-      .spyOn(DelegationBuilder.prototype, 'clearDraft')
-      .mockReturnValue(undefined)
-    vi.mocked(delegationService.createInvite).mockResolvedValue(undefined)
+    mocks.getEmail.mockReturnValue('joe@example.gov.uk')
+    mocks.getCphIds.mockReturnValue(['cph-id-1', 'cph-id-2'])
+    mocks.clearDraft.mockReturnValue(undefined)
+    mocks.createInvite.mockResolvedValue(undefined)
     mocks.view.mockReturnValue('view-response')
     const request = { auth: { credentials: { sub: 'user-123' } } }
     const h = { view: mocks.view }
@@ -88,20 +77,20 @@ describe('confirmSubmitController()', () => {
     const result = await confirmSubmitController.handler(request, h)
 
     // Assert
-    expect(getEmail).toHaveBeenCalledTimes(1)
-    expect(getCphIds).toHaveBeenCalledTimes(1)
-    expect(delegationService.createInvite).toHaveBeenCalledTimes(2)
-    expect(delegationService.createInvite).toHaveBeenCalledWith({
+    expect(mocks.getEmail).toHaveBeenCalledTimes(1)
+    expect(mocks.getCphIds).toHaveBeenCalledTimes(1)
+    expect(mocks.createInvite).toHaveBeenCalledTimes(2)
+    expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-1',
       delegatingUserId: 'user-123',
       delegatedUserEmail: 'joe@example.gov.uk'
     })
-    expect(delegationService.createInvite).toHaveBeenCalledWith({
+    expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-2',
       delegatingUserId: 'user-123',
       delegatedUserEmail: 'joe@example.gov.uk'
     })
-    expect(clearDraft).toHaveBeenCalledTimes(1)
+    expect(mocks.clearDraft).toHaveBeenCalledTimes(1)
     expect(mocks.view).toHaveBeenCalledWith('delegation/confirmation', {
       pageTitle: 'Invite sent',
       heading: 'Invite sent',

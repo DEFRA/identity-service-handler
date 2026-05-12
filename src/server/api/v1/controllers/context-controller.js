@@ -1,5 +1,5 @@
 import { redisClient } from '../../../common/helpers/redis-client.js'
-import userService from '../../../services/user/index.js'
+import * as userService from '../../../services/user/index.js'
 import { statusCodes } from '../../../common/constants/status-codes.js'
 import { seconds } from '../../../common/helpers/duration.js'
 import { getUserContext } from '../../../common/helpers/user-context.js'
