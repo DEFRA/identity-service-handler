@@ -3,7 +3,6 @@ import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
 import { config } from '../../../config/config.js'
 import { create } from './callbackController.js'
-import * as subjectsService from '../../services/subjects.js'
 import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
@@ -16,7 +15,6 @@ const mocks = {
     code: vi.fn(() => value)
   })),
   redirect: vi.fn((value) => value),
-  getOrCreateBrokerSub: vi.spyOn(subjectsService, 'getOrCreateBrokerSub'),
   stateStoreGet: vi.spyOn(stateStore, 'get'),
   stateStorePutByUid: vi.spyOn(stateStore, 'putByUid'),
   stateStoreDel: vi.spyOn(stateStore, 'del')
@@ -158,7 +156,7 @@ describe('create()', () => {
     expect(result).toBe('Unknown/expired state')
   })
 
-  test('it exchanges the code, stores the broker subject mapping and redirects to the interaction', async () => {
+  test('it exchanges the code, stores the broker subject and redirects to the interaction', async () => {
     // Arrange
     const request = {
       method: 'get',
@@ -187,17 +185,7 @@ describe('create()', () => {
       id_token: 'id-token'
     })
     mocks.decode.mockReturnValue({
-      iss: 'https://issuer.example',
-      sub: 'upstream-sub',
-      email: 'user@example.com',
-      firstName: 'Test',
-      lastName: 'User'
-    })
-    mocks.getOrCreateBrokerSub.mockResolvedValue({
-      sub: 'upstream-sub',
-      email: 'user@example.com',
-      firstName: 'Test',
-      lastName: 'User'
+      sub: 'upstream-sub'
     })
     const handler = create({
       config,
@@ -223,18 +211,8 @@ describe('create()', () => {
       `${config.get('idService.b2c.redirectUrl')}?code=auth-code&state=test-state&scope=openid+offline_access+${config.get('idService.b2c.clientId')}`
     )
     expect(mocks.decode).toHaveBeenCalledWith('id-token')
-    expect(mocks.getOrCreateBrokerSub).toHaveBeenCalledWith({
-      iss: 'https://issuer.example',
-      sub: 'upstream-sub',
-      email: 'user@example.com',
-      firstName: 'Test',
-      lastName: 'User'
-    })
     expect(request.cookieAuth.set).toHaveBeenCalledWith({
       sub: 'upstream-sub',
-      email: 'user@example.com',
-      firstName: 'Test',
-      lastName: 'User',
       upstreamIdTokenHint: 'id-token'
     })
     expect(request.yar.set).toHaveBeenCalledWith(
@@ -283,15 +261,7 @@ describe('create()', () => {
       id_token: 'id-token-post'
     })
     mocks.decode.mockReturnValue({
-      iss: 'https://issuer.example',
-      sub: 'upstream-post-sub',
-      email: 'post-user@example.com',
-      firstName: 'Post',
-      lastName: 'User'
-    })
-    mocks.getOrCreateBrokerSub.mockResolvedValue({
-      sub: 'broker-post-sub',
-      email: 'post-user@example.com'
+      sub: 'upstream-post-sub'
     })
     const handler = create({
       config,

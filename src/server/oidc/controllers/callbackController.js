@@ -2,7 +2,6 @@ import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
-import * as subjectsService from '../../services/subjects.js'
 import * as stateStore from '../../upstream/state-store.js'
 
 export function create({ config, b2cConfiguration }) {
@@ -43,26 +42,18 @@ export function create({ config, b2cConfiguration }) {
       }
     )
 
-    // Validate the ID Token and its nonce (OIDC step)
-    // Map upstream (iss, sub) to broker sub
-    const subject = await subjectsService.getOrCreateBrokerSub(
-      jwt.decode(tokens.id_token)
-    )
+    const { sub } = jwt.decode(tokens.id_token)
 
     // Set broker SSO cookie and retain the upstream ID token for logout.
     request.cookieAuth.set({
-      ...subject,
+      sub,
       upstreamIdTokenHint: tokens.id_token
     })
     request.yar?.set?.('upstreamIdTokenHint', tokens.id_token)
 
     // Persist resolved login by interaction UID so /interaction/{uid} can finish
     // even if browser cookie persistence is unreliable in local cross-domain hops.
-    await stateStore.putByUid(
-      uid,
-      { brokerSub: subject.sub },
-      seconds.twoMinutes
-    )
+    await stateStore.putByUid(uid, { brokerSub: sub }, seconds.twoMinutes)
 
     await stateStore.del(state)
 
