@@ -2,13 +2,9 @@ import * as oidc from 'openid-client'
 import jwt from 'jsonwebtoken'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
+import * as stateStore from '../../upstream/state-store.js'
 
-export function create({
-  config,
-  b2cConfiguration,
-  subjectsService,
-  upstreamStateStore
-}) {
+export function create({ config, b2cConfiguration }) {
   return async function (request, h) {
     const { code, state } =
       (request.method === 'post' ? request.payload : request.query) ?? {}
@@ -20,7 +16,7 @@ export function create({
       return h.response('Missing state').code(statusCodes.badRequest)
     }
 
-    const record = await upstreamStateStore.get(state)
+    const record = await stateStore.get(state)
     if (!record) {
       return h.response('Unknown/expired state').code(statusCodes.badRequest)
     }
@@ -46,28 +42,20 @@ export function create({
       }
     )
 
-    // Validate the ID Token and its nonce (OIDC step)
-    // Map upstream (iss, sub) to broker sub
-    const subject = await subjectsService.getOrCreateBrokerSub(
-      jwt.decode(tokens.id_token)
-    )
+    const { sub } = jwt.decode(tokens.id_token)
 
     // Set broker SSO cookie and retain the upstream ID token for logout.
     request.cookieAuth.set({
-      ...subject,
+      sub,
       upstreamIdTokenHint: tokens.id_token
     })
     request.yar?.set?.('upstreamIdTokenHint', tokens.id_token)
 
     // Persist resolved login by interaction UID so /interaction/{uid} can finish
     // even if browser cookie persistence is unreliable in local cross-domain hops.
-    await upstreamStateStore.putByUid(
-      uid,
-      { brokerSub: subject.sub },
-      seconds.twoMinutes
-    )
+    await stateStore.putByUid(uid, { brokerSub: sub }, seconds.twoMinutes)
 
-    await upstreamStateStore.del(state)
+    await stateStore.del(state)
 
     return h.redirect(nextUrl)
   }

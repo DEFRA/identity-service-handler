@@ -1,3 +1,17 @@
+/**
+ * @typedef {object} DelegateEntry
+ * @property {string} id
+ * @property {string} email
+ * @property {{ county_parish_holding_id: string, county_parish_holding_number: string, delegation_id: string }[]} cphs
+ */
+
+/**
+ * Builds a deduplicated list of delegates from a user's outbound delegations,
+ * grouping CPH assignments under each unique delegated user.
+ *
+ * @param {import('../../services/user/service.js').UserProfile} userProfile
+ * @returns {DelegateEntry[]}
+ */
 export const getDelegates = (userProfile) => {
   const { outbound_delegations: outboundDelegations } = userProfile
 
@@ -22,9 +36,23 @@ export const getDelegates = (userProfile) => {
   return Array.from(delegatesMap.values())
 }
 
+/**
+ * Returns a single delegate by their user ID, or undefined if not found.
+ *
+ * @param {import('../../services/user/service.js').UserProfile} userProfile
+ * @param {string} delegatedUserId
+ * @returns {DelegateEntry | undefined}
+ */
 export const getDelegate = (userProfile, delegatedUserId) =>
   getDelegates(userProfile).find((delegate) => delegate.id === delegatedUserId)
 
+/**
+ * Returns a Map of CPH ID → CPH number for all CPHs the user can delegate,
+ * derived from their direct assignments.
+ *
+ * @param {import('../../services/user/service.js').UserProfile} userProfile
+ * @returns {Map<string, string>}
+ */
 export const getDelegatableCphs = (userProfile) =>
   new Map(
     userProfile.direct_assignments.map((cph) => [

@@ -1,27 +1,17 @@
+import { getUserProfile } from '../user/index.js'
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 import { seconds } from '../../common/helpers/duration.js'
+import { getUserContext } from '../../common/helpers/user-context.js'
 
-/**
- * Builds the oidc-provider configuration object.
- *
- * @param {object} options
- * @param {string} options.cookiePassword
- * @param {boolean} options.sessionCookieSecure
- * @param {object} options.redis
- * @param {object} options.userService
- * @returns {object}
- */
 export function buildBrokerConfiguration({
   cookiePassword,
   sessionCookieSecure,
-  redis,
-  jwks,
-  userService
+  jwks
 }) {
   return {
     jwks,
-    adapter: (model) => new RedisAdapter(model, redis, 'oidc'),
+    adapter: (model) => new RedisAdapter(model, 'oidc'),
     features: {
       devInteractions: { enabled: false },
       rpInitiatedLogout: {
@@ -78,16 +68,17 @@ export function buildBrokerConfiguration({
     },
 
     async findAccount(ctx, sub, _token) {
-      return findUserAccount(ctx, sub, userService)
+      return findUserAccount(ctx, sub)
     }
   }
 }
 
-function findUserAccount(ctx, sub, userService) {
+function findUserAccount(ctx, sub) {
   return {
     accountId: sub,
     async claims(use) {
-      const userContext = await userService.getUserContext(sub)
+      const profile = await getUserProfile(sub)
+      const userContext = getUserContext(profile)
 
       if (use !== 'userinfo') {
         return userContext

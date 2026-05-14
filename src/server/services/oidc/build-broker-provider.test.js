@@ -19,24 +19,22 @@ const mocks = {
   configGet: vi.spyOn(config, 'get')
 }
 
+const configSetup = () => {
+  mocks.configGet.mockImplementation((key) => {
+    if (key === 'idService.oidc.issuer') return 'http://issuer'
+    if (key === 'session.cookie.password') return 'pw'
+    if (key === 'session.cookie.secure') return false
+  })
+}
+
 describe('buildBrokerProvider()', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
 
   test('it registers the server_error handler', () => {
-    // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
-    const options = { redis: {}, clientsService: {}, userService: {} }
-
-    // Act
-    buildBrokerProvider(options)
-
-    // Assert
+    configSetup()
+    buildBrokerProvider()
     expect(mocks.on).toHaveBeenCalledWith(
       'server_error',
       handlers.onServerError
@@ -44,18 +42,8 @@ describe('buildBrokerProvider()', () => {
   })
 
   test('it registers the interaction.error handler', () => {
-    // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
-    const options = { redis: {}, clientsService: {}, userService: {} }
-
-    // Act
-    buildBrokerProvider(options)
-
-    // Assert
+    configSetup()
+    buildBrokerProvider()
     expect(mocks.on).toHaveBeenCalledWith(
       'interaction.error',
       handlers.onInteractionError
@@ -63,18 +51,8 @@ describe('buildBrokerProvider()', () => {
   })
 
   test('it registers the authorization.error handler', () => {
-    // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
-    const options = { redis: {}, clientsService: {}, userService: {} }
-
-    // Act
-    buildBrokerProvider(options)
-
-    // Assert
+    configSetup()
+    buildBrokerProvider()
     expect(mocks.on).toHaveBeenCalledWith(
       'authorization.error',
       handlers.onAuthorizationError
@@ -83,57 +61,35 @@ describe('buildBrokerProvider()', () => {
 
   test('it registers Client.find using findClient', () => {
     // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
-    const clientsService = { getClient: vi.fn() }
-    const options = { redis: {}, clientsService, userService: {} }
+    configSetup()
 
     // Act
-    const result = buildBrokerProvider(options)
+    const result = buildBrokerProvider()
     result.Client.find('client-123')
 
     // Assert
     expect(vi.mocked(findClient)).toHaveBeenCalledWith(
       'client-123',
-      clientsService,
       result.Client
     )
   })
 
   test('it returns the provider instance', () => {
-    // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
-    const options = { redis: {}, clientsService: {}, userService: {} }
-
-    // Act
-    const result = buildBrokerProvider(options)
-
-    // Assert
+    configSetup()
+    const result = buildBrokerProvider()
     expect(result).toBeInstanceOf(Provider)
   })
 
   test('it passes jwks from loadPrivateKeyJwk to buildBrokerConfiguration', () => {
     // Arrange
-    mocks.configGet.mockImplementation((key) => {
-      if (key === 'idService.oidc.issuer') return 'http://issuer'
-      if (key === 'session.cookie.password') return 'pw'
-      if (key === 'session.cookie.secure') return false
-    })
+    configSetup()
     const jwks = {
       keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'test-kid' }]
     }
     mocks.loadPrivateKeyJwk.mockReturnValue(jwks)
-    const options = { redis: {}, clientsService: {}, userService: {} }
 
     // Act
-    buildBrokerProvider(options)
+    buildBrokerProvider()
 
     // Assert
     expect(mocks.buildBrokerConfiguration).toHaveBeenCalledWith(

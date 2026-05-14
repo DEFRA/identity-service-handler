@@ -23,28 +23,23 @@ import { requestContext } from './common/helpers/request-context.js'
 import { logger } from './common/helpers/logging/logger.js'
 import { auth } from './common/helpers/auth/auth.js'
 import { buildBrokerProvider } from './services/oidc/build-broker-provider.js'
-import { buildRedisClient } from './common/helpers/redis-client.js'
+import { redisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
-import { UserService } from './services/user/UserService.js'
-import { SubjectsService } from './services/subjects.js'
-import { ApplicationService } from './services/application/ApplicationService.js'
-import { ApplicationCache } from './services/application/ApplicationCache.js'
-import { UpstreamStateStore } from './upstream/state-store.js'
 import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 
 export async function createServer() {
   setupProxy()
 
   logger.info(`Starting server with configuration: ${config}`)
-  const redis = buildRedisClient()
-  const services = bootstrapServices(redis)
-  const brokerProvider = buildBrokerProvider({ redis, ...services })
 
-  const [server, b2cConfiguration] = await Promise.all([
-    bootstrapServer(),
-    getB2cConfiguration()
+  const [b2cConfiguration] = await Promise.all([
+    getB2cConfiguration(),
+    redisClient.connect()
   ])
+
+  const brokerProvider = buildBrokerProvider()
+  const server = bootstrapServer()
   await server.register([
     Cookie,
     Crumb,
@@ -64,21 +59,13 @@ export async function createServer() {
     },
     {
       plugin: router.plugin,
-      options: services
+      options: {}
     }
   ])
 
-  await registerOidcRoutes(server, {
-    config,
-    brokerProvider,
-    b2cConfiguration,
-    ...services
-  })
+  await registerOidcRoutes(server, { config, brokerProvider, b2cConfiguration })
 
-  registerLoginRoutes(server, {
-    upstreamStateStore: services.upstreamStateStore,
-    b2cConfiguration
-  })
+  registerLoginRoutes(server, { b2cConfiguration })
 
   server.ext('onRequest', async (req, h) => {
     // Let hapi handle anything that is not an oidc route
@@ -97,23 +84,6 @@ export async function createServer() {
   server.ext('onPreResponse', catchAll)
 
   return server
-}
-
-function bootstrapServices(redis) {
-  const applicationService = new ApplicationService(config)
-  const clientsService = new ApplicationCache(redis, applicationService, {
-    ttlSeconds: 300
-  })
-  const subjectsService = new SubjectsService(redis)
-  const userService = new UserService(redis, config)
-  const upstreamStateStore = new UpstreamStateStore(redis)
-  return {
-    applicationService,
-    clientsService,
-    subjectsService,
-    userService,
-    upstreamStateStore
-  }
 }
 
 function bootstrapServer() {

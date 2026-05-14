@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as oidc from 'openid-client'
 import { config } from '../../../config/config.js'
-import { create } from './login-controller.js'
-
 import * as crypto from 'node:crypto'
+import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
-vi.mock('node:crypto', () => ({ randomUUID: vi.fn() }))
+vi.mock('node:crypto')
+
+import { create } from './login-controller.js'
 
 const mocks = {
   randomPKCECodeVerifier: vi.mocked(oidc.randomPKCECodeVerifier),
@@ -14,10 +15,10 @@ const mocks = {
   randomState: vi.mocked(oidc.randomState),
   randomNonce: vi.mocked(oidc.randomNonce),
   buildAuthorizationUrl: vi.mocked(oidc.buildAuthorizationUrl),
-  randomUUID: vi.mocked(crypto.randomUUID)
+  randomUUID: vi.mocked(crypto.randomUUID),
+  put: vi.spyOn(stateStore, 'put')
 }
 
-const upstreamStateStore = { put: vi.fn() }
 const b2cConfiguration = {}
 
 function makeRequest(next) {
@@ -33,7 +34,8 @@ function makeH() {
 
 describe('create()', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
+    mocks.put.mockResolvedValue(undefined)
     mocks.randomPKCECodeVerifier.mockReturnValue('test-verifier')
     mocks.calculatePKCECodeChallenge.mockResolvedValue('test-challenge')
     mocks.randomState.mockReturnValue('test-state')
@@ -46,7 +48,7 @@ describe('create()', () => {
 
   test('returns 400 when next is missing', async () => {
     // Arrange
-    const handler = create({ b2cConfiguration, upstreamStateStore })
+    const handler = create({ b2cConfiguration })
 
     // Act
     const result = await handler(makeRequest(undefined), makeH())
@@ -57,7 +59,7 @@ describe('create()', () => {
 
   test('returns 400 when next does not start with /', async () => {
     // Arrange
-    const handler = create({ b2cConfiguration, upstreamStateStore })
+    const handler = create({ b2cConfiguration })
 
     // Act
     const result = await handler(makeRequest('https://evil.com'), makeH())
@@ -68,7 +70,7 @@ describe('create()', () => {
 
   test('returns 400 when next starts with //', async () => {
     // Arrange
-    const handler = create({ b2cConfiguration, upstreamStateStore })
+    const handler = create({ b2cConfiguration })
 
     // Act
     const result = await handler(makeRequest('//evil.com'), makeH())
@@ -80,13 +82,13 @@ describe('create()', () => {
   test('stores state in upstreamStateStore and redirects to B2C', async () => {
     // Arrange
     const h = makeH()
-    const handler = create({ b2cConfiguration, upstreamStateStore })
+    const handler = create({ b2cConfiguration })
 
     // Act
     const result = await handler(makeRequest('/dashboard'), h)
 
     // Assert
-    expect(upstreamStateStore.put).toHaveBeenCalledWith(
+    expect(mocks.put).toHaveBeenCalledWith(
       'test-state',
       {
         uid: '00000000-0000-0000-0000-000000000001',

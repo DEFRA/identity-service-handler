@@ -28,36 +28,33 @@ const sessionAuth = {
 }
 
 export const routes = (options = {}) => {
-  const { delegationPath = '/delegation', userService } = options
+  const { delegationPath = '/delegation' } = options
   return [
     {
       method: 'GET',
       path: delegationPath,
       options: sessionAuth,
-      ...listController(userService)
+      ...listController
     },
-    ...createFlowRoutes(delegationPath, userService),
-    ...managementRoutes(delegationPath, userService)
+    ...createFlowRoutes(delegationPath),
+    ...managementRoutes(delegationPath)
   ]
 }
 
-function createFlowRoutes(delegationPath, userService) {
-  const createSubmit = createSubmitController(userService)
-  const cphsSubmit = cphsSubmitController(userService)
-  const confirmSubmit = confirmSubmitController()
+function createFlowRoutes(delegationPath) {
   return [
     {
       method: 'GET',
       path: `${delegationPath}/create`,
       options: sessionAuth,
-      ...createController()
+      ...createController
     },
     {
       method: 'POST',
       path: `${delegationPath}/create`,
-      ...createSubmit,
+      ...createSubmitController,
       options: {
-        ...createSubmit.options,
+        ...createSubmitController.options,
         ...sessionAuth
       }
     },
@@ -65,14 +62,14 @@ function createFlowRoutes(delegationPath, userService) {
       method: 'GET',
       path: `${delegationPath}/create/cphs`,
       options: sessionAuth,
-      ...cphsController(userService)
+      ...cphsController
     },
     {
       method: 'POST',
       path: `${delegationPath}/create/cphs`,
-      ...cphsSubmit,
+      ...cphsSubmitController,
       options: {
-        ...cphsSubmit.options,
+        ...cphsSubmitController.options,
         ...sessionAuth
       }
     },
@@ -80,32 +77,31 @@ function createFlowRoutes(delegationPath, userService) {
       method: 'GET',
       path: `${delegationPath}/create/confirm`,
       options: sessionAuth,
-      ...confirmController(userService)
+      ...confirmController
     },
     {
       method: 'POST',
       options: sessionAuth,
       path: `${delegationPath}/create/confirm`,
-      ...confirmSubmit
+      ...confirmSubmitController
     }
   ]
 }
 
-function managementRoutes(delegationPath, userService) {
-  const manageUpdate = manageUpdateController(userService)
+function managementRoutes(delegationPath) {
   return [
     {
       method: 'GET',
       options: sessionAuth,
       path: `${delegationPath}/{delegated_user_id}/manage`,
-      ...manageController(userService)
+      ...manageController
     },
     {
       method: 'POST',
       path: `${delegationPath}/{delegated_user_id}/manage`,
-      ...manageUpdate,
+      ...manageUpdateController,
       options: {
-        ...manageUpdate.options,
+        ...manageUpdateController.options,
         ...sessionAuth
       }
     },
@@ -113,13 +109,13 @@ function managementRoutes(delegationPath, userService) {
       method: 'GET',
       options: sessionAuth,
       path: `${delegationPath}/{delegated_user_id}/delete`,
-      ...deleteController(userService)
+      ...deleteController
     },
     {
       method: 'POST',
       options: sessionAuth,
       path: `${delegationPath}/{delegated_user_id}/delete`,
-      ...deleteSubmitController(userService)
+      ...deleteSubmitController
     }
   ]
 }

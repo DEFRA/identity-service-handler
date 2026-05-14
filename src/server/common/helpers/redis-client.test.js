@@ -1,25 +1,32 @@
-import { afterEach, describe, expect, test, vi } from 'vitest'
-import { Cluster, Redis } from 'ioredis'
-import { config } from '../../../config/config.js'
-import { buildRedisClient } from './redis-client.js'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-vi.mock('ioredis', () => ({
-  Redis: vi.fn(),
-  Cluster: vi.fn()
+vi.mock('ioredis', () => {
+  const Redis = vi.fn()
+  Redis.prototype.on = vi.fn()
+  const Cluster = vi.fn()
+  Cluster.prototype.on = vi.fn()
+  return { Redis, Cluster }
+})
+
+vi.mock('../../../config/config.js', () => ({
+  config: { get: vi.fn() }
 }))
 
-Redis.prototype.on = vi.fn()
-Cluster.prototype.on = vi.fn()
+vi.mock('./logging/logger.js', () => ({
+  logger: { info: vi.fn(), error: vi.fn() }
+}))
 
 describe('buildRedisClient', () => {
-  afterEach(() => {
-    vi.resetAllMocks()
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
   })
 
   describe('When Redis Single InstanceCache is requested', () => {
-    test('it instantiates Redis with the correct config and registers event handlers', () => {
+    test('it instantiates Redis with the correct config and registers event handlers', async () => {
       // Arrange
-      vi.spyOn(config, 'get').mockReturnValue({
+      const { config } = await import('../../../config/config.js')
+      config.get.mockReturnValue({
         host: 'localhost',
         keyPrefix: 'test:',
         useSingleInstanceCache: true,
@@ -29,11 +36,13 @@ describe('buildRedisClient', () => {
       })
 
       // Act
-      const client = buildRedisClient()
+      const { redisClient } = await import('./redis-client.js')
+      const { Redis } = await import('ioredis')
 
       // Assert
-      expect(client).toBeInstanceOf(Redis)
+      expect(redisClient).toBeInstanceOf(Redis)
       expect(Redis).toHaveBeenCalledWith({
+        lazyConnect: true,
         db: 0,
         host: 'localhost',
         keyPrefix: 'test:',
@@ -51,9 +60,10 @@ describe('buildRedisClient', () => {
   })
 
   describe('When a Redis Cluster is requested', () => {
-    test('it instantiates Cluster with the correct config and registers event handlers', () => {
+    test('it instantiates Cluster with the correct config and registers event handlers', async () => {
       // Arrange
-      vi.spyOn(config, 'get').mockReturnValue({
+      const { config } = await import('../../../config/config.js')
+      config.get.mockReturnValue({
         host: 'localhost',
         keyPrefix: 'test:',
         useSingleInstanceCache: false,
@@ -63,13 +73,15 @@ describe('buildRedisClient', () => {
       })
 
       // Act
-      const client = buildRedisClient()
+      const { redisClient } = await import('./redis-client.js')
+      const { Cluster } = await import('ioredis')
 
       // Assert
-      expect(client).toBeInstanceOf(Cluster)
+      expect(redisClient).toBeInstanceOf(Cluster)
       expect(Cluster).toHaveBeenCalledWith(
         [{ host: 'localhost', port: 6379 }],
         {
+          lazyConnect: true,
           dnsLookup: expect.any(Function),
           keyPrefix: 'test:',
           redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },

@@ -5,27 +5,15 @@ import { logger } from './logging/logger.js'
 const port = 6379
 const db = 0
 
-/**
- * Setup Redis and provide a redis client
- *
- * Local development - 1 Redis instance
- * Environments - Elasticache / Redis Cluster with username and password
- */
-export function buildRedisClient() {
-  const {
-    keyPrefix,
-    host,
-    username,
-    password,
-    useTLS,
-    useSingleInstanceCache
-  } = config.get('redis')
-  const credentials = username === '' ? {} : { username, password }
-  const tls = useTLS ? { tls: {} } : {}
-  let redisClient
+const { keyPrefix, host, username, password, useTLS, useSingleInstanceCache } =
+  config.get('redis')
 
-  if (useSingleInstanceCache) {
-    redisClient = new Redis({
+const credentials = username === '' ? {} : { username, password }
+const tls = useTLS ? { tls: {} } : {}
+
+export const redisClient = useSingleInstanceCache
+  ? new Redis({
+      lazyConnect: true,
       port,
       host,
       db,
@@ -33,8 +21,7 @@ export function buildRedisClient() {
       ...credentials,
       ...tls
     })
-  } else {
-    redisClient = new Cluster(
+  : new Cluster(
       [
         {
           host,
@@ -42,6 +29,7 @@ export function buildRedisClient() {
         }
       ],
       {
+        lazyConnect: true,
         keyPrefix,
         slotsRefreshTimeout: 10000,
         dnsLookup: (address, callback) => callback(null, address),
@@ -52,17 +40,13 @@ export function buildRedisClient() {
         }
       }
     )
-  }
 
-  redisClient.on('connect', () => {
-    logger.info('Connected to Redis server')
-  })
+redisClient.on('connect', () => {
+  logger.info('Connected to Redis server')
+})
 
-  redisClient.on('error', (error) => {
-    logger.error(
-      `Redis connection error ${error}\nErrors:\n${error.errors}\nStack:\n${error.stack}`
-    )
-  })
-
-  return redisClient
-}
+redisClient.on('error', (error) => {
+  logger.error(
+    `Redis connection error ${error}\nErrors:\n${error.errors}\nStack:\n${error.stack}`
+  )
+})

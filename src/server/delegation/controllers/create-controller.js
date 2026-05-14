@@ -1,10 +1,11 @@
 import Joi from 'joi'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
-export const createController = () => ({
+export const createController = {
   handler: async (request, h) => {
     const draftService = new DelegationBuilder(request)
 
@@ -17,9 +18,9 @@ export const createController = () => ({
       })
     )
   }
-})
+}
 
-export const createSubmitController = (userService) => ({
+export const createSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
@@ -49,7 +50,7 @@ export const createSubmitController = (userService) => ({
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const delegatableCphs = getDelegatableCphs(profile)
 
     draftService.setEmail(request.payload.email.trim().toLowerCase())
@@ -61,7 +62,7 @@ export const createSubmitController = (userService) => ({
 
     return h.redirect('/delegation/create/cphs')
   }
-})
+}
 
 function getErrorsFromValidation(validationError) {
   const errors = {}

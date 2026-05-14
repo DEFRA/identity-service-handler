@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'
@@ -9,11 +10,11 @@ import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
 const TEMPLATE = 'delegation/cphs'
 
-export const cphsController = (userService) => ({
+export const cphsController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
     const availableCphs = getDelegatableCphs(profile)
 
@@ -27,9 +28,9 @@ export const cphsController = (userService) => ({
       })
     )
   }
-})
+}
 
-export const cphsSubmitController = (userService) => ({
+export const cphsSubmitController = {
   options: {
     validate: {
       payload: Joi.object({
@@ -37,7 +38,7 @@ export const cphsSubmitController = (userService) => ({
       }),
       failAction: async (request, h, err) => {
         const sub = request.auth?.credentials?.sub
-        const profile = await userService.getUserProfile(sub)
+        const profile = await getUserProfile(sub)
         const availableCphs = getDelegatableCphs(profile)
 
         return h
@@ -65,7 +66,7 @@ export const cphsSubmitController = (userService) => ({
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
     const selectedCphIds = normaliseCheckboxPayload(request.payload.cphs)
-    const profile = await userService.getUserProfile(sub)
+    const profile = await getUserProfile(sub)
     const availableCphs = getDelegatableCphs(profile)
 
     if (
@@ -92,7 +93,7 @@ export const cphsSubmitController = (userService) => ({
 
     return h.redirect('/delegation/create/confirm')
   }
-})
+}
 
 function viewModel(overrides = {}) {
   const errors = overrides.errors ?? {}

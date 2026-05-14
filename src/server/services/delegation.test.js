@@ -2,14 +2,18 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import helperClient from '../clients/helperClient.js'
 import { createInvite, revokeDelegation } from './delegation.js'
 
+const mocks = {
+  post: vi.spyOn(helperClient, 'post')
+}
+
 describe('createInvite()', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it posts a single invitation', async () => {
     // Arrange
-    vi.spyOn(helperClient, 'post').mockResolvedValue({})
+    mocks.post.mockResolvedValue({})
     const invite = {
       countyParishHoldingId: 'cph-guid-1',
       delegatingUserId: 'user-guid-1',
@@ -35,12 +39,12 @@ describe('createInvite()', () => {
 
 describe('revokeDelegation()', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   test('it posts to the revoke endpoint', async () => {
     // Arrange
-    vi.spyOn(helperClient, 'post').mockResolvedValue({})
+    mocks.post.mockResolvedValue({})
 
     // Act
     await revokeDelegation('delegate-1')

@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { getUserProfile } from '../../services/user/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { buildCphCheckboxItems } from '../helpers/build-cph-checkbox-items.js'
@@ -13,11 +14,11 @@ const DELEGATION_ROUTE = '/delegation'
 const TEMPLATE = 'delegation/manage'
 const PAGE_TITLE = 'Manage delegate'
 
-export const manageController = (userService) => ({
+export const manageController = {
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(delegatingUserId)
+    const profile = await getUserProfile(delegatingUserId)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
@@ -33,12 +34,12 @@ export const manageController = (userService) => ({
       )
     })
   }
-})
+}
 
-async function manageUpdateFailAction(userService, request, h, err) {
+async function manageUpdateFailAction(request, h, err) {
   const delegatingUserId = request.auth?.credentials?.sub
   const { delegated_user_id: delegatedUserId } = request.params
-  const profile = await userService.getUserProfile(delegatingUserId)
+  const profile = await getUserProfile(delegatingUserId)
   const delegatedUser = getDelegate(profile, delegatedUserId)
   if (!delegatedUser) {
     return h.redirect(DELEGATION_ROUTE).takeover()
@@ -62,7 +63,7 @@ async function manageUpdateFailAction(userService, request, h, err) {
     .takeover()
 }
 
-export const manageUpdateController = (userService) => ({
+export const manageUpdateController = {
   options: {
     validate: {
       payload: Joi.object({
@@ -70,14 +71,13 @@ export const manageUpdateController = (userService) => ({
         cphs: cphsSchema
       }),
       options: { allowUnknown: true },
-      failAction: (request, h, err) =>
-        manageUpdateFailAction(userService, request, h, err)
+      failAction: (request, h, err) => manageUpdateFailAction(request, h, err)
     }
   },
   handler: async (request, h) => {
     const delegatingUserId = request.auth?.credentials?.sub
     const { delegated_user_id: delegatedUserId } = request.params
-    const profile = await userService.getUserProfile(delegatingUserId)
+    const profile = await getUserProfile(delegatingUserId)
     const delegatedUser = getDelegate(profile, delegatedUserId)
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
@@ -124,4 +124,4 @@ export const manageUpdateController = (userService) => ({
 
     return h.redirect(DELEGATION_ROUTE)
   }
-})
+}

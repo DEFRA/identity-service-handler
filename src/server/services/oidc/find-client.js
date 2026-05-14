@@ -1,21 +1,28 @@
+import { redisClient } from '../../common/helpers/redis-client.js'
+import { get as getApplication } from '../application/index.js'
 import { buildClientParams } from './build-client-params.js'
+import { seconds } from '../../common/helpers/duration.js'
 
-/**
- * @typedef {import('../application/ApplicationCache.js').ApplicationCache} ApplicationCache
- */
+const APPLICATION_CACHE_KEY_PREFIX = 'application-cache'
 
-/**
- * Finds an OIDC client by client ID, returning a new OidcClient instance if found.
- *
- * @param {string} clientId
- * @param {ApplicationCache} clientsService
- * @param {new (params: object) => object} OidcClient
- * @returns {Promise<object | undefined>}
- */
-export async function findClient(clientId, clientsService, OidcClient) {
-  const c = await clientsService.get(clientId)
-  if (!c) {
+export async function findClient(clientId, OidcClient) {
+  const cacheKey = `${APPLICATION_CACHE_KEY_PREFIX}:${clientId}`
+
+  const cached = await redisClient.get(cacheKey)
+  if (cached) {
+    return new OidcClient(buildClientParams(JSON.parse(cached)))
+  }
+
+  const application = await getApplication(clientId)
+  if (!application) {
     return undefined
   }
-  return new OidcClient(buildClientParams(c))
+
+  await redisClient.set(
+    cacheKey,
+    JSON.stringify(application),
+    'EX',
+    seconds.fiveMinutes
+  )
+  return new OidcClient(buildClientParams(application))
 }
