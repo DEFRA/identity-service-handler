@@ -1,5 +1,5 @@
 import { redisClient } from '../../common/helpers/redis-client.js'
-import { get as getApplication } from '../application/index.js'
+import { get as getApplication } from '../application.js'
 import { buildClientParams } from './build-client-params.js'
 import { seconds } from '../../common/helpers/duration.js'
 

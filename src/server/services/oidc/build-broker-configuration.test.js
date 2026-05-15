@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { redisClient } from '../../common/helpers/redis-client.js'
-import * as userService from '../user/index.js'
+import * as userService from '../user.js'
 import * as postLogoutModule from './post-logout-success-source.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { RedisAdapter } from './redis-adapter.js'
 
-vi.mock('../user/index.js')
+vi.mock('../user.js')
 vi.mock('./post-logout-success-source.js')
 
 redisClient.options = { keyPrefix: '' }

@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { getUserProfile } from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
 import { withErrorPageTitle } from '../../common/helpers/with-error-page-title.js'

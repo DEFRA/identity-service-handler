@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { contextController } from './context-controller.js'
 import { redisClient } from '../../../common/helpers/redis-client.js'
-import { getUserProfile } from '../../../services/user/index.js'
+import { getUserProfile } from '../../../services/user.js'
 
-vi.mock('../../../services/user/index.js')
+vi.mock('../../../services/user.js')
 
 const mocks = {
   redisClient: {

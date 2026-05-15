@@ -1,4 +1,4 @@
-import { getUserProfile } from '../user/index.js'
+import { getUserProfile } from '../user.js'
 import { RedisAdapter } from './redis-adapter.js'
 import { postLogoutSuccessSource } from './post-logout-success-source.js'
 import { seconds } from '../../common/helpers/duration.js'
