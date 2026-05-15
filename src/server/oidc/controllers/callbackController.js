@@ -1,5 +1,4 @@
 import * as oidc from 'openid-client'
-import jwt from 'jsonwebtoken'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
 import * as stateStore from '../../upstream/state-store.js'
@@ -42,7 +41,7 @@ export function create({ config, b2cConfiguration }) {
       }
     )
 
-    const { sub } = jwt.decode(tokens.id_token)
+    const sub = tokens.claims().sub
 
     // Set broker SSO cookie and retain the upstream ID token for logout.
     request.cookieAuth.set({

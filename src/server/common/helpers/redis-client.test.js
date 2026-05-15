@@ -57,6 +57,38 @@ describe('buildRedisClient', () => {
         expect.any(Function)
       )
     })
+
+    test('it logs info on connect and logs error on error', async () => {
+      // Arrange
+      const { config } = await import('../../../config/config.js')
+      config.get.mockReturnValue({
+        host: 'localhost',
+        keyPrefix: 'test:',
+        useSingleInstanceCache: true,
+        useTLS: false,
+        username: '',
+        password: ''
+      })
+      await import('./redis-client.js')
+      const { Redis } = await import('ioredis')
+      const { logger } = await import('./logging/logger.js')
+
+      const connectHandler = Redis.prototype.on.mock.calls.find(
+        ([event]) => event === 'connect'
+      )[1]
+      const errorHandler = Redis.prototype.on.mock.calls.find(
+        ([event]) => event === 'error'
+      )[1]
+
+      // Act
+      connectHandler()
+      const error = Object.assign(new Error('fail'), { errors: [], stack: '' })
+      errorHandler(error)
+
+      // Assert
+      expect(logger.info).toHaveBeenCalledWith('Connected to Redis server')
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('fail'))
+    })
   })
 
   describe('When a Redis Cluster is requested', () => {
@@ -96,6 +128,30 @@ describe('buildRedisClient', () => {
         'error',
         expect.any(Function)
       )
+    })
+
+    test('it invokes the dnsLookup callback with the address unchanged', async () => {
+      // Arrange
+      const { config } = await import('../../../config/config.js')
+      config.get.mockReturnValue({
+        host: 'localhost',
+        keyPrefix: 'test:',
+        useSingleInstanceCache: false,
+        useTLS: false,
+        username: '',
+        password: ''
+      })
+      await import('./redis-client.js')
+      const { Cluster } = await import('ioredis')
+
+      const { dnsLookup } = Cluster.mock.calls[0][1]
+      const callback = vi.fn()
+
+      // Act
+      dnsLookup('127.0.0.1', callback)
+
+      // Assert
+      expect(callback).toHaveBeenCalledWith(null, '127.0.0.1')
     })
   })
 })

@@ -1,16 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as oidc from 'openid-client'
-import jwt from 'jsonwebtoken'
 import { config } from '../../../config/config.js'
 import { create } from './callbackController.js'
 import * as stateStore from '../../upstream/state-store.js'
 
 vi.mock('openid-client')
-vi.mock('jsonwebtoken')
 
 const mocks = {
   authorizationCodeGrant: vi.mocked(oidc.authorizationCodeGrant),
-  decode: vi.mocked(jwt.decode),
   response: vi.fn((value) => ({
     code: vi.fn(() => value)
   })),
@@ -182,10 +179,8 @@ describe('create()', () => {
       nextUrl: '/interaction/interaction-123'
     })
     mocks.authorizationCodeGrant.mockResolvedValue({
-      id_token: 'id-token'
-    })
-    mocks.decode.mockReturnValue({
-      sub: 'upstream-sub'
+      id_token: 'id-token',
+      claims: () => ({ sub: 'upstream-sub' })
     })
     const handler = create({
       config,
@@ -210,7 +205,6 @@ describe('create()', () => {
     expect(callbackUrl.toString()).toBe(
       `${config.get('idService.b2c.redirectUrl')}?code=auth-code&state=test-state&scope=openid+offline_access+${config.get('idService.b2c.clientId')}`
     )
-    expect(mocks.decode).toHaveBeenCalledWith('id-token')
     expect(request.cookieAuth.set).toHaveBeenCalledWith({
       sub: 'upstream-sub',
       upstreamIdTokenHint: 'id-token'
@@ -258,10 +252,8 @@ describe('create()', () => {
       pkceCodeVerifier: 'verifier-post'
     })
     mocks.authorizationCodeGrant.mockResolvedValue({
-      id_token: 'id-token-post'
-    })
-    mocks.decode.mockReturnValue({
-      sub: 'upstream-post-sub'
+      id_token: 'id-token-post',
+      claims: () => ({ sub: 'upstream-post-sub' })
     })
     const handler = create({
       config,

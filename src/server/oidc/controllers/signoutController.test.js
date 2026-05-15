@@ -248,6 +248,37 @@ describe('create()', () => {
     )
   })
 
+  test('it redirects directly to the broker signout url when no upstream end_session_endpoint is configured', async () => {
+    const handler = create({
+      config: { get: mocks.configGet },
+      b2cConfiguration: {}
+    })
+    const request = createRequest()
+    const h = { redirect: mocks.redirect }
+
+    await handler(request, h)
+
+    const redirectTo = new URL(mocks.redirect.mock.calls[0][0])
+    expect(redirectTo.pathname).toBe('/oidc/signout')
+    expect(redirectTo.searchParams.has('post_logout_redirect_uri')).toBe(false)
+  })
+
+  test('it falls back to "/" when referer is not a valid absolute URL', async () => {
+    const handler = createHandler()
+    const request = createRequest({
+      headers: { referer: 'not-a-valid-url' }
+    })
+    const h = { redirect: mocks.redirect }
+
+    await handler(request, h)
+
+    expect(mocks.state).toHaveBeenCalledWith(
+      SIGNOUT_REDIRECT_COOKIE_NAME,
+      encodeURIComponent('/'),
+      expect.any(Object)
+    )
+  })
+
   test('it returns the redirect response', async () => {
     const redirectResponse = { state: mocks.state }
     mocks.redirect.mockReturnValue(redirectResponse)
