@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import helperClient from '../../clients/helperClient.js'
-import { getUserProfile } from './service.js'
+import helperClient from '../clients/helperClient.js'
+import { getUserProfile } from './user.js'
 
 const mocks = {
   helperClientGet: vi.spyOn(helperClient, 'get')

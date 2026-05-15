@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import * as userService from '../../services/user/index.js'
+import * as userService from '../../services/user.js'
 import {
   deleteController,
   deleteSubmitController

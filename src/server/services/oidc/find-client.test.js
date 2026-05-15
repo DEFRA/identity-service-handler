@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
 
 import { redisClient } from '../../common/helpers/redis-client.js'
-import * as applicationModule from '../application/index.js'
+import * as applicationModule from '../application.js'
 import * as buildClientParamsModule from './build-client-params.js'
 import { findClient } from './find-client.js'
 

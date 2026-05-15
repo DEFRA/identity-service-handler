@@ -288,12 +288,6 @@ export const config = convict({
         default: 'NOT_A_REAL_CLIENT_ID',
         env: 'B2C_SERVICE_ID'
       },
-      useFakeClient: {
-        doc: 'Toggles whether to use the fake auth api or not',
-        format: Boolean,
-        default: false,
-        env: 'B2C_USE_FAKE_CLIENT'
-      },
       clientSecret: {
         doc: 'The B2C Client Secret',
         format: String,
@@ -329,12 +323,6 @@ export const config = convict({
           'rXlX5VGkoCoPRBFGnjrVyvSyYODJuScFttswo6U7gX9hUk97cmM6c8Bn4fRI5i7e',
         sensitive: true,
         env: 'ADMIN_API_KEY'
-      },
-      useFakeClient: {
-        doc: 'Toggles whether to use the fake client api or not. This is only used for testing purposes.',
-        format: Boolean,
-        default: false,
-        env: 'HANDLER_USE_FAKE_CLIENT'
       }
     },
     helper: {
@@ -351,12 +339,6 @@ export const config = convict({
           'jbz9ljIFoIYaCBwhB0pYYthqZlkF9FqIbf00Cuk0iHlnKMMXHdMSpyXSTU2AsmqG',
         sensitive: true,
         env: 'HELPER_API_KEY'
-      },
-      useFakeClient: {
-        doc: 'Toggles whether to use the fake client api or not. This is only used for testing purposes.',
-        format: Boolean,
-        default: false,
-        env: 'HELPER_USE_FAKE_CLIENT'
       }
     }
   }

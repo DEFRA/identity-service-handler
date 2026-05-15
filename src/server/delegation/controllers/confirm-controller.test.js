@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import * as userService from '../../services/user/index.js'
+import * as userService from '../../services/user.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   confirmController,
@@ -7,7 +7,7 @@ import {
 } from './confirm-controller.js'
 import * as delegationService from '../../services/delegation.js'
 
-vi.mock('../../services/user/index.js')
+vi.mock('../../services/user.js')
 vi.mock('../../services/delegation.js')
 
 const mocks = {

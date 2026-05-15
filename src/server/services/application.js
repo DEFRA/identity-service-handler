@@ -1,4 +1,4 @@
-import helperClient from '../../clients/helperClient.js'
+import helperClient from '../clients/helperClient.js'
 
 /**
  * @typedef {import('../../../config/config.js').AppConfig} AppConfig

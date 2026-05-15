@@ -1,4 +1,4 @@
-import { getUserProfile } from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { paginateList } from '../../common/helpers/pagination.js'
 import { getDelegates } from '../../common/helpers/delegation.js'

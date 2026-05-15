@@ -1,4 +1,4 @@
-import { getUserProfile } from '../../services/user/index.js'
+import { getUserProfile } from '../../services/user.js'
 import * as delegationService from '../../services/delegation.js'
 import { getDelegate } from '../../common/helpers/delegation.js'
 

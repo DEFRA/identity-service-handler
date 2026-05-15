@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import * as userService from '../../services/user/index.js'
+import * as userService from '../../services/user.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import {
   createController,
   createSubmitController
 } from './create-controller.js'
 
-vi.mock('../../services/user/index.js')
+vi.mock('../../services/user.js')
 
 const mocks = {
   getUserProfile: vi.mocked(userService.getUserProfile),

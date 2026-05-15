@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import * as userService from '../../services/user/index.js'
+import * as userService from '../../services/user.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import { cphsController, cphsSubmitController } from './cphs-controller.js'
 
-vi.mock('../../services/user/index.js')
+vi.mock('../../services/user.js')
 
 const ASSOCIATION_1 = {
   county_parish_holding_id: 'cph-id-1',
