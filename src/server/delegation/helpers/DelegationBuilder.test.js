@@ -13,6 +13,48 @@ describe('DelegationBuilder', () => {
     vi.resetAllMocks()
   })
 
+  describe('getDraft()', () => {
+    test('it returns the cached draft on subsequent calls without reading yar again', () => {
+      // Arrange
+      const request = { yar: { get: mocks.get } }
+      const builder = new DelegationBuilder(request)
+      mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
+
+      // Act
+      builder.getDraft()
+      builder.getDraft()
+
+      // Assert
+      expect(mocks.get).toHaveBeenCalledTimes(1)
+    })
+
+    test('it returns an empty object when yar has no draft', () => {
+      // Arrange
+      const request = { yar: { get: mocks.get } }
+      const builder = new DelegationBuilder(request)
+      mocks.get.mockReturnValue(null)
+
+      // Act
+      const result = builder.getDraft()
+
+      // Assert
+      expect(result).toEqual({})
+    })
+
+    test('it accepts a bare yar object instead of a request wrapper', () => {
+      // Arrange
+      const yar = { get: mocks.get }
+      const builder = new DelegationBuilder(yar)
+      mocks.get.mockReturnValue({ email: 'joe@example.gov.uk' })
+
+      // Act
+      const result = builder.getEmail()
+
+      // Assert
+      expect(result).toBe('joe@example.gov.uk')
+    })
+  })
+
   describe('getEmail()', () => {
     test('it returns the stored email', () => {
       // Arrange
