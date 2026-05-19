@@ -341,6 +341,14 @@ export const config = convict({
         env: 'HELPER_API_KEY'
       }
     }
+  },
+  delegations: {
+    defaultRoleId: {
+      doc: 'Default role id to use for delegations',
+      format: String,
+      default: '0c15ba2f-b4ba-406a-a0ae-213de64600a9',
+      env: 'DEFAULT_ROLE_ID'
+    }
   }
 })
 

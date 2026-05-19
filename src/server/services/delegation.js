@@ -1,4 +1,5 @@
 import helperClient from '../clients/helperClient.js'
+import { config } from '../../config/config.js'
 
 /**
  * @typedef {object} CphDelegation
@@ -45,7 +46,7 @@ export const createInvite = async ({
       county_parish_holding_id: countyParishHoldingId,
       delegating_user_id: delegatingUserId,
       delegated_user_email: delegatedUserEmail,
-      delegated_user_role_id: '0c15ba2f-b4ba-406a-a0ae-213de64600a9', // TODO: work out how role id will be chosen
+      delegated_user_role_id: config.get('delegations.defaultRoleId'), // TODO: work out how role id will be chosen
       delegated_user_id:
         delegatedUserId || '00000000-0000-0000-0000-000000000001' // TODO: Replace this quick fix when fixed in back end
     }
