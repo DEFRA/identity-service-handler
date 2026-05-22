@@ -1,0 +1,40 @@
+{% extends 'layouts/page.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Cookies</h1>
+
+      <p class="govuk-body">Cookies are files saved on your phone, tablet or computer when you visit a website.</p>
+
+      <p class="govuk-body">We only use cookies that are strictly necessary for this service to work. We do not use any cookies to track you or remember your preferences.</p>
+
+      <h2 class="govuk-heading-m">Essential cookies</h2>
+
+      <p class="govuk-body">These cookies are needed for the service to work. You cannot turn them off.</p>
+
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">Session and security cookies</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Purpose</th>
+            <th scope="col" class="govuk-table__header">Expires</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">session</td>
+            <td class="govuk-table__cell">Keeps you signed in as you move between pages</td>
+            <td class="govuk-table__cell">When you close your browser</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">_csrf, _session, _interaction, _interaction_resume, _signout</td>
+            <td class="govuk-table__cell">Keeps the service secure</td>
+            <td class="govuk-table__cell">When you close your browser</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -24,7 +24,7 @@
       </ul>
 
       <form method="post" action="/delegation/create/confirm">
-        <input type="hidden" name="crumb" value="{{ crumb }}">
+        <input type="hidden" name="_csrf" value="{{ _csrf }}">
 
         {{ govukButton({
           text: "Confirm and Send Invite"

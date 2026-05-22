@@ -67,7 +67,7 @@ export const manageUpdateController = {
   options: {
     validate: {
       payload: Joi.object({
-        crumb: Joi.string(),
+        _csrf: Joi.string(),
         cphs: cphsSchema
       }),
       options: { allowUnknown: true },
