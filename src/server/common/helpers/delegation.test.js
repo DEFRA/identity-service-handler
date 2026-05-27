@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { getDelegates, getDelegate } from './delegation.js'
+import {
+  getDelegates,
+  getDelegate,
+  getPendingInvitations
+} from './delegation.js'
 
 const profile = {
   outbound_delegations: [
@@ -90,5 +94,54 @@ describe('getDelegate()', () => {
     const result = getDelegate(profile, 'unknown-user')
 
     expect(result).toBeUndefined()
+  })
+})
+
+describe('getPendingInvitations()', () => {
+  const pending = {
+    id: 'del-1',
+    invitation_accepted_at: null,
+    invitation_rejected_at: null,
+    revoked_at: null
+  }
+
+  test('it returns pending inbound delegations', () => {
+    const result = getPendingInvitations({ inbound_delegations: [pending] })
+
+    expect(result).toEqual([pending])
+  })
+
+  test('it filters out accepted delegations', () => {
+    const result = getPendingInvitations({
+      inbound_delegations: [
+        { ...pending, invitation_accepted_at: '2024-01-01T00:00:00Z' }
+      ]
+    })
+
+    expect(result).toEqual([])
+  })
+
+  test('it filters out rejected delegations', () => {
+    const result = getPendingInvitations({
+      inbound_delegations: [
+        { ...pending, invitation_rejected_at: '2024-01-01T00:00:00Z' }
+      ]
+    })
+
+    expect(result).toEqual([])
+  })
+
+  test('it filters out revoked delegations', () => {
+    const result = getPendingInvitations({
+      inbound_delegations: [{ ...pending, revoked_at: '2024-01-01T00:00:00Z' }]
+    })
+
+    expect(result).toEqual([])
+  })
+
+  test('it returns an empty array when there are no inbound delegations', () => {
+    const result = getPendingInvitations({ inbound_delegations: [] })
+
+    expect(result).toEqual([])
   })
 })
