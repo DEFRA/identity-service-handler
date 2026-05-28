@@ -60,3 +60,19 @@ export const createInvite = async ({
 export const revokeDelegation = async (delegationId) => {
   await helperClient.post(`/delegations/${delegationId}:revoke`)
 }
+
+/**
+ * @param {string} delegationId
+ * @returns {Promise<void>}
+ */
+export const acceptInvitation = async (delegationId) => {
+  await helperClient.post(`/delegations/${delegationId}:accept`)
+}
+
+/**
+ * @param {string} delegationId
+ * @returns {Promise<void>}
+ */
+export const rejectInvitation = async (delegationId) => {
+  await helperClient.post(`/delegations/${delegationId}:reject`)
+}

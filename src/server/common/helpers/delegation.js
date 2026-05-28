@@ -60,3 +60,17 @@ export const getDelegatableCphs = (userProfile) =>
       cph.county_parish_holding_number
     ])
   )
+
+/**
+ * Returns inbound delegations that have not yet been accepted, rejected, or revoked.
+ *
+ * @param {import('../../services/user.js').UserProfile} userProfile
+ * @returns {import('../../services/user.js').CphDelegation[]}
+ */
+export const getPendingInvitations = (userProfile) =>
+  userProfile.inbound_delegations.filter(
+    (delegation) =>
+      !delegation.invitation_accepted_at &&
+      !delegation.invitation_rejected_at &&
+      !delegation.revoked_at
+  )

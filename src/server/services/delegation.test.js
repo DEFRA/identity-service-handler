@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import helperClient from '../clients/helperClient.js'
-import { createInvite, revokeDelegation } from './delegation.js'
+import {
+  acceptInvitation,
+  createInvite,
+  rejectInvitation,
+  revokeDelegation
+} from './delegation.js'
 
 const mocks = {
   post: vi.spyOn(helperClient, 'post')
@@ -52,6 +57,44 @@ describe('revokeDelegation()', () => {
     // Assert
     expect(helperClient.post).toHaveBeenCalledWith(
       '/delegations/delegate-1:revoke'
+    )
+  })
+})
+
+describe('acceptInvitation()', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
+  test('it posts to the accept endpoint', async () => {
+    // Arrange
+    mocks.post.mockResolvedValue({})
+
+    // Act
+    await acceptInvitation('delegation-1')
+
+    // Assert
+    expect(helperClient.post).toHaveBeenCalledWith(
+      '/delegations/delegation-1:accept'
+    )
+  })
+})
+
+describe('rejectInvitation()', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
+  test('it posts to the reject endpoint', async () => {
+    // Arrange
+    mocks.post.mockResolvedValue({})
+
+    // Act
+    await rejectInvitation('delegation-1')
+
+    // Assert
+    expect(helperClient.post).toHaveBeenCalledWith(
+      '/delegations/delegation-1:reject'
     )
   })
 })
