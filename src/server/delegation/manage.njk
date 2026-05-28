@@ -39,7 +39,7 @@
       <h2 class="govuk-heading-m">County Parish Holding Numbers:</h2>
 
       <form method="post" action="/delegation/{{ delegated_user_id }}/manage">
-        <input type="hidden" name="crumb" value="{{ crumb }}">
+        <input type="hidden" name="_csrf" value="{{ _csrf }}">
         {{ appCphCheckboxes({
           caption: "County Parish Holding Numbers",
           checkboxItems: checkboxItems,

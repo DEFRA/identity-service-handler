@@ -1,1 +1,1 @@
-export const SIGNOUT_REDIRECT_COOKIE_NAME = 'broker_signout_redirect'
+export const SIGNOUT_REDIRECT_COOKIE_NAME = '_signout'

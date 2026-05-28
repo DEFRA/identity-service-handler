@@ -10,7 +10,7 @@
       <p class="govuk-body">{{ delegated_user_email }}</p>
 
       <form method="post" action="/delegation/{{ delegated_user_id }}/delete">
-        <input type="hidden" name="crumb" value="{{ crumb }}">
+        <input type="hidden" name="_csrf" value="{{ _csrf }}">
 
         {{ govukButton({
           text: "Continue"

@@ -24,7 +24,7 @@
       <p class="govuk-body govuk-!-margin-bottom-5">{{ caption }}:</p>
 
       <form method="post" action="/delegation/create/cphs">
-        <input type="hidden" name="crumb" value="{{ crumb }}">
+        <input type="hidden" name="_csrf" value="{{ _csrf }}">
         {{ appCphCheckboxes({
           caption: caption,
           checkboxItems: checkboxItems,

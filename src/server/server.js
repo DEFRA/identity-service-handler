@@ -42,7 +42,13 @@ export async function createServer() {
   const server = bootstrapServer()
   await server.register([
     Cookie,
-    Crumb,
+    {
+      plugin: Crumb,
+      options: {
+        key: '_csrf',
+        cookieOptions: { isSecure: config.get('session.cookie.secure') }
+      }
+    },
     Inert,
     requestLogger,
     requestTracing,
