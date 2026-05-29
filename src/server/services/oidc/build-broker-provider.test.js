@@ -1,22 +1,23 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
 import Provider from 'oidc-provider'
 import * as handlers from './provider-event-handlers.js'
-import { findClient } from './find-client.js'
 import { buildBrokerConfiguration } from './build-broker-configuration.js'
 import { loadPrivateKeyJwk } from '../../common/helpers/auth/certificate-tools.js'
 import { config } from '../../../config/config.js'
 import { buildBrokerProvider } from './build-broker-provider.js'
+import * as application from '../application.js'
 
 vi.mock('./build-broker-configuration.js')
-vi.mock('./find-client.js')
 vi.mock('./provider-event-handlers.js')
 vi.mock('../../common/helpers/auth/certificate-tools.js')
+vi.mock('../application.js')
 
 const mocks = {
   on: vi.spyOn(Provider.prototype, 'on'),
   buildBrokerConfiguration: vi.mocked(buildBrokerConfiguration),
   loadPrivateKeyJwk: vi.mocked(loadPrivateKeyJwk),
-  configGet: vi.spyOn(config, 'get')
+  configGet: vi.spyOn(config, 'get'),
+  getApplication: vi.mocked(application.get)
 }
 
 const configSetup = () => {
@@ -33,8 +34,13 @@ describe('buildBrokerProvider()', () => {
   })
 
   test('it registers the server_error handler', () => {
+    // Arrange
     configSetup()
+
+    // Act
     buildBrokerProvider()
+
+    // Assert
     expect(mocks.on).toHaveBeenCalledWith(
       'server_error',
       handlers.onServerError
@@ -42,8 +48,13 @@ describe('buildBrokerProvider()', () => {
   })
 
   test('it registers the interaction.error handler', () => {
+    // Arrange
     configSetup()
+
+    // Act
     buildBrokerProvider()
+
+    // Assert
     expect(mocks.on).toHaveBeenCalledWith(
       'interaction.error',
       handlers.onInteractionError
@@ -51,32 +62,62 @@ describe('buildBrokerProvider()', () => {
   })
 
   test('it registers the authorization.error handler', () => {
+    // Arrange
     configSetup()
+
+    // Act
     buildBrokerProvider()
+
+    // Assert
     expect(mocks.on).toHaveBeenCalledWith(
       'authorization.error',
       handlers.onAuthorizationError
     )
   })
 
-  test('it registers Client.find using findClient', () => {
+  test('it returns a Client instance from Client.find when getApplication finds a config', async () => {
+    // Arrange
+    configSetup()
+    const appConfig = {
+      id: '1',
+      name: 'Test App',
+      client_id: 'client-123',
+      secret: 'secret',
+      tenant_name: 'tenant',
+      description: 'desc',
+      scopes: [],
+      redirect_uri: []
+    }
+    mocks.getApplication.mockResolvedValue(appConfig)
+    const result = buildBrokerProvider()
+    const originalFind = result.Client.find
+    const mockClientInstance = { client_id: 'client-123' }
+    const MockClient = vi.fn().mockImplementation(function () {
+      return mockClientInstance
+    })
+    Object.defineProperty(result, 'Client', {
+      get: () => MockClient,
+      configurable: true
+    })
+    MockClient.find = originalFind
+
+    // Act
+    const client = await MockClient.find('client-123')
+
+    // Assert
+    expect(mocks.getApplication).toHaveBeenCalledWith('client-123')
+    expect(MockClient).toHaveBeenCalledWith(appConfig)
+    expect(client).toBe(mockClientInstance)
+  })
+
+  test('it returns the provider instance', () => {
     // Arrange
     configSetup()
 
     // Act
     const result = buildBrokerProvider()
-    result.Client.find('client-123')
 
     // Assert
-    expect(vi.mocked(findClient)).toHaveBeenCalledWith(
-      'client-123',
-      result.Client
-    )
-  })
-
-  test('it returns the provider instance', () => {
-    configSetup()
-    const result = buildBrokerProvider()
     expect(result).toBeInstanceOf(Provider)
   })
 
