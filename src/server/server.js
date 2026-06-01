@@ -27,6 +27,7 @@ import { redisClient } from './common/helpers/redis-client.js'
 import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
 import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
+import { onPreAuth } from './common/helpers/on-pre-auth.js'
 
 export async function createServer() {
   setupProxy()
@@ -87,6 +88,7 @@ export async function createServer() {
 
   logger.info(`Current working directory: ${process.cwd()}`)
 
+  server.ext('onPreAuth', onPreAuth)
   server.ext('onPreResponse', catchAll)
 
   return server

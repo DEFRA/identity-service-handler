@@ -7,10 +7,7 @@ const buildOptions = (options = {}) => ({
   baseUrl: config.get('idService.helper.baseUrl'),
   json: true,
   ...options,
-  headers: Object.assign(
-    generateHeaders('helper', options.correlationId),
-    options.headers
-  )
+  headers: Object.assign(generateHeaders('helper'), options.headers)
 })
 
 const parseError = (statusCode, payload) => {

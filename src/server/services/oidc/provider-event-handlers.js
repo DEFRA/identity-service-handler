@@ -11,9 +11,7 @@ export const onServerError = (ctx, err) => {
       route: ctx?.request?.url,
       method: ctx?.request?.method,
       clientId: ctx?.oidc?.client?.clientId,
-      params: ctx?.oidc?.params,
       prompt: ctx?.oidc?.prompt,
-      sessionAccountId: ctx?.oidc?.session?.accountId,
       uid: ctx?.oidc?.uid
     })}`
   )

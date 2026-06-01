@@ -2,6 +2,7 @@ import * as oidc from 'openid-client'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { seconds } from '../../common/helpers/duration.js'
 import * as stateStore from '../../upstream/state-store.js'
+import { logger } from '../../common/helpers/logging/logger.js'
 
 export function create({ config, b2cConfiguration }) {
   return async function (request, h) {
@@ -9,14 +10,17 @@ export function create({ config, b2cConfiguration }) {
       (request.method === 'post' ? request.payload : request.query) ?? {}
 
     if (!code) {
+      logger.warn('SSO callback received without authorization code')
       return h.response('Missing code').code(statusCodes.badRequest)
     }
     if (!state) {
+      logger.warn('SSO callback received without state parameter')
       return h.response('Missing state').code(statusCodes.badRequest)
     }
 
     const record = await stateStore.get(state)
     if (!record) {
+      logger.warn('SSO callback state not found or expired')
       return h.response('Unknown/expired state').code(statusCodes.badRequest)
     }
 

@@ -1,5 +1,6 @@
 import { statusCodes } from '../constants/status-codes.js'
 import { config } from '../../../config/config.js'
+import { logger } from './logging/logger.js'
 
 function statusCodeMessage(statusCode) {
   switch (statusCode) {
@@ -27,7 +28,7 @@ export function catchAll(request, h) {
   const errorMessage = statusCodeMessage(statusCode)
 
   if (statusCode >= statusCodes.internalServerError) {
-    request.logger.error(response?.stack)
+    logger.error(response?.stack)
   }
 
   const isProduction = config.get('isProduction') || false

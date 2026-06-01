@@ -265,6 +265,7 @@ export const config = convict({
         format: String,
         default: null,
         nullable: true,
+        sensitive: true,
         env: 'OIDC_SIGNING_KEY'
       },
       signingCert: {
@@ -272,6 +273,7 @@ export const config = convict({
         format: String,
         default: null,
         nullable: true,
+        sensitive: true,
         env: 'OIDC_SIGNING_CERT'
       }
     },
