@@ -30,13 +30,16 @@ export const confirmSubmitController = {
     const draftService = new DelegationBuilder(request)
     const email = draftService.getEmail()
 
+    const delegatedUserRoleId = await delegationService.getDefaultRoleId()
+
     // TODO: handle partial failures
     await Promise.allSettled(
       draftService.getCphIds().map((id) =>
         delegationService.createInvite({
           countyParishHoldingId: id,
           delegatingUserId: sub,
-          delegatedUserEmail: email
+          delegatedUserEmail: email,
+          delegatedUserRoleId
         })
       )
     )

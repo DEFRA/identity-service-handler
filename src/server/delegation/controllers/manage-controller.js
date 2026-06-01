@@ -108,13 +108,18 @@ export const manageUpdateController = {
       }
     }
 
+    const delegatedUserRoleId = toCreate.length
+      ? await delegationService.getDefaultRoleId()
+      : null
+
     // TODO: handle partial failures
     await Promise.allSettled([
       ...toCreate.map((countyParishHoldingId) =>
         delegationService.createInvite({
           countyParishHoldingId,
           delegatingUserId,
-          delegatedUserEmail: delegatedUser.email
+          delegatedUserEmail: delegatedUser.email,
+          delegatedUserRoleId
         })
       ),
       ...toRevoke.map((delegationId) =>

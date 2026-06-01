@@ -11,6 +11,7 @@ const mocks = {
   getUserProfile: vi.spyOn(userService, 'getUserProfile'),
   getDelegate: vi.spyOn(delegation, 'getDelegate'),
   createInvite: vi.spyOn(delegationService, 'createInvite'),
+  getDefaultRoleId: vi.spyOn(delegationService, 'getDefaultRoleId'),
   revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
   view: vi.fn(),
   redirect: vi.fn(),
@@ -119,6 +120,7 @@ describe('manageUpdateController()', () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.getDefaultRoleId.mockResolvedValue('role-id-1')
     mocks.createInvite.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
@@ -133,10 +135,12 @@ describe('manageUpdateController()', () => {
     const result = await manageUpdateController.handler(request, h)
 
     // Assert
+    expect(mocks.getDefaultRoleId).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-2',
       delegatingUserId: 'user-123',
-      delegatedUserEmail: 'joe@example.gov.uk'
+      delegatedUserEmail: 'joe@example.gov.uk',
+      delegatedUserRoleId: 'role-id-1'
     })
     expect(mocks.revokeDelegation).not.toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')

@@ -16,6 +16,7 @@ const mocks = {
   getCphIds: vi.spyOn(DelegationBuilder.prototype, 'getCphIds'),
   clearDraft: vi.spyOn(DelegationBuilder.prototype, 'clearDraft'),
   createInvite: vi.mocked(delegationService.createInvite),
+  getDefaultRoleId: vi.mocked(delegationService.getDefaultRoleId),
   view: vi.fn()
 }
 
@@ -69,6 +70,7 @@ describe('confirmSubmitController()', () => {
     mocks.getCphIds.mockReturnValue(['cph-id-1', 'cph-id-2'])
     mocks.clearDraft.mockReturnValue(undefined)
     mocks.createInvite.mockResolvedValue(undefined)
+    mocks.getDefaultRoleId.mockResolvedValue('role-id-1')
     mocks.view.mockReturnValue('view-response')
     const request = { auth: { credentials: { sub: 'user-123' } } }
     const h = { view: mocks.view }
@@ -77,18 +79,21 @@ describe('confirmSubmitController()', () => {
     const result = await confirmSubmitController.handler(request, h)
 
     // Assert
+    expect(mocks.getDefaultRoleId).toHaveBeenCalledTimes(1)
     expect(mocks.getEmail).toHaveBeenCalledTimes(1)
     expect(mocks.getCphIds).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledTimes(2)
     expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-1',
       delegatingUserId: 'user-123',
-      delegatedUserEmail: 'joe@example.gov.uk'
+      delegatedUserEmail: 'joe@example.gov.uk',
+      delegatedUserRoleId: 'role-id-1'
     })
     expect(mocks.createInvite).toHaveBeenCalledWith({
       countyParishHoldingId: 'cph-id-2',
       delegatingUserId: 'user-123',
-      delegatedUserEmail: 'joe@example.gov.uk'
+      delegatedUserEmail: 'joe@example.gov.uk',
+      delegatedUserRoleId: 'role-id-1'
     })
     expect(mocks.clearDraft).toHaveBeenCalledTimes(1)
     expect(mocks.view).toHaveBeenCalledWith('delegation/confirmation', {
