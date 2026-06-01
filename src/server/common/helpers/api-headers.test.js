@@ -1,5 +1,10 @@
+import { vi } from 'vitest'
 import { config } from '../../../config/config.js'
 import * as requestContext from './request-context.js'
+
+vi.mock('@defra/hapi-tracing', () => ({ getTraceId: vi.fn() }))
+
+import { getTraceId } from '@defra/hapi-tracing'
 import { generateHeaders } from './api-headers.js'
 
 const mocks = {
@@ -12,57 +17,50 @@ describe('generateHeaders()', () => {
     vi.resetAllMocks()
   })
 
-  test('it returns headers with the provided correlation id', async () => {
+  test('it returns headers using context values', () => {
     // Arrange
     mocks.configGet.mockReturnValue('helper-api-key')
-    mocks.contextGet.mockReturnValue('operator-123')
+    mocks.contextGet.mockImplementation((key) =>
+      key === 'operator_id' ? 'operator-123' : 'correlation-abc'
+    )
+    getTraceId.mockReturnValue('trace-xyz')
 
     // Act
-    const result = await generateHeaders('helper', 'provided-correlation-id')
+    const result = generateHeaders('helper')
 
     // Assert
     expect(result).toEqual({
       'x-api-key': 'helper-api-key',
       'x-operator-id': 'operator-123',
-      'x-correlation-id': 'provided-correlation-id'
+      'x-correlation-id': 'correlation-abc',
+      'x-cdp-request-id': 'trace-xyz'
     })
     expect(mocks.configGet).toHaveBeenCalledWith('idService.helper.apiKey')
   })
 
-  test('it uses the nil UUID when no operator id is in context', async () => {
+  test('it uses the nil UUID when no operator id is in context', () => {
     // Arrange
     mocks.configGet.mockReturnValue('helper-api-key')
-    mocks.contextGet.mockReturnValue(null)
+    mocks.contextGet.mockImplementation((key) =>
+      key === 'correlation_id' ? 'correlation-abc' : null
+    )
+    getTraceId.mockReturnValue(null)
 
     // Act
-    const result = await generateHeaders('helper', 'provided-correlation-id')
+    const result = generateHeaders('helper')
 
     // Assert
     expect(result['x-operator-id']).toBe('00000000-0000-0000-0000-000000000000')
   })
 
-  test('it generates a correlation id when one is not provided', async () => {
-    // Arrange
-    mocks.configGet.mockReturnValue('helper-api-key')
-    mocks.contextGet.mockReturnValue('operator-123')
-
-    // Act
-    const result = await generateHeaders('helper')
-
-    // Assert
-    expect(result['x-correlation-id']).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  })
-
-  test('it throws when no api key is found for the service', async () => {
+  test('it throws when no api key is found for the service', () => {
     // Arrange
     mocks.configGet.mockReturnValue(undefined)
     let error
 
     // Act
     try {
-      await generateHeaders('missing-service')
+      generateHeaders('missing-service')
     } catch (e) {
       error = e
     }
