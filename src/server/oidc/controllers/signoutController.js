@@ -1,5 +1,6 @@
 import { SIGNOUT_REDIRECT_COOKIE_NAME } from '../constants.js'
 import { milliseconds } from '../../common/helpers/duration.js'
+import { logger } from '../../common/helpers/logging/logger.js'
 
 const OIDC_SIGNOUT_PARAM_NAMES = [
   'id_token_hint',
@@ -78,6 +79,9 @@ function buildUpstreamSignoutUrl(b2cConfiguration, brokerSignoutUrl, request) {
   const upstreamEndSessionEndpoint = getEndSessionEndpoint(b2cConfiguration)
 
   if (!upstreamEndSessionEndpoint) {
+    logger.warn(
+      'No end_session_endpoint in B2C configuration; upstream session will not be terminated'
+    )
     return new URL(brokerSignoutUrl)
   }
 
