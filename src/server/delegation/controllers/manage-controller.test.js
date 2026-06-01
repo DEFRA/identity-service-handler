@@ -164,6 +164,13 @@ describe('manageUpdateController()', () => {
     const result = await manageUpdateController.handler(request, h)
 
     // Assert
+    expect(mocks.getDefaultRoleId).toHaveBeenCalledTimes(1)
+    expect(mocks.createInvite).toHaveBeenCalledWith({
+      countyParishHoldingId: 'cph-id-2',
+      delegatingUserId: 'user-123',
+      delegatedUserEmail: 'joe@example.gov.uk',
+      delegatedUserRoleId: 'role-id-1'
+    })
     expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
       success: true
     })
