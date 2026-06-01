@@ -1,15 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { contextController } from './context-controller.js'
-import { redisClient } from '../../../common/helpers/redis-client.js'
 import { getUserProfile } from '../../../services/user.js'
 
 vi.mock('../../../services/user.js')
 
 const mocks = {
-  redisClient: {
-    get: vi.spyOn(redisClient, 'get'),
-    set: vi.spyOn(redisClient, 'set')
-  },
   getUserProfile: vi.mocked(getUserProfile)
 }
 
@@ -41,30 +36,9 @@ describe('contextController', () => {
     vi.resetAllMocks()
   })
 
-  test('it returns cached context when present', async () => {
-    // Arrange
-    const cached = { sub: 'broker-sub-123', email: 'user@example.com' }
-    mocks.redisClient.get.mockResolvedValue(JSON.stringify(cached))
-    const h = makeH()
-
-    // Act
-    const result = await contextController.handler(makeRequest(), h)
-
-    // Assert
-    expect(mocks.redisClient.get).toHaveBeenCalledWith(
-      'user_context:broker-sub-123'
-    )
-    expect(mocks.getUserProfile).not.toHaveBeenCalled()
-    expect(h.response).toHaveBeenCalledWith(cached)
-    expect(h.code).toHaveBeenCalledWith(200)
-    expect(result).toBe('final-response')
-  })
-
-  test('it fetches, caches, and returns context on a cache miss', async () => {
+  test('it fetches and returns context', async () => {
     // Arrange
     const profile = makeProfile()
-    mocks.redisClient.get.mockResolvedValue(null)
-    mocks.redisClient.set.mockResolvedValue('OK')
     mocks.getUserProfile.mockResolvedValue(profile)
     const h = makeH()
 
@@ -73,7 +47,7 @@ describe('contextController', () => {
 
     // Assert
     expect(mocks.getUserProfile).toHaveBeenCalledWith('broker-sub-123')
-    const expectedContext = {
+    expect(h.response).toHaveBeenCalledWith({
       sub: 'broker-sub-123',
       email: 'user@example.com',
       given_name: 'Test',
@@ -81,22 +55,13 @@ describe('contextController', () => {
       display_name: 'Test User',
       primary_cph: [],
       delegated_cph: []
-    }
-    expect(mocks.redisClient.set).toHaveBeenCalledWith(
-      'user_context:broker-sub-123',
-      JSON.stringify(expectedContext),
-      'EX',
-      300
-    )
-    expect(h.response).toHaveBeenCalledWith(expectedContext)
+    })
     expect(h.code).toHaveBeenCalledWith(200)
     expect(result).toBe('final-response')
   })
 
   test('it passes undefined sub when auth credentials are missing', async () => {
     // Arrange
-    mocks.redisClient.get.mockResolvedValue(null)
-    mocks.redisClient.set.mockResolvedValue('OK')
     mocks.getUserProfile.mockResolvedValue(makeProfile(undefined))
     const h = makeH()
 
@@ -104,7 +69,6 @@ describe('contextController', () => {
     await contextController.handler({}, h)
 
     // Assert
-    expect(mocks.redisClient.get).toHaveBeenCalledWith('user_context:undefined')
     expect(mocks.getUserProfile).toHaveBeenCalledWith(undefined)
   })
 })
