@@ -2,6 +2,7 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "cph-checkboxes/macro.njk" import appCphCheckboxes %}
 
 {% block content %}
@@ -19,6 +20,45 @@
             }
           ]
         }) }}
+      {% endif %}
+
+      {% if flash %}
+        {% if flash.success %}
+          {{ govukNotificationBanner({
+            type: "success",
+            html: "<h3 class=\"govuk-notification-banner__heading\">Delegate access updated</h3>"
+          }) }}
+        {% elif flash.failedAdds.length or flash.failedRevokes.length %}
+          {% set bannerHtml %}
+            <h3 class="govuk-notification-banner__heading">
+              {% if flash.failedAdds.length and flash.failedRevokes.length %}
+                Some changes to delegate access could not be saved
+              {% elif flash.failedAdds.length %}
+                Some holdings could not be added
+              {% else %}
+                Some holdings could not be removed
+              {% endif %}
+            </h3>
+            {% if flash.failedAdds.length %}
+              <p class="govuk-body govuk-!-margin-bottom-1">The following could not be added:</p>
+              <ul class="govuk-list govuk-list--bullet">
+                {% for cph in flash.failedAdds %}
+                  <li>{{ cph }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            {% if flash.failedRevokes.length %}
+              <p class="govuk-body govuk-!-margin-bottom-1">The following could not be removed:</p>
+              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-2">
+                {% for cph in flash.failedRevokes %}
+                  <li>{{ cph }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            <p class="govuk-body govuk-!-margin-bottom-0">Try again below, or <a href="/contact" class="govuk-notification-banner__link">contact support</a> if the problem continues.</p>
+          {% endset %}
+          {{ govukNotificationBanner({ html: bannerHtml }) }}
+        {% endif %}
       {% endif %}
 
       <h1 class="govuk-heading-l">{{ heading }}</h1>

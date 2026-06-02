@@ -13,6 +13,7 @@ import {
 const DELEGATION_ROUTE = '/delegation'
 const TEMPLATE = 'delegation/manage'
 const PAGE_TITLE = 'Manage delegate'
+const MANAGE_FLASH = 'manageFlash'
 
 export const manageController = {
   handler: async (request, h) => {
@@ -23,6 +24,9 @@ export const manageController = {
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
     }
+
+    const [flash] = request.yar.flash(MANAGE_FLASH)
+
     return h.view(TEMPLATE, {
       pageTitle: PAGE_TITLE,
       heading: PAGE_TITLE,
@@ -31,7 +35,8 @@ export const manageController = {
       checkboxItems: buildCphCheckboxItems(
         getDelegatableCphs(profile),
         new Set(delegatedUser.cphs.map((cph) => cph.county_parish_holding_id))
-      )
+      ),
+      flash: flash ?? null
     })
   }
 }
@@ -63,6 +68,32 @@ async function manageUpdateFailAction(request, h, err) {
     .takeover()
 }
 
+function resolveFailures(
+  results,
+  toCreate,
+  toRevoke,
+  delegatableCphs,
+  delegatedUser
+) {
+  const createResults = results.slice(0, toCreate.length)
+  const revokeResults = results.slice(toCreate.length)
+
+  const failedAdds = toCreate
+    .filter((_, i) => createResults[i].status === 'rejected')
+    .map((cphId) => delegatableCphs.get(cphId))
+
+  const failedRevokes = toRevoke
+    .filter((_, i) => revokeResults[i].status === 'rejected')
+    .map(
+      (delegationId) =>
+        delegatedUser.cphs.find((c) => c.delegation_id === delegationId)
+          ?.county_parish_holding_number
+    )
+    .filter(Boolean)
+
+  return { failedAdds, failedRevokes }
+}
+
 export const manageUpdateController = {
   options: {
     validate: {
@@ -82,6 +113,8 @@ export const manageUpdateController = {
     if (!delegatedUser) {
       return h.redirect(DELEGATION_ROUTE)
     }
+
+    const delegatableCphs = getDelegatableCphs(profile)
     const existingDelegatedCphs = new Map(
       delegatedUser.cphs.map((cph) => [
         cph.county_parish_holding_id,
@@ -92,7 +125,7 @@ export const manageUpdateController = {
     const toCreate = []
     const toRevoke = []
 
-    for (const cphId of getDelegatableCphs(profile).keys()) {
+    for (const cphId of delegatableCphs.keys()) {
       if (
         intendedDelegatedCphs.has(cphId) &&
         !existingDelegatedCphs.has(cphId)
@@ -112,8 +145,7 @@ export const manageUpdateController = {
       ? await delegationService.getDefaultRoleId()
       : null
 
-    // TODO: handle partial failures
-    await Promise.allSettled([
+    const results = await Promise.allSettled([
       ...toCreate.map((countyParishHoldingId) =>
         delegationService.createInvite({
           countyParishHoldingId,
@@ -127,6 +159,22 @@ export const manageUpdateController = {
       )
     ])
 
-    return h.redirect(DELEGATION_ROUTE)
+    const { failedAdds, failedRevokes } = resolveFailures(
+      results,
+      toCreate,
+      toRevoke,
+      delegatableCphs,
+      delegatedUser
+    )
+
+    const manageRoute = `/delegation/${delegatedUserId}/manage`
+
+    if (failedAdds.length || failedRevokes.length) {
+      request.yar.flash(MANAGE_FLASH, { failedAdds, failedRevokes })
+    } else {
+      request.yar.flash(MANAGE_FLASH, { success: true })
+    }
+
+    return h.redirect(manageRoute)
   }
 }
