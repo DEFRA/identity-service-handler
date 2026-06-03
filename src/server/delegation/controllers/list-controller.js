@@ -3,6 +3,8 @@ import { statusCodes } from '../../common/constants/status-codes.js'
 import { paginateList } from '../../common/helpers/pagination.js'
 import { getDelegates } from '../../common/helpers/delegation.js'
 
+const DELEGATION_FLASH = 'delegationFlash'
+
 const parsePage = (queryPage) => {
   if (queryPage === undefined) {
     return undefined
@@ -47,6 +49,8 @@ export const listController = {
 
     const pagination = buildPagination(page, totalPages, request.path)
 
+    const [delegationFlash] = request.yar.flash(DELEGATION_FLASH)
+
     return h.view('delegation/index', {
       pageTitle: 'Manage people who can act for you',
       heading: 'Manage people who can act for you',
@@ -54,7 +58,8 @@ export const listController = {
       showingDelegatesCount: delegates.length,
       totalDelegatesCount,
       singleCph: profile.direct_assignments.length === 1,
-      pagination
+      pagination,
+      flash: delegationFlash ?? null
     })
   }
 }

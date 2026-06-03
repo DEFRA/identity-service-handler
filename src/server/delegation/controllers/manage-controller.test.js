@@ -11,11 +11,13 @@ const mocks = {
   getUserProfile: vi.spyOn(userService, 'getUserProfile'),
   getDelegate: vi.spyOn(delegation, 'getDelegate'),
   createInvite: vi.spyOn(delegationService, 'createInvite'),
+  getDefaultRoleId: vi.spyOn(delegationService, 'getDefaultRoleId'),
   revokeDelegation: vi.spyOn(delegationService, 'revokeDelegation'),
   view: vi.fn(),
   redirect: vi.fn(),
   code: vi.fn(),
-  takeover: vi.fn()
+  takeover: vi.fn(),
+  yarFlash: vi.fn()
 }
 
 const profile = {
@@ -53,10 +55,12 @@ describe('manageController()', () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.yarFlash.mockReturnValue([])
     mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
-      params: { delegated_user_id: 'delegated-user-456' }
+      params: { delegated_user_id: 'delegated-user-456' },
+      yar: { flash: mocks.yarFlash }
     }
     const h = { view: mocks.view }
 
@@ -85,9 +89,34 @@ describe('manageController()', () => {
           text: 'County Parish Holding Number 35/345/0005',
           checked: false
         }
-      ]
+      ],
+      flash: null
     })
     expect(result).toBe('view-response')
+  })
+
+  test('it passes flash data from yar to the view', async () => {
+    // Arrange
+    const flashData = { success: true }
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.yarFlash.mockReturnValue([flashData])
+    mocks.view.mockReturnValue('view-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'delegated-user-456' },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { view: mocks.view }
+
+    // Act
+    await manageController.handler(request, h)
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/manage',
+      expect.objectContaining({ flash: flashData })
+    )
   })
 
   test('it redirects to /delegation when the delegated user is not found', async () => {
@@ -97,7 +126,8 @@ describe('manageController()', () => {
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
-      params: { delegated_user_id: 'unknown-id' }
+      params: { delegated_user_id: 'unknown-id' },
+      yar: { flash: mocks.yarFlash }
     }
     const h = { redirect: mocks.redirect }
 
@@ -115,17 +145,18 @@ describe('manageUpdateController()', () => {
     vi.resetAllMocks()
   })
 
-  test('it creates invites for newly checked CPHs and revokes unchecked ones, then redirects', async () => {
+  test('on success it flashes success and redirects to the manage page', async () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.getDefaultRoleId.mockResolvedValue('role-id-1')
     mocks.createInvite.mockResolvedValue(undefined)
     mocks.redirect.mockReturnValue('redirect-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       params: { delegated_user_id: 'delegated-user-456' },
-      // cph-id-1 already delegated (checked — no-op), cph-id-2 now checked (create)
-      payload: { cphs: ['cph-id-1', 'cph-id-2'] }
+      payload: { cphs: ['cph-id-1', 'cph-id-2'] },
+      yar: { flash: mocks.yarFlash }
     }
     const h = { redirect: mocks.redirect }
 
@@ -133,17 +164,16 @@ describe('manageUpdateController()', () => {
     const result = await manageUpdateController.handler(request, h)
 
     // Assert
-    expect(mocks.createInvite).toHaveBeenCalledWith({
-      countyParishHoldingId: 'cph-id-2',
-      delegatingUserId: 'user-123',
-      delegatedUserEmail: 'joe@example.gov.uk'
+    expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
+      success: true
     })
-    expect(mocks.revokeDelegation).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/delegation/delegated-user-456/manage'
+    )
     expect(result).toBe('redirect-response')
   })
 
-  test('it revokes delegations for unchecked CPHs', async () => {
+  test('it does not call getDefaultRoleId when there are only revokes', async () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)
     mocks.getDelegate.mockReturnValue(delegatedUser)
@@ -152,8 +182,9 @@ describe('manageUpdateController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       params: { delegated_user_id: 'delegated-user-456' },
-      // nothing checked — cph-id-1 had a delegation and is now unchecked (revoke)
-      payload: {}
+      // cph-id-1 removed, nothing added
+      payload: { cphs: [] },
+      yar: { flash: mocks.yarFlash }
     }
     const h = { redirect: mocks.redirect }
 
@@ -161,8 +192,73 @@ describe('manageUpdateController()', () => {
     await manageUpdateController.handler(request, h)
 
     // Assert
+    expect(mocks.getDefaultRoleId).not.toHaveBeenCalled()
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
-    expect(mocks.createInvite).not.toHaveBeenCalled()
+    expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
+      success: true
+    })
+  })
+
+  test('on partial failure it flashes failed CPH numbers and redirects to manage', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.getDefaultRoleId.mockResolvedValue('role-id-1')
+    mocks.createInvite.mockRejectedValue(new Error('failed'))
+    mocks.revokeDelegation.mockRejectedValue(new Error('failed'))
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'delegated-user-456' },
+      // cph-id-2 added (create), cph-id-1 removed (revoke)
+      payload: { cphs: 'cph-id-2' },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { redirect: mocks.redirect }
+
+    // Act
+    const result = await manageUpdateController.handler(request, h)
+
+    // Assert
+    expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
+      failedAdds: ['35/345/0005'],
+      failedRevokes: ['12/345/6789']
+    })
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/delegation/delegated-user-456/manage'
+    )
+    expect(result).toBe('redirect-response')
+  })
+
+  test('on total failure it flashes all failed CPH numbers and redirects to manage', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.getDefaultRoleId.mockResolvedValue('role-id-1')
+    mocks.createInvite.mockRejectedValue(new Error('failed'))
+    mocks.revokeDelegation.mockRejectedValue(new Error('failed'))
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'delegated-user-456' },
+      // cph-id-2 added (create fails), cph-id-1 removed (revoke fails)
+      payload: { cphs: 'cph-id-2' },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { redirect: mocks.redirect }
+
+    // Act
+    const result = await manageUpdateController.handler(request, h)
+
+    // Assert
+    expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
+      failedAdds: ['35/345/0005'],
+      failedRevokes: ['12/345/6789']
+    })
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/delegation/delegated-user-456/manage'
+    )
+    expect(result).toBe('redirect-response')
   })
 
   test('it redirects from failAction when the delegated user is not found', async () => {
@@ -198,7 +294,8 @@ describe('manageUpdateController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       params: { delegated_user_id: 'unknown-id' },
-      payload: {}
+      payload: {},
+      yar: { flash: mocks.yarFlash }
     }
     const h = { redirect: mocks.redirect }
 
@@ -232,7 +329,6 @@ describe('manageUpdateController()', () => {
     )
 
     // Assert
-    expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/manage',
       expect.objectContaining({

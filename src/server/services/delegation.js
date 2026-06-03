@@ -24,31 +24,58 @@ import { config } from '../../config/config.js'
  */
 
 /**
+ * @typedef {object} Role
+ * @property {string} id
+ * @property {string} name
+ * @property {string} description
+ */
+
+/**
+ * @returns {Promise<Role[]>}
+ */
+export const getRoles = async () => {
+  const { payload } = await helperClient.get('/roles')
+  return payload
+}
+
+/**
+ * Looks up the role ID for the configured default role name.
+ * @returns {Promise<string>}
+ */
+export const getDefaultRoleId = async () => {
+  const roles = await getRoles()
+  const name = config.get('delegations.defaultRoleName')
+  const role = roles.find((r) => r.name === name)
+  if (!role) {
+    throw new Error(`Default delegation role not found: ${name}`)
+  }
+  return role.id
+}
+
+/**
  * @typedef {object} DelegateInvite
  * @property {string} countyParishHoldingId
  * @property {string} delegatingUserId
  * @property {string} delegatedUserEmail
+ * @property {string} delegatedUserRoleId
  */
 
 /**
- * @param {string} _userId
  * @param {DelegateInvite} invite
  * @returns {Promise<void>}
  */
 export const createInvite = async ({
   countyParishHoldingId,
   delegatingUserId,
-  delegatedUserId,
-  delegatedUserEmail
+  delegatedUserEmail,
+  delegatedUserRoleId
 }) => {
   await helperClient.post('/delegations', {
     payload: {
       county_parish_holding_id: countyParishHoldingId,
       delegating_user_id: delegatingUserId,
       delegated_user_email: delegatedUserEmail,
-      delegated_user_role_id: config.get('delegations.defaultRoleId'), // TODO: work out how role id will be chosen
-      delegated_user_id:
-        delegatedUserId || '00000000-0000-0000-0000-000000000001' // TODO: Replace this quick fix when fixed in back end
+      delegated_user_role_id: delegatedUserRoleId
     }
   })
 }

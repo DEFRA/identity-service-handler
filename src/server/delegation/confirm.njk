@@ -1,15 +1,37 @@
 {% extends 'layouts/page.njk' %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="/delegation/create/cphs" class="govuk-back-link">Back</a>
+      {% if not confirmFailure %}
+        <a href="/delegation/create/cphs" class="govuk-back-link">Back</a>
+      {% endif %}
+
+      {% if confirmFailure %}
+        {% if confirmFailure.succeededCphs.length %}
+          {% set bannerHtml %}
+            <h3 class="govuk-notification-banner__heading">Some invites could not be sent</h3>
+            <p class="govuk-body">An invite was sent to <strong>{{ email }}</strong> for:</p>
+            <ul class="govuk-list govuk-list--bullet">
+              {% for cph in confirmFailure.succeededCphs %}
+                <li>{{ cph }}</li>
+              {% endfor %}
+            </ul>
+            <p class="govuk-body govuk-!-margin-bottom-0">Try again for the remaining holdings below, or <a href="/contact" class="govuk-notification-banner__link">contact support</a> if the problem continues.</p>
+          {% endset %}
+        {% else %}
+          {% set bannerHtml %}
+            <h3 class="govuk-notification-banner__heading">Invites could not be sent</h3>
+            <p class="govuk-body govuk-!-margin-bottom-0">We could not send invites for any of the selected holdings. Try again for the holdings below, or <a href="/contact" class="govuk-notification-banner__link">contact support</a> if the problem continues.</p>
+          {% endset %}
+        {% endif %}
+        {{ govukNotificationBanner({ html: bannerHtml }) }}
+      {% endif %}
 
       <h1 class="govuk-heading-l">{{ heading }}</h1>
-
-      <p class="govuk-body">Confirm the delegate details below and we will send an invite to your new delegate.</p>
 
       <p class="govuk-body govuk-!-margin-bottom-1">Delegate Livestock Information System access to:</p>
       <p class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-9">

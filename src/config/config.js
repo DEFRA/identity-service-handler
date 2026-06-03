@@ -345,11 +345,11 @@ export const config = convict({
     }
   },
   delegations: {
-    defaultRoleId: {
-      doc: 'Default role id to use for delegations',
+    defaultRoleName: {
+      doc: 'Default role name to use for delegations',
       format: String,
-      default: '0c15ba2f-b4ba-406a-a0ae-213de64600a9',
-      env: 'DEFAULT_ROLE_ID'
+      default: 'agent',
+      env: 'DEFAULT_ROLE_NAME'
     }
   }
 })

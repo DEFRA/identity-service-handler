@@ -8,7 +8,8 @@ const mocks = {
   getDelegates: vi.spyOn(delegation, 'getDelegates'),
   view: vi.fn(),
   redirect: vi.fn(),
-  response: vi.fn()
+  response: vi.fn(),
+  yarFlash: vi.fn()
 }
 
 const makeProfile = (assignmentCount = 2) => ({
@@ -23,6 +24,7 @@ describe('listController()', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mocks.getUserProfile.mockResolvedValue(makeProfile(2))
+    mocks.yarFlash.mockReturnValue([])
   })
 
   const makeH = () => {
@@ -46,7 +48,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
@@ -81,7 +84,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
@@ -119,7 +123,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '1' },
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
@@ -150,7 +155,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
@@ -219,7 +225,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
@@ -242,7 +249,8 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation'
+      path: '/delegation',
+      yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
 
