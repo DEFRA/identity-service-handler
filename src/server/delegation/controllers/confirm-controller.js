@@ -1,8 +1,9 @@
+import { logger } from '../../common/helpers/logging/logger.js'
 import { getUserProfile } from '../../services/user.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import * as delegationService from '../../services/delegation.js'
 
-const CONFIRM_ROUTE = '/delegation/confirm'
+const CONFIRM_ROUTE = '/delegation/create/confirm'
 const CONFIRM_FAILURE_FLASH = 'confirmFailure'
 
 export const confirmController = {
@@ -66,6 +67,15 @@ export const confirmSubmitController = {
     const failedCphIds = cphIds.filter(
       (_, i) => results[i].status === 'rejected'
     )
+
+    results.forEach((result, i) => {
+      if (result.status === 'rejected') {
+        logger.error(
+          { cphId: cphIds[i], err: result.reason },
+          'Failed to create delegation invite'
+        )
+      }
+    })
 
     if (failedCphIds.length > 0) {
       draftService.setCphIds(failedCphIds)

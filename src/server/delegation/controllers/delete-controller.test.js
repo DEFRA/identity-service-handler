@@ -118,7 +118,8 @@ describe('deleteSubmitController()', () => {
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
     expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-2')
     expect(mocks.yarFlash).toHaveBeenCalledWith('delegationFlash', {
-      removed: true
+      removed: true,
+      email: 'joe@example.gov.uk'
     })
     expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
     expect(result).toBe('redirect-response')

@@ -50,7 +50,10 @@ export const deleteSubmitController = {
       return h.redirect(`/delegation/${delegatedUserId}/manage`)
     }
 
-    request.yar.flash(DELEGATION_FLASH, { removed: true })
+    request.yar.flash(DELEGATION_FLASH, {
+      removed: true,
+      email: delegatedUser.email
+    })
     return h.redirect(DELEGATION_ROUTE)
   }
 }

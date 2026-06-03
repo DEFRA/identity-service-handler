@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { logger } from '../../common/helpers/logging/logger.js'
 import { getUserProfile } from '../../services/user.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { normaliseCheckboxPayload } from '../../common/helpers/normalise-checkbox-payload.js'
@@ -66,6 +67,25 @@ async function manageUpdateFailAction(request, h, err) {
     })
     .code(statusCodes.badRequest)
     .takeover()
+}
+
+function logResults(results, toCreate, toRevoke) {
+  results.slice(0, toCreate.length).forEach((result, i) => {
+    if (result.status === 'rejected') {
+      logger.error(
+        { cphId: toCreate[i], err: result.reason },
+        'Failed to create delegation invite'
+      )
+    }
+  })
+  results.slice(toCreate.length).forEach((result, i) => {
+    if (result.status === 'rejected') {
+      logger.error(
+        { delegationId: toRevoke[i], err: result.reason },
+        'Failed to revoke delegation'
+      )
+    }
+  })
 }
 
 function resolveFailures(
@@ -158,6 +178,8 @@ export const manageUpdateController = {
         delegationService.revokeDelegation(delegationId)
       )
     ])
+
+    logResults(results, toCreate, toRevoke)
 
     const { failedAdds, failedRevokes } = resolveFailures(
       results,

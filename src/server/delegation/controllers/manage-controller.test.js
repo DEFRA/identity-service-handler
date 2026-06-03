@@ -173,6 +173,32 @@ describe('manageUpdateController()', () => {
     expect(result).toBe('redirect-response')
   })
 
+  test('it does not call getDefaultRoleId when there are only revokes', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue(profile)
+    mocks.getDelegate.mockReturnValue(delegatedUser)
+    mocks.revokeDelegation.mockResolvedValue(undefined)
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      params: { delegated_user_id: 'delegated-user-456' },
+      // cph-id-1 removed, nothing added
+      payload: { cphs: [] },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { redirect: mocks.redirect }
+
+    // Act
+    await manageUpdateController.handler(request, h)
+
+    // Assert
+    expect(mocks.getDefaultRoleId).not.toHaveBeenCalled()
+    expect(mocks.revokeDelegation).toHaveBeenCalledWith('del-1')
+    expect(mocks.yarFlash).toHaveBeenCalledWith('manageFlash', {
+      success: true
+    })
+  })
+
   test('on partial failure it flashes failed CPH numbers and redirects to manage', async () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)

@@ -6,7 +6,7 @@
   {% if flash.removed %}
     {{ govukNotificationBanner({
       type: "success",
-      html: "<h3 class=\"govuk-notification-banner__heading\">Delegate access removed</h3>"
+      html: "<h3 class=\"govuk-notification-banner__heading\">Delegate access removed</h3><p class=\"govuk-body\">Access has been removed for " + flash.email + "</p>"
     }) }}
   {% endif %}
 

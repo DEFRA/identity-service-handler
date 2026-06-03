@@ -195,7 +195,7 @@ describe('confirmSubmitController()', () => {
       succeededCphIds: ['cph-id-1']
     })
     expect(mocks.clearDraft).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
     expect(result).toBe('redirect-response')
   })
 
@@ -222,6 +222,6 @@ describe('confirmSubmitController()', () => {
       succeededCphIds: []
     })
     expect(mocks.clearDraft).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
   })
 })
