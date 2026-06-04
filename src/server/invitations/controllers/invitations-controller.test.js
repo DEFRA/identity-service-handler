@@ -28,12 +28,15 @@ const makeH = () => ({
 const makeRequest = (overrides = {}) => ({
   auth: { credentials: { sub: 'user-123' } },
   yar: { flash: mocks.flash },
+  query: {},
+  path: '/invitations',
   ...overrides
 })
 
 const anInvitation = {
   id: 'del-1',
   county_parish_holding_number: '12/345/0001',
+  delegating_user_id: 'user-id-1',
   delegating_user_name: 'John Doe'
 }
 
@@ -68,6 +71,66 @@ describe('invitationsController()', () => {
       })
     )
     expect(result).toBe('view-response')
+  })
+
+  test('it renders the requested page with pagination links', async () => {
+    // Arrange
+    const allInvitations = Array.from({ length: 11 }, (_, i) => ({
+      id: `del-${i}`,
+      county_parish_holding_number: `12/345/000${i}`,
+      delegating_user_id: `user-id-${String(i).padStart(2, '0')}`,
+      delegating_user_name: `User ${String(i).padStart(2, '0')}`
+    }))
+    mocks.getUserProfile.mockResolvedValue({ inbound_delegations: [] })
+    mocks.getPendingInvitations.mockReturnValue(allInvitations)
+    mocks.flash.mockReturnValue([null])
+    mocks.view.mockReturnValue('view-response')
+    const request = makeRequest({ query: { page: '2' } })
+
+    // Act
+    await invitationsController.handler(request, makeH())
+
+    // Assert
+    expect(mocks.view).toHaveBeenCalledWith(
+      'invitations/index',
+      expect.objectContaining({
+        showingInvitationsCount: 5,
+        totalInvitationsCount: 11,
+        pagination: expect.objectContaining({
+          previous: { labelText: 'Previous', href: '/invitations?page=1' },
+          next: { labelText: 'Next', href: '/invitations?page=3' }
+        })
+      })
+    )
+  })
+
+  test('it redirects when the page query is invalid', async () => {
+    // Arrange
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = makeRequest({ query: { page: 'abc' } })
+
+    // Act
+    const result = await invitationsController.handler(request, makeH())
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(result).toBe('redirect-response')
+  })
+
+  test('it redirects when the requested page exceeds total pages', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue({ inbound_delegations: [] })
+    mocks.getPendingInvitations.mockReturnValue([anInvitation])
+    mocks.flash.mockReturnValue([null])
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = makeRequest({ query: { page: '999' } })
+
+    // Act
+    const result = await invitationsController.handler(request, makeH())
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(result).toBe('redirect-response')
   })
 
   test('it passes flash data to the view', async () => {

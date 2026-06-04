@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { buildPaginationSearchParams, paginateList } from './pagination.js'
+import {
+  buildPagination,
+  buildPaginationSearchParams,
+  paginateList
+} from './pagination.js'
 
 describe('buildPaginationSearchParams()', () => {
   test('it returns default pageSize and pageNumber when called with no options', () => {
@@ -105,5 +109,48 @@ describe('paginateList()', () => {
     expect(result.page_number).toBe(1)
     expect(result.page_size).toBe(5)
     expect(result.items).toEqual(list)
+  })
+})
+
+describe('buildPagination()', () => {
+  test('it returns null when there is only one page', () => {
+    expect(buildPagination(1, 1, '/example')).toBeNull()
+  })
+
+  test('it returns page items with hrefs for each page', () => {
+    const result = buildPagination(2, 3, '/example')
+
+    expect(result.items).toEqual([
+      { number: 1, href: '/example?page=1', current: false },
+      { number: 2, href: '/example?page=2', current: true },
+      { number: 3, href: '/example?page=3', current: false }
+    ])
+  })
+
+  test('it returns previous and next links for a middle page', () => {
+    const result = buildPagination(2, 3, '/example')
+
+    expect(result.previous).toEqual({
+      labelText: 'Previous',
+      href: '/example?page=1'
+    })
+    expect(result.next).toEqual({ labelText: 'Next', href: '/example?page=3' })
+  })
+
+  test('it returns no previous link on the first page', () => {
+    const result = buildPagination(1, 3, '/example')
+
+    expect(result.previous).toBeNull()
+    expect(result.next).toEqual({ labelText: 'Next', href: '/example?page=2' })
+  })
+
+  test('it returns no next link on the last page', () => {
+    const result = buildPagination(3, 3, '/example')
+
+    expect(result.previous).toEqual({
+      labelText: 'Previous',
+      href: '/example?page=2'
+    })
+    expect(result.next).toBeNull()
   })
 })

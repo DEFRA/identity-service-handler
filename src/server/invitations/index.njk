@@ -1,6 +1,7 @@
 {% extends 'layouts/page.njk' %}
 
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block content %}
   {% if flash.accepted %}
@@ -50,6 +51,14 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <p class="govuk-body govuk-!-font-weight-bold">
+      Showing {{ showingInvitationsCount }} of {{ totalInvitationsCount }} invitations
+    </p>
+
+    {% if pagination %}
+      {{ govukPagination(pagination) }}
+    {% endif %}
   {% else %}
     <p class="govuk-body">You have no pending invitations.</p>
   {% endif %}
