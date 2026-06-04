@@ -1,19 +1,36 @@
 {% extends 'layouts/page.njk' %}
 
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
 {% block content %}
+  {% if flash.accepted %}
+    {{ govukNotificationBanner({
+      type: "success",
+      html: "<h3 class=\"govuk-notification-banner__heading\">Invitation accepted</h3><p class=\"govuk-body\">You can now manage County Parish Holding number " + flash.cphNumber + " on behalf of " + flash.delegatingUserName + ".</p>"
+    }) }}
+  {% endif %}
+
+  {% if flash.rejected %}
+    {{ govukNotificationBanner({
+      type: "success",
+      html: "<h3 class=\"govuk-notification-banner__heading\">Invitation rejected</h3><p class=\"govuk-body\">You rejected the invitation from " + flash.delegatingUserName + " for County Parish Holding number " + flash.cphNumber + ".</p>"
+    }) }}
+  {% endif %}
+
   {{ appHeading({
     text: heading
   }) }}
 
-  <p class="govuk-body">Accept or reject invitations to manage the digital service on behalf of another user.</p>
+  <p class="govuk-body">Accept or reject invitations to manage the Livestock Information Service on behalf of another person.</p>
 
   {% if invitations.length %}
     <table class="govuk-table">
       <caption class="govuk-visually-hidden">Pending invitations and available actions</caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">CPH number</th>
-          <th scope="col" class="govuk-table__header">From</th>
+          <th scope="col" class="govuk-table__header">County Parish Holding number</th>
+          <th scope="col" class="govuk-table__header">Invited by</th>
           <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
         </tr>
       </thead>
@@ -23,27 +40,25 @@
             <td class="govuk-table__cell">{{ invitation.county_parish_holding_number }}</td>
             <td class="govuk-table__cell">{{ invitation.delegating_user_name }}</td>
             <td class="govuk-table__cell">
-              <div class="govuk-button-group">
-                <form method="post" action="/invitations/{{ invitation.id }}/accept">
-                  <input type="hidden" name="crumb" value="{{ crumb }}">
-                  {{ govukButton({
-                    text: "Accept",
-                    classes: "govuk-!-margin-bottom-0"
-                  }) }}
-                </form>
-                <form method="post" action="/invitations/{{ invitation.id }}/reject">
-                  <input type="hidden" name="crumb" value="{{ crumb }}">
-                  {{ govukButton({
-                    text: "Reject",
-                    classes: "govuk-button--warning govuk-!-margin-bottom-0"
-                  }) }}
-                </form>
-              </div>
+              <a class="govuk-link govuk-!-margin-right-3" href="/invitations/{{ invitation.id }}/accept">
+                Accept<span class="govuk-visually-hidden"> invitation from {{ invitation.delegating_user_name }}</span>
+              </a>
+              <a class="govuk-link" href="/invitations/{{ invitation.id }}/reject">
+                Reject<span class="govuk-visually-hidden"> invitation from {{ invitation.delegating_user_name }}</span>
+              </a>
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <p class="govuk-body govuk-!-font-weight-bold">
+      Showing {{ showingInvitationsCount }} of {{ totalInvitationsCount }} invitations
+    </p>
+
+    {% if pagination %}
+      {{ govukPagination(pagination) }}
+    {% endif %}
   {% else %}
     <p class="govuk-body">You have no pending invitations.</p>
   {% endif %}

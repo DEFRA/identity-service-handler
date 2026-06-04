@@ -1,3 +1,30 @@
+export const buildPagination = (page, totalPages, basePath) => {
+  if (totalPages <= 1) {
+    return null
+  }
+
+  const items = Array.from({ length: totalPages }, (_, index) => {
+    const itemPage = index + 1
+    return {
+      number: itemPage,
+      href: `${basePath}?page=${itemPage}`,
+      current: itemPage === page
+    }
+  })
+
+  return {
+    items,
+    previous:
+      page > 1
+        ? { labelText: 'Previous', href: `${basePath}?page=${page - 1}` }
+        : null,
+    next:
+      page < totalPages
+        ? { labelText: 'Next', href: `${basePath}?page=${page + 1}` }
+        : null
+  }
+}
+
 const minPageSize = 1
 const maxPageSize = 50
 const defaultPageSize = 5
