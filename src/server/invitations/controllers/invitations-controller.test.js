@@ -73,6 +73,37 @@ describe('invitationsController()', () => {
     expect(result).toBe('view-response')
   })
 
+  test('it sorts by CPH number when delegating_user_id is the same', async () => {
+    // Arrange
+    const invitations = [
+      {
+        id: 'del-2',
+        county_parish_holding_number: '12/345/0002',
+        delegating_user_id: 'user-id-1',
+        delegating_user_name: 'John Doe'
+      },
+      {
+        id: 'del-1',
+        county_parish_holding_number: '12/345/0001',
+        delegating_user_id: 'user-id-1',
+        delegating_user_name: 'John Doe'
+      }
+    ]
+    mocks.getUserProfile.mockResolvedValue({ inbound_delegations: [] })
+    mocks.getPendingInvitations.mockReturnValue(invitations)
+    mocks.flash.mockReturnValue([null])
+    mocks.view.mockReturnValue('view-response')
+    const request = makeRequest()
+
+    // Act
+    await invitationsController.handler(request, makeH())
+
+    // Assert
+    const [, viewModel] = mocks.view.mock.calls[0]
+    expect(viewModel.invitations[0].id).toBe('del-1')
+    expect(viewModel.invitations[1].id).toBe('del-2')
+  })
+
   test('it renders the requested page with pagination links', async () => {
     // Arrange
     const allInvitations = Array.from({ length: 11 }, (_, i) => ({
