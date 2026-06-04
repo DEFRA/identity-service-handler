@@ -51,6 +51,7 @@ describe('helper client', () => {
         expect(mocks.wreck[method]).toHaveBeenCalledWith('/some/path', {
           baseUrl: 'https://helper.example.com',
           json: true,
+          timeout: 30000,
           headers: mockHeaders
         })
       }

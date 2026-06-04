@@ -6,10 +6,12 @@ const TWO = 2
 const FIVE = 5
 const TEN = 10
 const FIFTEEN = 15
+const THIRTY = 30
 const EIGHT = 8
 
 export const milliseconds = {
   tenSeconds: TEN * MILLIS_IN_SECOND,
+  thirtySeconds: THIRTY * MILLIS_IN_SECOND,
   fiveMinutes: FIVE * SECONDS_IN_MINUTE * MILLIS_IN_SECOND
 }
 

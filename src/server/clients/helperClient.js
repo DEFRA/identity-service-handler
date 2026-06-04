@@ -2,10 +2,12 @@ import Wreck from '@hapi/wreck'
 import { config } from '../../config/config.js'
 import { generateHeaders } from '../common/helpers/api-headers.js'
 import { statusCodes } from '../common/constants/status-codes.js'
+import { milliseconds } from '../common/helpers/duration.js'
 
 const buildOptions = (options = {}) => ({
   baseUrl: config.get('idService.helper.baseUrl'),
   json: true,
+  timeout: milliseconds.thirtySeconds,
   ...options,
   headers: Object.assign(generateHeaders('helper'), options.headers)
 })
