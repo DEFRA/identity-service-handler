@@ -38,5 +38,6 @@ describe('createServer', () => {
     // Assert
     expect(statusCode).toBe(statusCodes.ok)
     expect(mocks.redisClientConnect).toHaveBeenCalled()
+    expect(server.settings.routes.timeout.server).toBe(30000)
   })
 })
