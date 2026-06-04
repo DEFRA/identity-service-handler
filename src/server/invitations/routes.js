@@ -1,5 +1,7 @@
 import {
   invitationsController,
+  acceptInvitationConfirmController,
+  rejectInvitationConfirmController,
   acceptInvitationController,
   rejectInvitationController
 } from './controllers/invitations-controller.js'
@@ -17,6 +19,18 @@ export const routes = () => [
     path: '/invitations',
     options: sessionAuth,
     ...invitationsController
+  },
+  {
+    method: 'GET',
+    path: '/invitations/{delegation_id}/accept',
+    options: sessionAuth,
+    ...acceptInvitationConfirmController
+  },
+  {
+    method: 'GET',
+    path: '/invitations/{delegation_id}/reject',
+    options: sessionAuth,
+    ...rejectInvitationConfirmController
   },
   {
     method: 'POST',

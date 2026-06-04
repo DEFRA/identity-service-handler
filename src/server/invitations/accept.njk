@@ -1,0 +1,32 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/invitations" class="govuk-back-link">Back</a>
+
+      {% if error %}
+        {{ govukNotificationBanner({
+          titleText: "There is a problem",
+          html: "<p class=\"govuk-body\">" + error + "</p>"
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">Accept this invitation?</h1>
+
+      <p class="govuk-body">You are accepting an invitation from <strong>{{ delegatingUserName }}</strong> to manage County Parish Holding number <strong>{{ cphNumber }}</strong>.</p>
+
+      <form method="post" action="/invitations/{{ invitationId }}/accept">
+        <input type="hidden" name="_csrf" value="{{ _csrf }}">
+        {{ govukButton({
+          text: "Accept invitation"
+        }) }}
+      </form>
+
+      <p class="govuk-body"><a class="govuk-link" href="/invitations">Cancel</a></p>
+    </div>
+  </div>
+{% endblock %}
