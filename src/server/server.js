@@ -28,6 +28,7 @@ import { registerOidcRoutes } from './oidc/index.js'
 import { registerLoginRoutes } from './login/index.js'
 import { OIDC_ROUTES } from './common/helpers/oidc-config.js'
 import { onPreAuth } from './common/helpers/on-pre-auth.js'
+import { milliseconds } from './common/helpers/duration.js'
 
 export async function createServer() {
   setupProxy()
@@ -99,6 +100,9 @@ function bootstrapServer() {
     host: config.get('host'),
     port: config.get('port'),
     routes: {
+      timeout: {
+        server: milliseconds.thirtySeconds
+      },
       validate: {
         options: {
           abortEarly: false
