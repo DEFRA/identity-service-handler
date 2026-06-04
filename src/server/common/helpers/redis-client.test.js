@@ -46,7 +46,8 @@ describe('buildRedisClient', () => {
         db: 0,
         host: 'localhost',
         keyPrefix: 'test:',
-        port: 6379
+        port: 6379,
+        commandTimeout: 30000
       })
       expect(Redis.prototype.on).toHaveBeenCalledWith(
         'connect',
@@ -116,7 +117,13 @@ describe('buildRedisClient', () => {
           lazyConnect: true,
           dnsLookup: expect.any(Function),
           keyPrefix: 'test:',
-          redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
+          redisOptions: {
+            db: 0,
+            commandTimeout: 30000,
+            password: 'pass',
+            tls: {},
+            username: 'user'
+          },
           slotsRefreshTimeout: 10000
         }
       )

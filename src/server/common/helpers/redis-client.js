@@ -1,9 +1,11 @@
 import { Cluster, Redis } from 'ioredis'
 import { config } from '../../../config/config.js'
 import { logger } from './logging/logger.js'
+import { milliseconds } from './duration.js'
 
 const port = 6379
 const db = 0
+const commandTimeout = milliseconds.thirtySeconds
 
 const { keyPrefix, host, username, password, useTLS, useSingleInstanceCache } =
   config.get('redis')
@@ -18,6 +20,7 @@ export const redisClient = useSingleInstanceCache
       host,
       db,
       keyPrefix,
+      commandTimeout,
       ...credentials,
       ...tls
     })
@@ -35,6 +38,7 @@ export const redisClient = useSingleInstanceCache
         dnsLookup: (address, callback) => callback(null, address),
         redisOptions: {
           db,
+          commandTimeout,
           ...credentials,
           ...tls
         }
