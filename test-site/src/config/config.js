@@ -231,6 +231,21 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  stubB2c: {
+    helperBaseUrl: {
+      doc: 'Base URL of identity-service-helper for user lookup',
+      format: String,
+      default: 'http://localhost:8080',
+      env: 'HELPER_BASEURL'
+    },
+    helperApiKey: {
+      doc: 'API key for identity-service-helper',
+      format: String,
+      default: 'test',
+      env: 'HELPER_API_KEY',
+      sensitive: true
+    }
   }
 })
 

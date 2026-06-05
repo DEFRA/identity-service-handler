@@ -1,0 +1,69 @@
+# Standalone local dev compose — run alongside identity-service-helper compose.
+# Usage: docker compose -f compose.local.yml up
+#
+# Requires the helper to be running first (creates the cdp-tenant network):
+#   cd ../identity-service-helper && docker compose up -d
+
+services:
+  identity-service-handler:
+    build:
+      context: ./
+      target: development
+    platform: linux
+    ports:
+      - '3000:3000'
+    depends_on:
+      test-site:
+        condition: service_started
+    env_file:
+      - path: 'compose/identity-service-handler.env'
+        required: false
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      REDIS_HOST: redis
+      TLS_ENABLED: true
+      SESSION_COOKIE_SECURE: true
+      SESSION_COOKIE_PASSWORD: supersecretcookiepassword123456789
+      USE_FAKE_EXTERNAL_API: false
+      HELPER_USE_FAKE_CLIENT: false
+      HELPER_BASEURL: http://identity-service-helper:8080
+      HELPER_API_KEY: test
+      B2C_CLIENT_ID: stub-client-id
+      B2C_CLIENT_SECRET: stub-client-secret
+      B2C_SERVICE_ID: stub-service-id
+      B2C_DISCOVERY_URL: https://test-site:3005/b2c/.well-known/openid-configuration
+      B2C_REDIRECT_URL: https://localhost:3000/sso
+      BROKER_BASE_URL2: https://identity-service-handler.dev.cdp-int.defra.cloud/
+      BROKER_REDIRECT_URL2: https://fakelocal
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    networks:
+      - cdp-tenant
+
+  test-site:
+    image: node:22
+    working_dir: /repo/test-site
+    command: sh -c "npm install && npm run docker:dev"
+    ports:
+      - '3005:3005'
+    volumes:
+      - ./:/repo
+      - test-site-modules:/repo/test-site/node_modules
+    environment:
+      PORT: 3005
+      NODE_ENV: development
+      SESSION_COOKIE_PASSWORD: supersecretcookiepassword123456789
+      HELPER_BASEURL: http://identity-service-helper:8080
+      HELPER_API_KEY: test
+      STUB_B2C_EXTERNAL_BASE: https://localhost:3005/b2c
+      STUB_B2C_INTERNAL_BASE: https://test-site:3005/b2c
+    networks:
+      - cdp-tenant
+
+volumes:
+  test-site-modules:
+
+networks:
+  cdp-tenant:
+    name: identity-service-helper_cdp-tenant
+    external: true
