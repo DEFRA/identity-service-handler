@@ -55,6 +55,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      test-site:
+        condition: service_started
     env_file:
       - path: 'compose/aws.env'
         required: true
@@ -67,13 +69,16 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       USE_SINGLE_INSTANCE_CACHE: true
       USE_FAKE_EXTERNAL_API: ${HELPER_USE_FAKE_CLIENT:-true}
-      HELPER_BASEURL: ${HELPER_BASEURL:-http://localhost:3001}
+      HELPER_BASEURL: ${HELPER_BASEURL:-http://identity-service-helper:8080}
       HELPER_API_KEY: ${HELPER_API_KEY:-your-helper-api-key}
-      B2C_CLIENT_ID: ${B2C_CLIENT_ID:-your-default-client-id}
+      B2C_CLIENT_ID: ${B2C_CLIENT_ID:-stub-client-id}
       B2C_CLIENT_SECRET: ${B2C_CLIENT_SECRET}
-      B2C_SERVICE_ID: ${B2C_SERVICE_ID:-your-default-service-id}
+      B2C_SERVICE_ID: ${B2C_SERVICE_ID:-stub-service-id}
+      B2C_DISCOVERY_URL: ${B2C_DISCOVERY_URL:-https://test-site:3005/b2c/.well-known/openid-configuration}
+      B2C_REDIRECT_URL: ${B2C_REDIRECT_URL:-https://localhost:3000/sso}
       DEBUG: ${DEBUG}
       NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}
+      NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
       OIDC_SIGNING_CERT: ${OIDC_SIGNING_CERT}
       OIDC_SIGNING_KEY: ${OIDC_SIGNING_KEY}
       SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
@@ -83,9 +88,32 @@ services:
       BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-https://fakelocal}
     networks:
       - identity-services
+
+  test-site:
+    image: node:22
+    working_dir: /repo/test-site
+    command: sh -c "npm install && npm run docker:dev"
+    ports:
+      - '3005:3005'
+    volumes:
+      - ./:/repo
+      - test-site-modules:/repo/test-site/node_modules
+    environment:
+      PORT: 3005
+      NODE_ENV: development
+      SESSION_COOKIE_PASSWORD: v9yg3NU08bnsAco724GAK5hStUX8Hqn9
+      HELPER_BASEURL: http://identity-service-helper:8080
+      HELPER_API_KEY: test
+      STUB_B2C_EXTERNAL_BASE: https://localhost:3005/b2c
+      STUB_B2C_INTERNAL_BASE: https://test-site:3005/b2c
+    networks:
+      - identity-services
+
 volumes:
   mongodb-data:
+  test-site-modules:
 
 networks:
   identity-services:
-    driver: bridge
+    name: identity-services_identity-services
+    external: true
