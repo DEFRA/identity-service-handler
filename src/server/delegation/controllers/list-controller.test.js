@@ -66,7 +66,7 @@ describe('listController()', () => {
         delegates,
         showingDelegatesCount: 1,
         totalDelegatesCount: 1,
-        singleCph: false,
+        cphCount: 2,
         pagination: null
       })
     )
@@ -218,10 +218,11 @@ describe('listController()', () => {
     expect(result).toBe('redirect-response')
   })
 
-  test('it returns 404 when user has no CPH assignments', async () => {
+  test('it renders the page with empty delegates when user has no CPH assignments', async () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(makeProfile(0))
     mocks.getDelegates.mockReturnValue([])
+    mocks.view.mockReturnValue('view-response')
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
@@ -234,9 +235,15 @@ describe('listController()', () => {
     const result = await listController.handler(request, h)
 
     // Assert
-    expect(mocks.response).toHaveBeenCalled()
-    expect(h._code).toHaveBeenCalledWith(404)
-    expect(result).toBe('takeover-response')
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/index',
+      expect.objectContaining({
+        delegates: [],
+        totalDelegatesCount: 0,
+        cphCount: 0
+      })
+    )
+    expect(result).toBe('view-response')
   })
 
   test('it passes singleCph true when user has exactly one CPH', async () => {
@@ -260,7 +267,7 @@ describe('listController()', () => {
     // Assert
     expect(mocks.view).toHaveBeenCalledWith(
       'delegation/index',
-      expect.objectContaining({ singleCph: true })
+      expect.objectContaining({ cphCount: 1 })
     )
   })
 })

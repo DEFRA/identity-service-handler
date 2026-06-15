@@ -41,6 +41,40 @@ describe('confirmController()', () => {
     vi.resetAllMocks()
   })
 
+  test('it redirects to /delegation/create when no email in draft', async () => {
+    // Arrange
+    mocks.getEmail.mockReturnValue(undefined)
+    mocks.getCphIds.mockReturnValue(['cph-id-1'])
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = { auth: { credentials: { sub: 'user-123' } } }
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await confirmController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.getUserProfile).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
+  })
+
+  test('it redirects to /delegation/create/cphs when no CPH IDs in draft', async () => {
+    // Arrange
+    mocks.getEmail.mockReturnValue('joe@example.gov.uk')
+    mocks.getCphIds.mockReturnValue([])
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = { auth: { credentials: { sub: 'user-123' } } }
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await confirmController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(mocks.getUserProfile).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
+  })
+
   test('it renders the confirm page with email and resolved cph numbers from draft', async () => {
     // Arrange
     mocks.getUserProfile.mockResolvedValue(profile)
@@ -124,6 +158,46 @@ describe('confirmController()', () => {
 describe('confirmSubmitController()', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+  })
+
+  test('it redirects to /delegation/create when no email in draft', async () => {
+    // Arrange
+    mocks.getEmail.mockReturnValue(undefined)
+    mocks.getCphIds.mockReturnValue(['cph-id-1'])
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await confirmSubmitController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.createInvite).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
+  })
+
+  test('it redirects to /delegation/create/cphs when no CPH IDs in draft', async () => {
+    // Arrange
+    mocks.getEmail.mockReturnValue('joe@example.gov.uk')
+    mocks.getCphIds.mockReturnValue([])
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await confirmSubmitController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(mocks.createInvite).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
   })
 
   test('it creates one invite per CPH, clears draft and renders the confirmation page', async () => {

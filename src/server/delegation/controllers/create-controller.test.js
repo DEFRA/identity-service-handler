@@ -26,10 +26,18 @@ describe('createController()', () => {
 
   test('it renders the create page with default view model', async () => {
     // Arrange
-    const request = {}
+    mocks.getUserProfile.mockResolvedValue({
+      direct_assignments: [
+        {
+          county_parish_holding_id: 'cph-1',
+          county_parish_holding_number: '12/345/0001'
+        }
+      ]
+    })
     mocks.getEmail.mockReturnValue(undefined)
     mocks.view.mockReturnValue('view-response')
-    const h = { view: mocks.view }
+    const request = { auth: { credentials: { sub: 'user-123' } } }
+    const h = { view: mocks.view, redirect: mocks.redirect }
 
     // Act
     const result = await createController.handler(request, h)
@@ -47,6 +55,22 @@ describe('createController()', () => {
       })
     )
     expect(result).toBe('view-response')
+  })
+
+  test('it redirects to /delegation when user has no CPH assignments', async () => {
+    // Arrange
+    mocks.getUserProfile.mockResolvedValue({ direct_assignments: [] })
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = { auth: { credentials: { sub: 'user-123' } } }
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await createController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.view).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
   })
 })
 

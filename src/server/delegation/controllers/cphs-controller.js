@@ -14,6 +14,11 @@ export const cphsController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
+
+    if (!draftService.getEmail()) {
+      return h.redirect('/delegation/create')
+    }
+
     const profile = await getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
     const availableCphs = getDelegatableCphs(profile)
