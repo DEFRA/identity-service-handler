@@ -1,5 +1,4 @@
 import { getUserProfile } from '../../services/user.js'
-import { statusCodes } from '../../common/constants/status-codes.js'
 import {
   buildPagination,
   paginateList
@@ -32,10 +31,6 @@ export const listController = {
       return h.redirect(request.path)
     }
 
-    if (!profile.direct_assignments.length) {
-      return h.response().code(statusCodes.notFound).takeover()
-    }
-
     const {
       items: delegates,
       total_pages: totalPages,
@@ -60,7 +55,7 @@ export const listController = {
       delegates,
       showingDelegatesCount: delegates.length,
       totalDelegatesCount,
-      singleCph: profile.direct_assignments.length === 1,
+      cphCount: profile.direct_assignments.length,
       pagination,
       flash: delegationFlash ?? null
     })

@@ -10,6 +10,15 @@ export const confirmController = {
   handler: async (request, h) => {
     const sub = request.auth?.credentials?.sub
     const draftService = new DelegationBuilder(request)
+
+    if (!draftService.getEmail()) {
+      return h.redirect('/delegation/create')
+    }
+
+    if (!draftService.getCphIds().length) {
+      return h.redirect('/delegation/create/cphs')
+    }
+
     const profile = await getUserProfile(sub)
     const selectedCphIds = new Set(draftService.getCphIds())
     const cphs = profile.direct_assignments.reduce((acc, cph) => {
@@ -47,6 +56,14 @@ export const confirmSubmitController = {
     const draftService = new DelegationBuilder(request)
     const email = draftService.getEmail()
     const cphIds = draftService.getCphIds()
+
+    if (!email) {
+      return h.redirect('/delegation/create')
+    }
+
+    if (!cphIds.length) {
+      return h.redirect('/delegation/create/cphs')
+    }
 
     const delegatedUserRoleId = await delegationService.getDefaultRoleId()
 

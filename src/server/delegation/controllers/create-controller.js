@@ -7,6 +7,13 @@ import { getDelegatableCphs } from '../../common/helpers/delegation.js'
 
 export const createController = {
   handler: async (request, h) => {
+    const sub = request.auth?.credentials?.sub
+    const profile = await getUserProfile(sub)
+
+    if (!profile.direct_assignments.length) {
+      return h.redirect('/delegation')
+    }
+
     const draftService = new DelegationBuilder(request)
 
     return h.view(

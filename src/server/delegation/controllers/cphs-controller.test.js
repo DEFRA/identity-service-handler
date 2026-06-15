@@ -21,6 +21,7 @@ const makeProfile = (...assignments) => ({
 
 const mocks = {
   getUserProfile: vi.mocked(userService.getUserProfile),
+  getEmail: vi.spyOn(DelegationBuilder.prototype, 'getEmail'),
   getCphIds: vi.spyOn(DelegationBuilder.prototype, 'getCphIds'),
   setCphIds: vi.spyOn(DelegationBuilder.prototype, 'setCphIds'),
   view: vi.fn(),
@@ -34,9 +35,26 @@ describe('cphsController()', () => {
     vi.resetAllMocks()
   })
 
+  test('it redirects to /delegation/create when no email in draft', async () => {
+    // Arrange
+    mocks.getEmail.mockReturnValue(undefined)
+    mocks.redirect.mockReturnValue('redirect-response')
+    const request = {}
+    const h = { view: mocks.view, redirect: mocks.redirect }
+
+    // Act
+    const result = await cphsController.handler(request, h)
+
+    // Assert
+    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.getUserProfile).not.toHaveBeenCalled()
+    expect(result).toBe('redirect-response')
+  })
+
   test('it renders the cphs page with stored selections', async () => {
     // Arrange
     const request = {}
+    mocks.getEmail.mockReturnValue('joe@example.gov.uk')
     mocks.getUserProfile.mockResolvedValue(
       makeProfile(ASSOCIATION_1, ASSOCIATION_2)
     )
