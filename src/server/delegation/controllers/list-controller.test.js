@@ -276,4 +276,43 @@ describe('listController()', () => {
       expect.objectContaining({ cphCount: 1 })
     )
   })
+
+  test('it sorts delegates by createdAt descending', async () => {
+    // Arrange
+    const older = {
+      id: 'user-1',
+      email: 'a@example.gov.uk',
+      createdAt: new Date('2024-01-01')
+    }
+    const newer = {
+      id: 'user-2',
+      email: 'b@example.gov.uk',
+      createdAt: new Date('2024-06-01')
+    }
+    mocks.getDelegates.mockReturnValue([older, newer])
+    mocks.view.mockReturnValue('view-response')
+    const request = {
+      auth: { credentials: { sub: 'user-123' } },
+      query: {},
+      path: '/account/delegations',
+      yar: { flash: mocks.yarFlash }
+    }
+    const h = makeH()
+
+    // Act
+    let result, error
+    try {
+      result = await listController.handler(request, h)
+    } catch (e) {
+      error = e
+    }
+
+    // Assert
+    expect(error).not.toBeDefined()
+    expect(mocks.view).toHaveBeenCalledWith(
+      'delegation/index',
+      expect.objectContaining({ delegates: [newer, older] })
+    )
+    expect(result).toBe('view-response')
+  })
 })

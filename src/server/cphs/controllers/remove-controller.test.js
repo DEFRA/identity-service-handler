@@ -20,6 +20,7 @@ const acceptedDelegation = {
   county_parish_holding_number: '55/200/3001',
   delegating_user_name: 'Jane Smith',
   invitation_accepted_at: '2024-01-01T00:00:00Z',
+  active: true,
   invitation_rejected_at: null,
   revoked_at: null
 }

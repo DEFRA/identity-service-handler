@@ -23,8 +23,8 @@ export const listController = {
     const sub = request.auth?.credentials?.sub
     const requestedPage = parsePage(request.query?.page)
     const profile = await getUserProfile(sub)
-    const sortedDelegates = getDelegates(profile).sort((a, b) =>
-      a.email.localeCompare(b.email)
+    const sortedDelegates = getDelegates(profile).sort(
+      (a, b) => b.createdAt - a.createdAt
     )
 
     if (requestedPage === null) {
