@@ -22,8 +22,6 @@
       {% if totalCount === 0 %}
         <p class="govuk-body">You do not have any County Parish Holdings to manage.</p>
       {% else %}
-        <p class="govuk-body">Showing {{ (page - 1) * 25 + 1 }} to {{ (page - 1) * 25 + showingCount }} of {{ totalCount }} {{ "County Parish Holding" if totalCount === 1 else "County Parish Holdings" }}.</p>
-
         <table class="govuk-table">
           <caption class="govuk-visually-hidden">County Parish Holdings you can manage</caption>
           <thead class="govuk-table__head">
@@ -51,6 +49,10 @@
             {% endfor %}
           </tbody>
         </table>
+
+        <p class="govuk-body govuk-!-font-weight-bold">
+          Showing {{ showingCount }} out of {{ totalCount }} {{ "holding" if totalCount === 1 else "holdings" }}
+        </p>
 
         {% if pagination %}
           {{ govukPagination(pagination) }}

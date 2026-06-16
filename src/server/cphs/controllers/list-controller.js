@@ -5,7 +5,7 @@ import {
   paginateList
 } from '../../common/helpers/pagination.js'
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 10
 
 const parsePage = (queryPage) => {
   if (queryPage === undefined) {
