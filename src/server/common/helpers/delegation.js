@@ -74,3 +74,14 @@ export const getPendingInvitations = (userProfile) =>
       !delegation.invitation_rejected_at &&
       !delegation.revoked_at
   )
+
+/**
+ * Returns inbound delegations that have been accepted and not subsequently revoked.
+ *
+ * @param {import('../../services/user.js').UserProfile} userProfile
+ * @returns {import('../../services/user.js').CphDelegation[]}
+ */
+export const getAcceptedInboundDelegations = (userProfile) =>
+  userProfile.inbound_delegations.filter(
+    (delegation) => delegation.invitation_accepted_at && !delegation.revoked_at
+  )
