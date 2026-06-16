@@ -8,7 +8,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <a href="/delegation" class="govuk-back-link">Back</a>
+      <a href="/account/delegations" class="govuk-back-link">Back</a>
 
       {% if errors.cphs %}
         {{ govukErrorSummary({
@@ -71,14 +71,14 @@
         <div class="govuk-summary-list__row">
           <dd class="govuk-summary-list__value">{{ delegated_user_email }}</dd>
           <dd class="govuk-summary-list__actions">
-            <a href="/delegation/{{ delegated_user_id }}/delete" class="govuk-link">Remove</a>
+            <a href="/account/delegations/{{ delegated_user_id }}/delete" class="govuk-link">Remove</a>
           </dd>
         </div>
       </dl>
 
       <h2 class="govuk-heading-m">County Parish Holding Numbers:</h2>
 
-      <form method="post" action="/delegation/{{ delegated_user_id }}/manage">
+      <form method="post" action="/account/delegations/{{ delegated_user_id }}/manage">
         <input type="hidden" name="_csrf" value="{{ _csrf }}">
         {{ appCphCheckboxes({
           caption: "County Parish Holding Numbers",

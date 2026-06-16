@@ -68,7 +68,7 @@ describe('createController()', () => {
     const result = await createController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(mocks.view).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -106,7 +106,9 @@ describe('createSubmitController()', () => {
 
     // Assert
     expect(mocks.setEmail).toHaveBeenCalledWith('joe@example.com')
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/cphs'
+    )
     expect(result).toBe('redirect-response')
   })
 
@@ -134,7 +136,9 @@ describe('createSubmitController()', () => {
 
     // Assert
     expect(mocks.setCphIds).toHaveBeenCalledWith(['cph-1'])
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/confirm'
+    )
     expect(result).toBe('redirect-response')
   })
 

@@ -16,31 +16,31 @@ const sessionAuth = {
 export const routes = () => [
   {
     method: 'GET',
-    path: '/invitations',
+    path: '/account/invitations',
     options: sessionAuth,
     ...invitationsController
   },
   {
     method: 'GET',
-    path: '/invitations/{delegation_id}/accept',
+    path: '/account/invitations/{delegation_id}/accept',
     options: sessionAuth,
     ...acceptInvitationConfirmController
   },
   {
     method: 'GET',
-    path: '/invitations/{delegation_id}/reject',
+    path: '/account/invitations/{delegation_id}/reject',
     options: sessionAuth,
     ...rejectInvitationConfirmController
   },
   {
     method: 'POST',
-    path: '/invitations/{delegation_id}/accept',
+    path: '/account/invitations/{delegation_id}/accept',
     options: sessionAuth,
     ...acceptInvitationController
   },
   {
     method: 'POST',
-    path: '/invitations/{delegation_id}/reject',
+    path: '/account/invitations/{delegation_id}/reject',
     options: sessionAuth,
     ...rejectInvitationController
   }

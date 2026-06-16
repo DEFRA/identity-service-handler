@@ -16,7 +16,7 @@ export const cphsController = {
     const draftService = new DelegationBuilder(request)
 
     if (!draftService.getEmail()) {
-      return h.redirect('/delegation/create')
+      return h.redirect('/account/delegations/create')
     }
 
     const profile = await getUserProfile(sub)
@@ -96,7 +96,7 @@ export const cphsSubmitController = {
 
     draftService.setCphIds(Array.from(selectedCphIds))
 
-    return h.redirect('/delegation/create/confirm')
+    return h.redirect('/account/delegations/create/confirm')
   }
 }
 

@@ -28,7 +28,7 @@ const sessionAuth = {
 }
 
 export const routes = (options = {}) => {
-  const { delegationPath = '/delegation' } = options
+  const { delegationPath = '/account/delegations' } = options
   return [
     {
       method: 'GET',

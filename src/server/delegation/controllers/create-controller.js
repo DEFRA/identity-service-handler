@@ -11,7 +11,7 @@ export const createController = {
     const profile = await getUserProfile(sub)
 
     if (!profile.direct_assignments.length) {
-      return h.redirect('/delegation')
+      return h.redirect('/account/delegations')
     }
 
     const draftService = new DelegationBuilder(request)
@@ -64,10 +64,10 @@ export const createSubmitController = {
 
     if (delegatableCphs.size === 1) {
       draftService.setCphIds(Array.from(delegatableCphs.keys()))
-      return h.redirect('/delegation/create/confirm')
+      return h.redirect('/account/delegations/create/confirm')
     }
 
-    return h.redirect('/delegation/create/cphs')
+    return h.redirect('/account/delegations/create/cphs')
   }
 }
 

@@ -3,7 +3,7 @@ import { getUserProfile } from '../../services/user.js'
 import { DelegationBuilder } from '../helpers/DelegationBuilder.js'
 import * as delegationService from '../../services/delegation.js'
 
-const CONFIRM_ROUTE = '/delegation/create/confirm'
+const CONFIRM_ROUTE = '/account/delegations/create/confirm'
 const CONFIRM_FAILURE_FLASH = 'confirmFailure'
 
 export const confirmController = {
@@ -12,11 +12,11 @@ export const confirmController = {
     const draftService = new DelegationBuilder(request)
 
     if (!draftService.getEmail()) {
-      return h.redirect('/delegation/create')
+      return h.redirect('/account/delegations/create')
     }
 
     if (!draftService.getCphIds().length) {
-      return h.redirect('/delegation/create/cphs')
+      return h.redirect('/account/delegations/create/cphs')
     }
 
     const profile = await getUserProfile(sub)
@@ -58,11 +58,11 @@ export const confirmSubmitController = {
     const cphIds = draftService.getCphIds()
 
     if (!email) {
-      return h.redirect('/delegation/create')
+      return h.redirect('/account/delegations/create')
     }
 
     if (!cphIds.length) {
-      return h.redirect('/delegation/create/cphs')
+      return h.redirect('/account/delegations/create/cphs')
     }
 
     const delegatedUserRoleId = await delegationService.getDefaultRoleId()

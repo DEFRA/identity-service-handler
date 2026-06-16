@@ -2,7 +2,7 @@ import { getUserProfile } from '../../services/user.js'
 import * as delegationService from '../../services/delegation.js'
 import { getDelegate } from '../../common/helpers/delegation.js'
 
-const DELEGATION_ROUTE = '/delegation'
+const DELEGATION_ROUTE = '/account/delegations'
 const MANAGE_FLASH = 'manageFlash'
 const DELEGATION_FLASH = 'delegationFlash'
 
@@ -47,7 +47,7 @@ export const deleteSubmitController = {
 
     if (failedRevokes.length) {
       request.yar.flash(MANAGE_FLASH, { failedRevokes, failedAdds: [] })
-      return h.redirect(`/delegation/${delegatedUserId}/manage`)
+      return h.redirect(`/account/delegations/${delegatedUserId}/manage`)
     }
 
     request.yar.flash(DELEGATION_FLASH, {

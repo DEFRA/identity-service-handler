@@ -29,7 +29,7 @@ const makeRequest = (overrides = {}) => ({
   auth: { credentials: { sub: 'user-123' } },
   yar: { flash: mocks.flash },
   query: {},
-  path: '/invitations',
+  path: '/account/invitations',
   ...overrides
 })
 
@@ -128,8 +128,11 @@ describe('invitationsController()', () => {
         showingInvitationsCount: 5,
         totalInvitationsCount: 11,
         pagination: expect.objectContaining({
-          previous: { labelText: 'Previous', href: '/invitations?page=1' },
-          next: { labelText: 'Next', href: '/invitations?page=3' }
+          previous: {
+            labelText: 'Previous',
+            href: '/account/invitations?page=1'
+          },
+          next: { labelText: 'Next', href: '/account/invitations?page=3' }
         })
       })
     )
@@ -144,7 +147,7 @@ describe('invitationsController()', () => {
     const result = await invitationsController.handler(request, makeH())
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 
@@ -160,7 +163,7 @@ describe('invitationsController()', () => {
     const result = await invitationsController.handler(request, makeH())
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 
@@ -234,7 +237,7 @@ describe('acceptInvitationConfirmController()', () => {
     )
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 })
@@ -285,7 +288,7 @@ describe('rejectInvitationConfirmController()', () => {
     )
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 })
@@ -313,7 +316,7 @@ describe('acceptInvitationController()', () => {
       cphNumber: '12/345/0001',
       delegatingUserName: 'John Doe'
     })
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 
@@ -328,7 +331,7 @@ describe('acceptInvitationController()', () => {
     const result = await acceptInvitationController.handler(request, makeH())
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 
@@ -381,7 +384,7 @@ describe('rejectInvitationController()', () => {
       cphNumber: '12/345/0001',
       delegatingUserName: 'John Doe'
     })
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 
@@ -396,7 +399,7 @@ describe('rejectInvitationController()', () => {
     const result = await rejectInvitationController.handler(request, makeH())
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/invitations')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/invitations')
     expect(result).toBe('redirect-response')
   })
 

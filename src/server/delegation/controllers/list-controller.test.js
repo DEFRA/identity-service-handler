@@ -48,7 +48,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
@@ -84,7 +84,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
@@ -100,12 +100,15 @@ describe('listController()', () => {
         totalDelegatesCount: 11,
         pagination: expect.objectContaining({
           items: [
-            { number: 1, href: '/delegation?page=1', current: false },
-            { number: 2, href: '/delegation?page=2', current: true },
-            { number: 3, href: '/delegation?page=3', current: false }
+            { number: 1, href: '/account/delegations?page=1', current: false },
+            { number: 2, href: '/account/delegations?page=2', current: true },
+            { number: 3, href: '/account/delegations?page=3', current: false }
           ],
-          previous: { labelText: 'Previous', href: '/delegation?page=1' },
-          next: { labelText: 'Next', href: '/delegation?page=3' }
+          previous: {
+            labelText: 'Previous',
+            href: '/account/delegations?page=1'
+          },
+          next: { labelText: 'Next', href: '/account/delegations?page=3' }
         })
       })
     )
@@ -123,7 +126,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '1' },
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
@@ -137,7 +140,7 @@ describe('listController()', () => {
       expect.objectContaining({
         pagination: expect.objectContaining({
           previous: null,
-          next: { labelText: 'Next', href: '/delegation?page=2' }
+          next: { labelText: 'Next', href: '/account/delegations?page=2' }
         })
       })
     )
@@ -155,7 +158,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '2' },
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
@@ -168,7 +171,10 @@ describe('listController()', () => {
       'delegation/index',
       expect.objectContaining({
         pagination: expect.objectContaining({
-          previous: { labelText: 'Previous', href: '/delegation?page=1' },
+          previous: {
+            labelText: 'Previous',
+            href: '/account/delegations?page=1'
+          },
           next: null
         })
       })
@@ -180,7 +186,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: 'abc' },
-      path: '/delegation'
+      path: '/account/delegations'
     }
     mocks.redirect.mockReturnValue('redirect-response')
     const h = makeH()
@@ -189,7 +195,7 @@ describe('listController()', () => {
     const result = await listController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 
@@ -205,7 +211,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: { page: '999' },
-      path: '/delegation'
+      path: '/account/delegations'
     }
     const h = makeH()
 
@@ -214,7 +220,7 @@ describe('listController()', () => {
 
     // Assert
     expect(mocks.getDelegates).toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 
@@ -226,7 +232,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()
@@ -256,7 +262,7 @@ describe('listController()', () => {
     const request = {
       auth: { credentials: { sub: 'user-123' } },
       query: {},
-      path: '/delegation',
+      path: '/account/delegations',
       yar: { flash: mocks.yarFlash }
     }
     const h = makeH()

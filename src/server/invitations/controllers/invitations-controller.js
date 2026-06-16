@@ -8,7 +8,7 @@ import {
 } from '../../common/helpers/pagination.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
-const INVITATIONS_ROUTE = '/invitations'
+const INVITATIONS_ROUTE = '/account/invitations'
 const INVITATIONS_FLASH = 'invitationsFlash'
 const PAGE_SIZE = 5
 

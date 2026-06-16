@@ -7,7 +7,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {% if not confirmFailure %}
-        <a href="/delegation/create/cphs" class="govuk-back-link">Back</a>
+        <a href="/account/delegations/create/cphs" class="govuk-back-link">Back</a>
       {% endif %}
 
       {% if confirmFailure %}
@@ -45,7 +45,7 @@
         {% endfor %}
       </ul>
 
-      <form method="post" action="/delegation/create/confirm">
+      <form method="post" action="/account/delegations/create/confirm">
         <input type="hidden" name="_csrf" value="{{ _csrf }}">
 
         {{ govukButton({
@@ -53,7 +53,7 @@
         }) }}
       </form>
 
-      <p class="govuk-body"><a href="/delegation" class="govuk-link">Cancel</a></p>
+      <p class="govuk-body"><a href="/account/delegations" class="govuk-link">Cancel</a></p>
     </div>
   </div>
 {% endblock %}
