@@ -1,0 +1,64 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      {% if flash.removed %}
+        {{ govukNotificationBanner({
+          type: "success",
+          html: "<h3 class=\"govuk-notification-banner__heading\">Access removed</h3><p class=\"govuk-body\">You are no longer managing " + flash.cphNumber + " for " + flash.ownerName + ".</p>"
+        }) }}
+      {% endif %}
+
+      <a href="/account" class="govuk-back-link">Back to your account</a>
+
+      {{ appHeading({
+        text: heading
+      }) }}
+
+      {% if totalCount === 0 %}
+        <p class="govuk-body">You do not have any County Parish Holdings to manage.</p>
+      {% else %}
+        <table class="govuk-table">
+          <caption class="govuk-visually-hidden">County Parish Holdings you can manage</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">County Parish Holding number</th>
+              <th scope="col" class="govuk-table__header">Owner</th>
+              <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in cphRows %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ row.cphNumber }}</td>
+                <td class="govuk-table__cell">{{ row.ownerLabel }}</td>
+                <td class="govuk-table__cell">
+                  {% if row.delegationId %}
+                    <a class="govuk-link" href="/account/cphs/{{ row.delegationId }}/remove">
+                      Stop managing<span class="govuk-visually-hidden"> {{ row.cphNumber }} ({{ row.ownerLabel }})</span>
+                    </a>
+                  {% else %}
+                    <span aria-hidden="true">–</span><span class="govuk-visually-hidden">No action</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <p class="govuk-body govuk-!-font-weight-bold">
+          Showing {{ showingCount }} out of {{ totalCount }} {{ "holding" if totalCount === 1 else "holdings" }}
+        </p>
+
+        {% if pagination %}
+          {{ govukPagination(pagination) }}
+        {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

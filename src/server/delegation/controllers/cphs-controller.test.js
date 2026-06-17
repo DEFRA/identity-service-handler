@@ -46,7 +46,7 @@ describe('cphsController()', () => {
     const result = await cphsController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations/create')
     expect(mocks.getUserProfile).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -120,7 +120,9 @@ describe('cphsSubmitController()', () => {
     // Assert
     expect(mocks.getUserProfile).toHaveBeenCalledWith('user-123')
     expect(mocks.setCphIds).toHaveBeenCalledWith(['cph-id-1'])
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/confirm'
+    )
     expect(result).toBe('redirect-response')
   })
 

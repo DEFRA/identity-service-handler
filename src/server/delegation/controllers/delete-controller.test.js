@@ -88,7 +88,7 @@ describe('deleteController()', () => {
 
     // Assert
     expect(mocks.view).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 })
@@ -121,7 +121,7 @@ describe('deleteSubmitController()', () => {
       removed: true,
       email: 'joe@example.gov.uk'
     })
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 
@@ -149,7 +149,7 @@ describe('deleteSubmitController()', () => {
       failedRevokes: ['35/345/0005']
     })
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/delegation/delegated-user-456/manage'
+      '/account/delegations/delegated-user-456/manage'
     )
   })
 
@@ -175,7 +175,7 @@ describe('deleteSubmitController()', () => {
       failedRevokes: ['12/345/6789', '35/345/0005']
     })
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/delegation/delegated-user-456/manage'
+      '/account/delegations/delegated-user-456/manage'
     )
   })
 
@@ -196,7 +196,7 @@ describe('deleteSubmitController()', () => {
 
     // Assert
     expect(mocks.revokeDelegation).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 })

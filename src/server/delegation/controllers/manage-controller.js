@@ -11,7 +11,7 @@ import {
   getDelegate
 } from '../../common/helpers/delegation.js'
 
-const DELEGATION_ROUTE = '/delegation'
+const DELEGATION_ROUTE = '/account/delegations'
 const TEMPLATE = 'delegation/manage'
 const PAGE_TITLE = 'Manage delegate'
 const MANAGE_FLASH = 'manageFlash'
@@ -189,7 +189,7 @@ export const manageUpdateController = {
       delegatedUser
     )
 
-    const manageRoute = `/delegation/${delegatedUserId}/manage`
+    const manageRoute = `/account/delegations/${delegatedUserId}/manage`
 
     if (failedAdds.length || failedRevokes.length) {
       request.yar.flash(MANAGE_FLASH, { failedAdds, failedRevokes })

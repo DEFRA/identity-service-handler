@@ -1,8 +1,10 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
+  <a href="/account" class="govuk-back-link">Back</a>
   {% if flash.removed %}
     {{ govukNotificationBanner({
       type: "success",
@@ -14,8 +16,8 @@
     text: heading
   }) }}
 
-  <p class="govuk-body">Add new or remove existing individuals who manage the digital service on your behalf.</p>
-  <p class="govuk-body">Once removed, a user will retain their government login credentials, but will not be able to access the service they had been delegated to.</p>
+  <p class="govuk-body">Add or remove people who can manage your holdings on your behalf.</p>
+  <p class="govuk-body">Once removed, a delegate will no longer be able to manage your holdings.</p>
 
 
   {% if cphCount == 0 %}
@@ -36,11 +38,11 @@
               <td class="govuk-table__cell app-delegation-list__email">{{ delegate.email }}</td>
               <td class="govuk-table__cell app-delegation-list__action">
                 {% if cphCount == 1 %}
-                  <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/delete">
+                  <a class="govuk-link app-delegation-list__remove-link" href="/account/delegations/{{ delegate.id }}/delete">
                     Remove<span class="govuk-visually-hidden"> {{ delegate.name }}</span>
                   </a>
                 {% else %}
-                  <a class="govuk-link app-delegation-list__remove-link" href="/delegation/{{ delegate.id }}/manage">
+                  <a class="govuk-link app-delegation-list__remove-link" href="/account/delegations/{{ delegate.id }}/manage">
                     Manage<span class="govuk-visually-hidden"> {{ delegate.name }}</span>
                   </a>
                 {% endif %}
@@ -64,7 +66,7 @@
     <div class="govuk-button-group app-delegation-list__invite">
       {{ govukButton({
         text: "Add a new delegate",
-        href: "/delegation/create"
+        href: "/account/delegations/create"
       }) }}
     </div>
   {% endif %}

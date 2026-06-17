@@ -53,7 +53,7 @@ describe('confirmController()', () => {
     const result = await confirmController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations/create')
     expect(mocks.getUserProfile).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -70,7 +70,9 @@ describe('confirmController()', () => {
     const result = await confirmController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/cphs'
+    )
     expect(mocks.getUserProfile).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -175,7 +177,7 @@ describe('confirmSubmitController()', () => {
     const result = await confirmSubmitController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations/create')
     expect(mocks.createInvite).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -195,7 +197,9 @@ describe('confirmSubmitController()', () => {
     const result = await confirmSubmitController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/cphs')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/cphs'
+    )
     expect(mocks.createInvite).not.toHaveBeenCalled()
     expect(result).toBe('redirect-response')
   })
@@ -269,7 +273,9 @@ describe('confirmSubmitController()', () => {
       succeededCphIds: ['cph-id-1']
     })
     expect(mocks.clearDraft).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/confirm'
+    )
     expect(result).toBe('redirect-response')
   })
 
@@ -296,6 +302,8 @@ describe('confirmSubmitController()', () => {
       succeededCphIds: []
     })
     expect(mocks.clearDraft).not.toHaveBeenCalled()
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation/create/confirm')
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/account/delegations/create/confirm'
+    )
   })
 })

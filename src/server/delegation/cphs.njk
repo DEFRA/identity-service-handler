@@ -6,7 +6,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="/delegation/create" class="govuk-back-link">Back</a>
+      <a href="/account/delegations/create" class="govuk-back-link">Back</a>
 
       {% if errors.cphs %}
         {{ govukErrorSummary({
@@ -23,7 +23,7 @@
       <h1 class="govuk-heading-l govuk-!-margin-bottom-5">{{ heading }}</h1>
       <p class="govuk-body govuk-!-margin-bottom-5">{{ caption }}:</p>
 
-      <form method="post" action="/delegation/create/cphs">
+      <form method="post" action="/account/delegations/create/cphs">
         <input type="hidden" name="_csrf" value="{{ _csrf }}">
         {{ appCphCheckboxes({
           caption: caption,
@@ -36,7 +36,7 @@
         }) }}
       </form>
 
-        <p class="govuk-body"><a href="/delegation" class="govuk-link">Cancel</a></p>
+        <p class="govuk-body"><a href="/account/delegations" class="govuk-link">Cancel</a></p>
     </div>
   </div>
 {% endblock %}

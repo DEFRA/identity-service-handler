@@ -4,6 +4,8 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block content %}
+  <a href="/account" class="govuk-back-link">Back</a>
+
   {% if flash.accepted %}
     {{ govukNotificationBanner({
       type: "success",
@@ -22,7 +24,7 @@
     text: heading
   }) }}
 
-  <p class="govuk-body">Accept or reject invitations to manage the Livestock Information Service on behalf of another person.</p>
+  <p class="govuk-body">Accept or reject invitations to manage holdings on behalf of another person.</p>
 
   {% if invitations.length %}
     <table class="govuk-table">
@@ -40,10 +42,10 @@
             <td class="govuk-table__cell">{{ invitation.county_parish_holding_number }}</td>
             <td class="govuk-table__cell">{{ invitation.delegating_user_name }}</td>
             <td class="govuk-table__cell">
-              <a class="govuk-link govuk-!-margin-right-3" href="/invitations/{{ invitation.id }}/accept">
+              <a class="govuk-link govuk-!-margin-right-3" href="/account/invitations/{{ invitation.id }}/accept">
                 Accept<span class="govuk-visually-hidden"> invitation from {{ invitation.delegating_user_name }}</span>
               </a>
-              <a class="govuk-link" href="/invitations/{{ invitation.id }}/reject">
+              <a class="govuk-link" href="/account/invitations/{{ invitation.id }}/reject">
                 Reject<span class="govuk-visually-hidden"> invitation from {{ invitation.delegating_user_name }}</span>
               </a>
             </td>

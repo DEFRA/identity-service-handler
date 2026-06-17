@@ -1,0 +1,73 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {% if pendingInvitationsCount > 0 %}
+        {{ govukNotificationBanner({
+          html: "<h3 class=\"govuk-notification-banner__heading\">You have " + pendingInvitationsCount + " pending " + ("invitation" if pendingInvitationsCount === 1 else "invitations") + "</h3><p class=\"govuk-body\">Go to <a class=\"govuk-notification-banner__link\" href=\"/account/invitations\">your invitations</a> to accept or reject them.</p>"
+        }) }}
+      {% endif %}
+
+      {{ appHeading({
+        text: heading
+      }) }}
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-6">County Parish Holdings you can manage</h2>
+
+      {% if totalCphCount === 0 %}
+        <p class="govuk-body">You do not have any holdings to manage.</p>
+      {% elif delegatedCount === 0 %}
+        <p class="govuk-body">You directly manage {{ ownCount }} {{ "holding" if ownCount === 1 else "holdings" }}.</p>
+        <p class="govuk-body"><a class="govuk-link" href="/account/cphs">View your County Parish Holdings</a></p>
+      {% elif ownCount === 0 %}
+        <p class="govuk-body">You can manage {{ delegatedCount }} {{ "holding" if delegatedCount === 1 else "holdings" }} on behalf of others.</p>
+        <p class="govuk-body"><a class="govuk-link" href="/account/cphs">View your County Parish Holdings</a></p>
+      {% else %}
+        <p class="govuk-body">You directly manage {{ ownCount }} {{ "holding" if ownCount === 1 else "holdings" }}. You can manage {{ delegatedCount }} additional {{ "holding" if delegatedCount === 1 else "holdings" }} on behalf of others.</p>
+        <p class="govuk-body"><a class="govuk-link" href="/account/cphs">View your County Parish Holdings</a></p>
+      {% endif %}
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-8">People who act for you</h2>
+
+      <p class="govuk-body">Add or remove people who can manage your holdings on your behalf.</p>
+
+      {% if delegateCount === 0 %}
+        <p class="govuk-body">You do not have any delegates yet.</p>
+      {% elif delegateCount === 1 %}
+        <p class="govuk-body">1 person can currently act for you.</p>
+      {% else %}
+        <p class="govuk-body">{{ delegateCount }} people can currently act for you.</p>
+      {% endif %}
+
+      {{ govukButton({
+        text: "Manage your delegates",
+        href: "/account/delegations",
+        element: "a"
+      }) }}
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-8">Invitations to act for others</h2>
+
+      <p class="govuk-body">Accept or reject invitations to manage holdings on behalf of another person.</p>
+
+      {% if pendingInvitationsCount === 0 %}
+        <p class="govuk-body">You have no pending invitations.</p>
+      {% elif pendingInvitationsCount === 1 %}
+        <p class="govuk-body">1 invitation is waiting for your response.</p>
+      {% else %}
+        <p class="govuk-body">{{ pendingInvitationsCount }} invitations are waiting for your response.</p>
+      {% endif %}
+
+      {{ govukButton({
+        text: "View your invitations",
+        href: "/account/invitations",
+        element: "a",
+        classes: "govuk-button--secondary"
+      }) }}
+
+    </div>
+  </div>
+{% endblock %}

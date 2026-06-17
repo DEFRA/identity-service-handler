@@ -6,7 +6,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="/invitations" class="govuk-back-link">Back</a>
+      <a href="/account/invitations" class="govuk-back-link">Back</a>
 
       {% if error %}
         {{ govukNotificationBanner({
@@ -19,14 +19,14 @@
 
       <p class="govuk-body">You are accepting an invitation from <strong>{{ delegatingUserName }}</strong> to manage County Parish Holding number <strong>{{ cphNumber }}</strong>.</p>
 
-      <form method="post" action="/invitations/{{ invitationId }}/accept">
+      <form method="post" action="/account/invitations/{{ invitationId }}/accept">
         <input type="hidden" name="_csrf" value="{{ _csrf }}">
         {{ govukButton({
           text: "Accept invitation"
         }) }}
       </form>
 
-      <p class="govuk-body"><a class="govuk-link" href="/invitations">Cancel</a></p>
+      <p class="govuk-body"><a class="govuk-link" href="/account/invitations">Cancel</a></p>
     </div>
   </div>
 {% endblock %}

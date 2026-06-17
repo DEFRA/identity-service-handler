@@ -135,7 +135,7 @@ describe('manageController()', () => {
     const result = await manageController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 })
@@ -168,7 +168,7 @@ describe('manageUpdateController()', () => {
       success: true
     })
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/delegation/delegated-user-456/manage'
+      '/account/delegations/delegated-user-456/manage'
     )
     expect(result).toBe('redirect-response')
   })
@@ -225,7 +225,7 @@ describe('manageUpdateController()', () => {
       failedRevokes: ['12/345/6789']
     })
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/delegation/delegated-user-456/manage'
+      '/account/delegations/delegated-user-456/manage'
     )
     expect(result).toBe('redirect-response')
   })
@@ -256,7 +256,7 @@ describe('manageUpdateController()', () => {
       failedRevokes: ['12/345/6789']
     })
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/delegation/delegated-user-456/manage'
+      '/account/delegations/delegated-user-456/manage'
     )
     expect(result).toBe('redirect-response')
   })
@@ -282,7 +282,7 @@ describe('manageUpdateController()', () => {
     )
 
     // Assert
-    expect(redirect).toHaveBeenCalledWith('/delegation')
+    expect(redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('takeover-response')
   })
 
@@ -303,7 +303,7 @@ describe('manageUpdateController()', () => {
     const result = await manageUpdateController.handler(request, h)
 
     // Assert
-    expect(mocks.redirect).toHaveBeenCalledWith('/delegation')
+    expect(mocks.redirect).toHaveBeenCalledWith('/account/delegations')
     expect(result).toBe('redirect-response')
   })
 
