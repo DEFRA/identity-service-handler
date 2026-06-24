@@ -108,7 +108,7 @@ services:
     environment:
       PORT: 3005
       NODE_ENV: development
-      SESSION_COOKIE_PASSWORD: v9yg3NU08bnsAco724GAK5hStUX8Hqn9
+      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
       HELPER_BASEURL: http://identity-service-helper:8080
       HELPER_API_KEY: test
       STUB_B2C_EXTERNAL_BASE: https://localhost:3005/b2c
