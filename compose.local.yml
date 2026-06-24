@@ -10,11 +10,17 @@ services:
       context: ./
       target: development
     platform: linux
+    healthcheck:
+      test: ['CMD', 'node', '/home/node/scripts/healthcheck.js']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     ports:
       - '3000:3000'
     depends_on:
       test-site:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - path: 'compose/identity-service-handler.env'
         required: false
@@ -46,6 +52,12 @@ services:
     command: sh -c "npm install && npm run docker:dev"
     ports:
       - '3005:3005'
+    healthcheck:
+      test: ['CMD', 'node', '/repo/test-site/scripts/healthcheck.js', 'https://localhost:3005']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     volumes:
       - ./:/repo
       - test-site-modules:/repo/test-site/node_modules

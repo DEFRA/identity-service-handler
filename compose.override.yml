@@ -45,6 +45,12 @@ services:
       context: ./
       target: ${NODE_ENV:-development}
     platform: linux
+    healthcheck:
+      test: ['CMD', 'node', '/home/node/scripts/healthcheck.js']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     ports:
       - '${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}'
     links:
