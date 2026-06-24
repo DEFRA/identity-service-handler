@@ -62,7 +62,7 @@ services:
       redis:
         condition: service_started
       test-site:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - path: 'compose/aws.env'
         required: true
@@ -100,6 +100,12 @@ services:
     image: node:22
     working_dir: /repo/test-site
     command: sh -c "npm install && npm run docker:dev"
+    healthcheck:
+      test: ['CMD', 'node', '/repo/test-site/scripts/healthcheck.js']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     ports:
       - '3005:3005'
     volumes:
