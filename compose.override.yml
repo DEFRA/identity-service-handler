@@ -20,7 +20,7 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - shared
+      - identity-services
 
   redis:
     image: redis:7.2.3-alpine3.18
@@ -28,12 +28,12 @@ services:
       - '6379:6379'
     restart: always
     networks:
-      - shared
+      - identity-services
 
   mongodb:
     image: mongo:6.0.13
     networks:
-      - shared
+      - identity-services
     ports:
       - '27017:27017'
     volumes:
@@ -93,8 +93,7 @@ services:
       BROKER_BASE_URL2: ${BROKER_BASE_URL2:-https://identity-service-handler.dev.cdp-int.defra.cloud/}
       BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-https://fakelocal}
     networks:
-      - default
-      - shared
+      - identity-services
 
   test-site:
     image: node:22
@@ -120,16 +119,12 @@ services:
       STUB_B2C_EXTERNAL_BASE: https://localhost:3005/b2c
       STUB_B2C_INTERNAL_BASE: https://test-site:3005/b2c
     networks:
-      - default
-      - shared
+      - identity-services
 
 volumes:
   mongodb-data:
   test-site-modules:
 
 networks:
-  default:
-    driver: bridge
-  shared:
-    name: identity-services
+  identity-services:
     external: true
