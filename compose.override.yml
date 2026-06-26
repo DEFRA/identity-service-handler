@@ -127,4 +127,4 @@ volumes:
 
 networks:
   identity-services:
-    external: true
+    driver: bridge
