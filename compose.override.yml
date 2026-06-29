@@ -128,3 +128,4 @@ volumes:
 networks:
   identity-services:
     driver: bridge
+    external: true
