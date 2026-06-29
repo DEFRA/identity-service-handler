@@ -117,7 +117,7 @@ services:
       HELPER_BASEURL: ${HELPER_BASEURL:-http://identity-service-helper:8080}
       HELPER_API_KEY: ${HELPER_API_KEY:-test}
       STUB_B2C_EXTERNAL_BASE: ${STUB_B2C_EXTERNAL_BASE:-https://test-site:3005/b2c}
-      STUB_B2C_INTERNAL_BASE: ${STUB_B2C_EXTERNAL_BASE:-https://test-site:3005/b2c}
+      STUB_B2C_INTERNAL_BASE: ${STUB_B2C_INTERNAL_BASE:-https://test-site:3005/b2c}
     networks:
       - identity-services
 
