@@ -66,30 +66,30 @@ services:
     env_file:
       - path: 'compose/aws.env'
         required: true
-      - path: 'compose/identity-service-handler.env'
+      - path: '.env'
         required: false
     environment:
       PORT: ${FRONTEND_PORT:-3000}
       NODE_ENV: ${NODE_ENV:-development}
       REDIS_HOST: redis
       LOCALSTACK_ENDPOINT: http://localstack:4566
-      USE_SINGLE_INSTANCE_CACHE: true
+      USE_SINGLE_INSTANCE_CACHE: ${USE_SINGLE_INSTANCE_CACHE:-true}
       USE_FAKE_EXTERNAL_API: ${HELPER_USE_FAKE_CLIENT:-true}
       HELPER_BASEURL: ${HELPER_BASEURL:-http://identity-service-helper:8080}
-      HELPER_API_KEY: ${HELPER_API_KEY:-your-helper-api-key}
+      HELPER_API_KEY: ${HELPER_API_KEY:-test}
       B2C_CLIENT_ID: ${B2C_CLIENT_ID:-stub-client-id}
-      B2C_CLIENT_SECRET: ${B2C_CLIENT_SECRET}
+      B2C_CLIENT_SECRET: ${B2C_CLIENT_SECRET:-stub-client-secret}
       B2C_SERVICE_ID: ${B2C_SERVICE_ID:-stub-service-id}
       B2C_DISCOVERY_URL: ${B2C_DISCOVERY_URL:-https://test-site:3005/b2c/.well-known/openid-configuration}
-      B2C_REDIRECT_URL: ${B2C_REDIRECT_URL:-https://localhost:3000/sso}
-      DEBUG: ${DEBUG}
-      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}
+      B2C_REDIRECT_URL: ${B2C_REDIRECT_URL:-https://identity-service-handler:3000/sso}
+      DEBUG: ${DEBUG:-oidc-provider:*}
+      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-}
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
-      OIDC_SIGNING_CERT: ${OIDC_SIGNING_CERT}
-      OIDC_SIGNING_KEY: ${OIDC_SIGNING_KEY}
-      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
+      OIDC_SIGNING_CERT: ${OIDC_SIGNING_CERT:-}
+      OIDC_SIGNING_KEY: ${OIDC_SIGNING_KEY:-}
+      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD:-v9yg3NU08bnsAco724GAK5hStUX8Hqn9}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
-      TLS_ENABLED: ${TLS_ENABLED:-false}
+      TLS_ENABLED: ${TLS_ENABLED:-true}
       BROKER_BASE_URL2: ${BROKER_BASE_URL2:-https://identity-service-handler.dev.cdp-int.defra.cloud/}
       BROKER_REDIRECT_URL2: ${BROKER_REDIRECT_URL2:-https://fakelocal}
     networks:
@@ -113,11 +113,11 @@ services:
     environment:
       PORT: 3005
       NODE_ENV: development
-      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD}
-      HELPER_BASEURL: http://identity-service-helper:8080
-      HELPER_API_KEY: test
-      STUB_B2C_EXTERNAL_BASE: https://localhost:3005/b2c
-      STUB_B2C_INTERNAL_BASE: https://test-site:3005/b2c
+      SESSION_COOKIE_PASSWORD: ${SESSION_COOKIE_PASSWORD:-}
+      HELPER_BASEURL: ${HELPER_BASEURL:-http://identity-service-helper:8080}
+      HELPER_API_KEY: ${HELPER_API_KEY:-test}
+      STUB_B2C_EXTERNAL_BASE: ${STUB_B2C_EXTERNAL_BASE:-https://test-site:3005/b2c}
+      STUB_B2C_INTERNAL_BASE: ${STUB_B2C_INTERNAL_BASE:-https://test-site:3005/b2c}
     networks:
       - identity-services
 
@@ -127,4 +127,4 @@ volumes:
 
 networks:
   identity-services:
-    driver: bridge
+    external: true
